@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet">
+<style>
+
+/* =================================
+   BASE
+================================= */
+
+body{
+  margin:0;
+  background:transparent;
+}
+
+/* =================================
+   FONTS
+   Put in /fonts/
+================================= */
+
+@font-face{
+  font-family:'CarbonFont';
+  src:url('fonts/carbon.woff2') format('woff2');
+}
+
+@font-face{
+  font-family:'MillFont';
+  src:url('fonts/mill.woff2') format('woff2');
+}
+
+/* =================================
+   SHARED STRUCTURE
+================================= */
+
+.branding{
+  position:absolute;
+}
+
+.logo{
+  width:100%;
+}
+
+.clock-wrapper{
+  position:absolute;
+}
+
+#clockBox{
+  position:absolute;
+  top:0;
+  left:0;
+}
+
+#clock{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  font-weight:800;
+  white-space:nowrap;
+  pointer-events:none;
+}
+
+/* =================================
+   🟨 CARBON STYLE
+================================= */
+
+body.carbon .branding{
+  top:25px;
+  left:35px;
+  width:220px;
+}
+
+body.carbon .clock-wrapper{
+  top:73px;
+  left:57px;
+  width:103px;
+  height:38px;
+}
+
+body.carbon #clockBox{
+  display:block;
+  width:100%;
+  transform:rotate(-3.27deg);
+  transform-origin:center;
+}
+
+body.carbon #clock{
+  font-family:'CarbonFont', sans-serif;
+  font-size:28px;
+  color:#000;
+  top:15px;
+  transform:
+    translate(-50%, -50%)
+    rotate(-3.27deg);
+}
+
+/* =================================
+   🌿 THE MILL STYLE
+================================= */
+
+body.mill .branding{
+  top:40px;
+  left:20%;
+  transform:translateX(-50%);
+  width:150px;
+  text-align:center;
+}
+
+body.mill .logo{
+  margin:0 auto;
+  display:block;
+}
+
+body.mill .clock-wrapper{
+  position:relative;
+  width:100%;
+  height:auto;
+}
+
+body.mill #clockBox{
+  display:none;
+}
+
+body.mill #clock{
+  position:relative;
+  top:0px;
+  left:20px;
+  transform:none;
+  font-family:'Google Sans', serif;
+  font-size:24px;
+  color:#111;
+  letter-spacing:0px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="branding">
+
+  <img id="venueLogo" class="logo">
+
+  <div class="clock-wrapper">
+      <img id="clockBox">
+      <div id="clock"></div>
+  </div>
+
+</div>
+
+<script>
+
+/* =================================
+   SITE CONFIG
+================================= */
+
+const SITE_CONFIG = {
+
+  carbon:{
+    logo:"1_vo6c0O9Qj8qYul5WymV4hA7aViSPyvZ",
+    showBox:true
+  },
+
+  mill:{
+    logo:"1x71GS_8SuyRysnGilsKzvYPMFzGdawuY",
+    showBox:false
+  }
+
+};
+
+/* =================================
+   DETECT SITE
+================================= */
+
+const params = new URLSearchParams(window.location.search);
+const site = params.get("site") || "carbon";
+
+document.body.classList.add(site);
+
+const config = SITE_CONFIG[site];
+
+/* =================================
+   LOGO
+================================= */
+
+document.getElementById("venueLogo").src =
+`https://drive.google.com/thumbnail?id=${config.logo}&sz=w1000`;
+
+/* =================================
+   CLOCK BOX (Carbon only)
+================================= */
+
+if(config.showBox){
+  document.getElementById("clockBox").src =
+  "https://drive.google.com/thumbnail?id=1h4DO_-Xv7LrmIh-0br8AMOjTTUz_Cn-g&sz=w1000";
+}
+
+/* =================================
+   LIVE CLOCK
+================================= */
+
+function updateClock(){
+  const now=new Date();
+  const h=now.getHours().toString().padStart(2,"0");
+  const m=now.getMinutes().toString().padStart(2,"0");
+  document.getElementById("clock").textContent=`${h}:${m}`;
+}
+
+setInterval(updateClock,1000);
+updateClock();
+
+</script>
+
+</body>
+</html>
