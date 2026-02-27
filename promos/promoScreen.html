@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<style>
+
+body{
+  margin:0;
+  background:black;
+  overflow:hidden;
+background: #fff;
+}
+
+#screen{
+  width:1564px;
+  height:880px;
+  position:relative;
+  overflow:hidden;
+}
+
+/* ======================
+   SLIDE SYSTEM
+====================== */
+
+.slide{
+  position:absolute;
+  width:100%;
+  height:100%;
+  top:0;
+  left:0;
+}
+
+.slide img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+/* waiting position */
+.off-left{
+  transform:translateX(-100%);
+}
+
+/* visible */
+.active{
+  transform:translateX(0);
+  transition:transform .6s ease;
+}
+
+/* exiting */
+.exit-left{
+  transform:translateX(-100%);
+  transition:transform .6s ease;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="screen">
+
+  <div id="slideA" class="slide active">
+    <img id="imgA">
+  </div>
+
+  <div id="slideB" class="slide off-left">
+    <img id="imgB">
+  </div>
+
+</div>
+
+<script>
+
+const BASE =
+"https://totalmixcreative.github.io/graphics/promos/";
+
+let currentImage=null;
+let showingA=true;
+
+/* ======================
+   SLIDE CHANGE
+====================== */
+
+function swapSlides(newImage){
+
+  const slideA=document.getElementById("slideA");
+  const slideB=document.getElementById("slideB");
+
+  const imgA=document.getElementById("imgA");
+  const imgB=document.getElementById("imgB");
+
+  const incoming = showingA ? slideB : slideA;
+  const outgoing = showingA ? slideA : slideB;
+  const incomingImg = showingA ? imgB : imgA;
+
+  incomingImg.src = BASE + newImage;
+
+  /* bring new slide in from LEFT */
+  incoming.classList.remove("off-left");
+  incoming.classList.add("active");
+
+  /* push old slide out LEFT */
+  outgoing.classList.remove("active");
+  outgoing.classList.add("exit-left");
+
+  setTimeout(()=>{
+    outgoing.classList.remove("exit-left");
+    outgoing.classList.add("off-left");
+  },600);
+
+  showingA=!showingA;
+}
+
+/* ======================
+   STORAGE SYNC
+====================== */
+
+function updateFromStorage(){
+
+  const promo =
+    JSON.parse(localStorage.getItem("currentPromo"));
+
+  if(!promo || !promo.image) return;
+
+  if(promo.image===currentImage) return;
+
+  currentImage=promo.image;
+
+  swapSlides(promo.image);
+}
+
+/* INSTANT SYNC (no delay) */
+window.addEventListener("storage",(e)=>{
+  if(e.key==="currentPromo"){
+    updateFromStorage();
+  }
+});
+
+/* run once on load */
+updateFromStorage();
+
+</script>
+
+</body>
+</html>
