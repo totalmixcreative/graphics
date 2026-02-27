@@ -94,23 +94,23 @@ const ENDPOINT =
 "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";
 
 const HOLD_DURATION = 6000;
-const ANIMATION_DURATION = 600;
+const TOTAL_DURATION = HOLD_DURATION + 600;
 
 let slides=[];
-let currentIndex=-1;
+let currentIndex=0;
 
-/**************** PLAY SLIDE ****************/
+/******** PLAY ********/
 
 function playSlide(item){
 
   const wrapper =
     document.getElementById("text-wrapper");
 
-  document.getElementById("headline")
-    .textContent = item.headline || "";
+  document.getElementById("headline").textContent =
+    item.headline || "";
 
-  document.getElementById("subline")
-    .textContent = item.subline || "";
+  document.getElementById("subline").textContent =
+    item.subline || "";
 
   wrapper.className="";
   wrapper.classList.add("slide-in");
@@ -119,72 +119,74 @@ function playSlide(item){
     wrapper.classList.remove("slide-in");
     wrapper.classList.add("slide-out");
   },HOLD_DURATION);
+
 }
 
-/**************** TIMELINE SYNC ****************/
+/******** ROTATION LOOP ********/
 
-async function syncTimeline(){
+function startRotation(){
 
-  try{
+  setInterval(()=>{
 
-    const res = await fetch(
-      ENDPOINT + "?t=" + Date.now()
-    );
+    if(!slides.length) return;
 
-    const data = await res.json();
+    currentIndex =
+      (currentIndex + 1) % slides.length;
 
-    slides = data.lowerThird || [];
-
-    if(!slides.length){
-      console.warn("No slides yet");
-      return;
-    }
-
-    const timelineIndex =
-      Number(data.timelineIndex);
-
-    if(isNaN(timelineIndex)){
-      console.warn("timelineIndex missing");
-      return;
-    }
-
-    const index =
-      timelineIndex % slides.length;
-
-    if(index === currentIndex)
-      return;
-
-    const item = slides[index];
-
-    if(!item){
-      console.warn("Invalid slide");
-      return;
-    }
-
-    currentIndex=index;
+    const item = slides[currentIndex];
 
     playSlide(item);
 
-    /* sync promo screen */
     localStorage.setItem(
       "currentPromo",
       JSON.stringify(item)
     );
 
-  }
-  catch(err){
-    console.error("Sync failed",err);
+  },TOTAL_DURATION);
+
+}
+
+/******** SYNC WITH ENDPOINT ********/
+
+async function syncTimeline(){
+
+  try{
+
+    const res =
+      await fetch(ENDPOINT+"?t="+Date.now());
+
+    const data=await res.json();
+
+    if(!data.lowerThird?.length) return;
+
+    slides=data.lowerThird;
+
+    const timelineIndex =
+      Number(data.timelineIndex);
+
+    if(!isNaN(timelineIndex)){
+      currentIndex =
+        timelineIndex % slides.length;
+    }
+
+  }catch(e){
+    console.log("sync retry");
   }
 }
 
-/**************** START ****************/
+/******** START ********/
 
-syncTimeline();
+await syncTimeline();
 
-/* check every second */
-setInterval(syncTimeline,1000);
+playSlide(slides[currentIndex]);
+
+startRotation();
+
+/* occasional resync */
+setInterval(syncTimeline,30000);
 
 </script>
 
 </body>
 </html>
+
