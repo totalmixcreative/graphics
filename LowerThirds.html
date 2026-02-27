@@ -210,21 +210,37 @@ function rotate(){
   },HOLD_DURATION);
 
   setTimeout(()=>{
-    wrapper.classList.remove("slide-out");
-    index =
-  Math.floor(
-    Date.now() /
-    (HOLD_DURATION + ANIMATION_DURATION)
-  ) % items.length;
-    rotate();
-  },HOLD_DURATION+ANIMATION_DURATION);
-}
+  wrapper.classList.remove("slide-out");
+},HOLD_DURATION+ANIMATION_DURATION);
 
 loadData();
 setInterval(loadData,120000);
+
+  let lastIndex = -1;
+
+setInterval(()=>{
+
+  if(!items.length) return;
+
+  const globalIndex =
+    Math.floor(
+      Date.now() /
+      (HOLD_DURATION + ANIMATION_DURATION)
+    ) % items.length;
+
+  if(globalIndex !== lastIndex){
+
+    lastIndex = globalIndex;
+    index = globalIndex;
+
+    rotate();
+  }
+
+},250);
 
 </script>
 
 </body>
 </html>
+
 
