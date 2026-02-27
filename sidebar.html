@@ -189,57 +189,47 @@ function render(matches) {
     slider.appendChild(card);
   });
 
-  startSlider(matches.length);
+
 }
 
 /**************** SLIDER ****************/
-function startSlider(total) {
-  const slider = document.getElementById("slider");
+let lastSidebarIndex = -1;
 
-  if (sliderInterval) {
-    clearInterval(sliderInterval);
-  }
+const SIDEBAR_DURATION = 9000; // same timing you used
 
-  if (total <= 1) return;
+setInterval(()=>{
 
-  let index = 0;
+  const slider =
+    document.getElementById("slider");
 
-  sliderInterval = setInterval(() => {
-    const cards = slider.children;
-    if (!cards.length) return;
+  const cards = slider.children;
 
-    const currentCard = cards[index];
+  if(!cards.length) return;
 
-    // Slide out left
-    currentCard.style.transition = "transform 0.6s ease, opacity 0.6s ease";
-    currentCard.style.transform = "translateX(-100%)";
-    currentCard.style.opacity = "0";
+  const globalIndex =
+    Math.floor(Date.now()/SIDEBAR_DURATION)
+    % cards.length;
 
-    setTimeout(() => {
-      // Move to next
-      index = (index + 1) % total;
+  if(globalIndex === lastSidebarIndex)
+    return;
 
-      // Instantly reset position
-      slider.style.transition = "none";
-      slider.style.transform = "translateX(0)";
+  lastSidebarIndex = globalIndex;
 
-      // Reset all cards
-      Array.from(cards).forEach(card => {
-        card.style.transform = "translateX(100%)";
-        card.style.opacity = "0";
-      });
+  /* reset all cards */
+  Array.from(cards).forEach(card=>{
+    card.style.transform="translateX(100%)";
+    card.style.opacity="0";
+  });
 
-      const nextCard = cards[index];
+  const nextCard = cards[globalIndex];
 
-      // Bring next card in
-      nextCard.style.transition = "transform 0.6s cubic-bezier(.22,1,.36,1), opacity 0.6s ease";
-      nextCard.style.transform = "translateX(0)";
-      nextCard.style.opacity = "1";
+  nextCard.style.transition =
+    "transform 0.6s cubic-bezier(.22,1,.36,1), opacity 0.6s ease";
 
-    }, 600);
+  nextCard.style.transform="translateX(0)";
+  nextCard.style.opacity="1";
 
-  }, 9000);
-}
+},250);
 /**************** LIVE LABEL UPDATER ****************/
 setInterval(() => {
   const cards = document.querySelectorAll(".card");
@@ -271,4 +261,5 @@ setInterval(() => {
 
 </script>
 </body>
+
 </html>
