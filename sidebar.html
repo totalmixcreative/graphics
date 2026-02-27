@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=PT+Sans+Narrow:wght@400;700&display=swap" rel="stylesheet">
+<meta charset="utf-8" />
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: 'PT Sans Narrow', system-ui, sans-serif;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+
+.viewport { width: 359px; overflow: hidden; }
+.slider {
+  position: relative;
+  width: 359px;
+  height: 1000px; /* or exact total height of your card */
+}
+.card {
+  position: absolute;
+  width: 359px;
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.team-img {
+  width: 359px;
+  height: 324px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.info { display: flex; flex-direction: column; gap: 8px; text-align: center;}
+.competition img { height: 60px; margin: 10px 0 20px; }
+
+.fixture .team {
+  font-size: 35px;
+  line-height: 1.1;
+font-weight: 700;
+}
+
+.time {
+  font-size: 25px;
+  margin-top: 20px;
+font-weight: 700;
+}
+
+.time.live {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+font-size: 25px;
+font-weight: 700;
+}
+
+.live-dot {
+  width: 10px;
+  height: 10px;
+  background: red;
+  border-radius: 50%;
+  animation: pulse 1.2s infinite;
+}
+
+.versus {
+  font-size: 20px; }
+  
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.2; }
+  100% { opacity: 1; }
+}
+
+.channel[data-channel^="SS"] img { height: 25px; }
+.channel[data-channel^="TNT"] img { height: 40px; }
+.channel[data-channel^="Prime"] img { height: 40px; }
+.channel[data-channel^="DAZN"] img { height: 25px; }
+.channel[data-channel^="BBC1"] img { height: 25px; }
+.channel[data-channel^="ITV1"] img { height: 25px; }
+.channel[data-channel^="ITV4"] img { height: 25px; }
+
+.competition[data-competition*="Six Nations"] img { height: 70px; }
+.competition[data-competition*="BetMGM Premier League"] img { height: 100px; }
+.competition[data-competition*="F1"] img { height: 40px; }
+</style>
+</head>
+
+<body>
+<div class="viewport">
+  <div class="slider" id="slider"></div>
+</div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";   // ← PUT YOUR /exec URL HERE
+const SLIDE_WIDTH = 359;
+
+let sliderInterval = null;
+let lastUpdated = null;
+let currentMatches = [];
+let imageVersion = Date.now();
+
+/**************** FETCH DATA ****************/
+async function fetchData() {
+  try {
+    const res = await fetch(API + "?_=" + Date.now());
+    const data = await res.json();
+
+   const newMatches = JSON.stringify(data.matches || []);
+const oldMatches = JSON.stringify(currentMatches || []);
+
+if (newMatches !== oldMatches) {
+  lastUpdated = data.updated;
+  imageVersion = data.updated;
+  currentMatches = data.matches || [];
+  render(currentMatches);
+}
+
+  } catch (err) {
+    console.error("Fetch error:", err);
+  }
+}
+
+/**************** TIME LOGIC ****************/
+function calculateLabel(m) {
+  const now = Date.now();
+
+  if (now >= m.startTime && now <= m.endTime) {
+    return "LIVE NOW";
+  }
+
+  if (now < m.startTime && (m.startTime - now) <= 60 * 60 * 1000) {
+    return "UP NEXT";
+  }
+
+  return m.label;
+}
+
+/**************** RENDER ****************/
+function render(matches) {
+  const slider = document.getElementById("slider");
+  slider.innerHTML = "";
+
+  matches.forEach((m, i) => {
+    const displayLabel = calculateLabel(m);
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <div class="team-img"
+           style="background-image:url('https://drive.google.com/thumbnail?id=${m.homeImg}&sz=w1000&v=${imageVersion}')"></div>
+
+      <div class="info">
+        ${m.competitionImg ? `
+          <div class="competition" data-competition="${m.competition}">
+            <img src="https://drive.google.com/thumbnail?id=${m.competitionImg}&sz=w1000&v=${imageVersion}">
+          </div>` : ""}
+
+        <div class="fixture">
+          <div class="team home">${m.home}</div>
+          ${m.away ? `<div class="versus">v</div>` : ""}
+          ${m.away ? `<div class="team away">${m.away}</div>` : ""}
+        </div>
+
+        <div class="time ${displayLabel === 'LIVE NOW' ? 'live' : ''}">
+          ${displayLabel === 'LIVE NOW' ? '<span class="live-dot"></span>' : ''}
+          ${displayLabel}
+        </div>
+
+        ${m.channelImg ? `
+          <div class="channel" data-channel="${m.channel}">
+            <img src="https://drive.google.com/thumbnail?id=${m.channelImg}&sz=w1000&v=${imageVersion}">
+          </div>` : ""}
+      </div>
+    `;
+
+    // Make first card visible immediately
+    if (i === 0) {
+      card.style.transform = "translateX(0)";
+      card.style.opacity = "1";
+    }
+
+    slider.appendChild(card);
+  });
+
+  startSlider(matches.length);
+}
+
+/**************** SLIDER ****************/
+function startSlider(total) {
+  const slider = document.getElementById("slider");
+
+  if (sliderInterval) {
+    clearInterval(sliderInterval);
+  }
+
+  if (total <= 1) return;
+
+  let index = 0;
+
+  sliderInterval = setInterval(() => {
+    const cards = slider.children;
+    if (!cards.length) return;
+
+    const currentCard = cards[index];
+
+    // Slide out left
+    currentCard.style.transition = "transform 0.6s ease, opacity 0.6s ease";
+    currentCard.style.transform = "translateX(-100%)";
+    currentCard.style.opacity = "0";
+
+    setTimeout(() => {
+      // Move to next
+      index = (index + 1) % total;
+
+      // Instantly reset position
+      slider.style.transition = "none";
+      slider.style.transform = "translateX(0)";
+
+      // Reset all cards
+      Array.from(cards).forEach(card => {
+        card.style.transform = "translateX(100%)";
+        card.style.opacity = "0";
+      });
+
+      const nextCard = cards[index];
+
+      // Bring next card in
+      nextCard.style.transition = "transform 0.6s cubic-bezier(.22,1,.36,1), opacity 0.6s ease";
+      nextCard.style.transform = "translateX(0)";
+      nextCard.style.opacity = "1";
+
+    }, 600);
+
+  }, 9000);
+}
+/**************** LIVE LABEL UPDATER ****************/
+setInterval(() => {
+  const cards = document.querySelectorAll(".card");
+
+  cards.forEach((card, index) => {
+    const m = currentMatches[index];
+    if (!m) return;
+
+    const displayLabel = calculateLabel(m);
+    const timeDiv = card.querySelector(".time");
+    if (!timeDiv) return;
+
+    timeDiv.className = "time " + (displayLabel === "LIVE NOW" ? "live" : "");
+    timeDiv.innerHTML =
+      (displayLabel === "LIVE NOW" ? '<span class="live-dot"></span>' : '') +
+      displayLabel;
+  });
+
+}, 1000);
+
+/**************** INITIAL LOAD ****************/
+fetchData();
+setInterval(fetchData, 30000);
+
+/**************** OBS KEEP ALIVE ****************/
+setInterval(() => {
+  document.body.dataset.keepalive = Date.now();
+}, 30000);
+
+</script>
+</body>
+</html>
