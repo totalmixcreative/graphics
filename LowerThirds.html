@@ -142,29 +142,26 @@ body{
 const ENDPOINT_URL =
 "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";
 
-const HOLD_DURATION=6000;
-const ANIMATION_DURATION=600;
+const HOLD_DURATION = 6000;
+const ANIMATION_DURATION = 600;
+const TOTAL_DURATION = HOLD_DURATION + ANIMATION_DURATION;
 
 let items=[];
 let index=0;
-let rotationStarted=false;
 let timelineSynced=false;
 
-  const TOTAL_DURATION =
-  HOLD_DURATION + ANIMATION_DURATION;
+/**************** LOAD DATA ****************/
 
 async function loadData(){
   try{
 
-    const res = await fetch(
-      ENDPOINT_URL + "?t=" + Date.now()
-    );
+    const res =
+      await fetch(ENDPOINT_URL+"?t="+Date.now());
 
     const data = await res.json();
 
     items = data.lowerThird || [];
 
-    /* ⭐ GLOBAL SYNC POINT */
     if(
       !timelineSynced &&
       items.length &&
@@ -176,25 +173,23 @@ async function loadData(){
       timelineSynced = true;
     }
 
-    if(items.length && !rotationStarted){
-      rotationStarted = true;
-      rotate();
-    }
-
   }catch(err){
     console.error(err);
   }
 }
 
+/**************** PLAY SLIDE ****************/
+
 function rotate(){
 
-  if(!items.length)return;
+  if(!items.length) return;
 
-  const item=items[index];
-  const wrapper=document.getElementById("text-wrapper");
+  const item = items[index];
+  const wrapper =
+    document.getElementById("text-wrapper");
 
-  headline.textContent=item.headline;
-  subline.textContent=item.subline;
+  headline.textContent = item.headline || "";
+  subline.textContent = item.subline || "";
 
   localStorage.setItem(
     "currentPromo",
@@ -210,23 +205,21 @@ function rotate(){
   },HOLD_DURATION);
 
   setTimeout(()=>{
-  wrapper.classList.remove("slide-out");
-},HOLD_DURATION+ANIMATION_DURATION);
+    wrapper.classList.remove("slide-out");
+  },TOTAL_DURATION);
+}
 
-loadData();
-setInterval(loadData,120000);
+/**************** GLOBAL CLOCK SYNC ****************/
 
-  let lastIndex = -1;
+let lastIndex = -1;
 
 setInterval(()=>{
 
   if(!items.length) return;
 
   const globalIndex =
-    Math.floor(
-      Date.now() /
-      (HOLD_DURATION + ANIMATION_DURATION)
-    ) % items.length;
+    Math.floor(Date.now()/TOTAL_DURATION)
+    % items.length;
 
   if(globalIndex !== lastIndex){
 
@@ -238,9 +231,15 @@ setInterval(()=>{
 
 },250);
 
+/**************** STARTUP ****************/
+
+loadData();
+setInterval(loadData,120000);
+
 </script>
 
 </body>
 </html>
+
 
 
