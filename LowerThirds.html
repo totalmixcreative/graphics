@@ -9,21 +9,27 @@ body{
   margin:0;
   overflow:hidden;
   background:transparent;
+  font-family:Arial,Helvetica,sans-serif;
 }
 
-#lowerthird{
+#container{
   position:absolute;
-  bottom:0;
+  top:0;
   left:0;
   width:100%;
+  height:220px;
+  overflow:hidden;
 }
+
+/* ===== TEXT WRAPPER ===== */
 
 #text-wrapper{
-  transform:translateX(-100%);
-  opacity:0;
+  position:absolute;
+  width:100%;
+  height:100%;
 }
 
-/* SAME CARBON ANIMATION */
+/* ===== ANIMATION ===== */
 
 .slide-in{
   animation:slideIn .6s ease forwards;
@@ -55,118 +61,127 @@ body{
   }
 }
 
+/* ===== TEXT ===== */
+
+#headline{
+  font-size:48px;
+  font-weight:bold;
+  color:white;
+}
+
+#subline{
+  font-size:28px;
+  color:white;
+}
+
 </style>
 </head>
 
 <body>
 
-<div id="lowerthird">
+<div id="container">
   <div id="text-wrapper">
-    <div id="headline"></div>
-    <div id="subline"></div>
+      <div id="headline"></div>
+      <div id="subline"></div>
   </div>
 </div>
 
 <script>
 
-const ENDPOINT_URL =
+/**************** CONFIG ****************/
+
+const ENDPOINT =
 "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";
 
 const HOLD_DURATION = 6000;
 const ANIMATION_DURATION = 600;
 
-const headline =
-document.getElementById("headline");
+let slides=[];
+let currentIndex=-1;
 
-const subline =
-document.getElementById("subline");
+/**************** PLAY SLIDE ****************/
 
-let lastTimelineIndex = -1;
+function playSlide(item){
 
-/* ===============================
-   MASTER TIMELINE SYNC
-================================ */
+  const wrapper =
+    document.getElementById("text-wrapper");
+
+  document.getElementById("headline")
+    .textContent = item.headline || "";
+
+  document.getElementById("subline")
+    .textContent = item.subline || "";
+
+  wrapper.className="";
+  wrapper.classList.add("slide-in");
+
+  setTimeout(()=>{
+    wrapper.classList.remove("slide-in");
+    wrapper.classList.add("slide-out");
+  },HOLD_DURATION);
+}
+
+/**************** TIMELINE SYNC ****************/
 
 async function syncTimeline(){
 
   try{
 
     const res = await fetch(
-  ENDPOINT_URL + "?t=" + Date.now()
-);
+      ENDPOINT + "?t=" + Date.now()
+    );
 
     const data = await res.json();
 
-    const slides = data.lowerThird || [];
+    slides = data.lowerThird || [];
 
-    if(!slides.length) return;
+    if(!slides.length){
+      console.warn("No slides yet");
+      return;
+    }
 
     const timelineIndex =
-      data.timelineIndex;
+      Number(data.timelineIndex);
+
+    if(isNaN(timelineIndex)){
+      console.warn("timelineIndex missing");
+      return;
+    }
 
     const index =
       timelineIndex % slides.length;
 
-    if(index === lastTimelineIndex)
+    if(index === currentIndex)
       return;
-
-    lastTimelineIndex = index;
 
     const item = slides[index];
 
+    if(!item){
+      console.warn("Invalid slide");
+      return;
+    }
+
+    currentIndex=index;
+
     playSlide(item);
 
-  }catch(err){
-    console.error("Timeline error",err);
+    /* sync promo screen */
+    localStorage.setItem(
+      "currentPromo",
+      JSON.stringify(item)
+    );
+
+  }
+  catch(err){
+    console.error("Sync failed",err);
   }
 }
 
-/* ===============================
-   PLAY SLIDE
-================================ */
-
-function playSlide(item){
-
-  const wrapper =
-    document.getElementById(
-      "text-wrapper"
-    );
-
-  headline.textContent =
-    item.headline || "";
-
-  subline.textContent =
-    item.subline || "";
-
-  /* sync promo screen */
-  localStorage.setItem(
-    "currentPromo",
-    JSON.stringify(item)
-  );
-
-  wrapper.className="";
-  wrapper.classList.add("slide-in");
-
-  setTimeout(()=>{
-
-    wrapper.classList.remove(
-      "slide-in"
-    );
-
-    wrapper.classList.add(
-      "slide-out"
-    );
-
-  }, HOLD_DURATION);
-}
-
-/* ===============================
-   START SYNC
-================================ */
+/**************** START ****************/
 
 syncTimeline();
 
-/* check master clock */
+/* check every second */
 setInterval(syncTimeline,1000);
 
 </script>
