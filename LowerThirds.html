@@ -202,12 +202,30 @@ async function init(){
   setInterval(syncTimeline,30000);
 }
 
+async function loadData(){
+
+  try{
+
+    const response = await fetch(API_URL + "?t=" + Date.now());
+    const data = await response.json();
+
+    if(!data || !data.lowerThird) return;
+
+    slides = data.lowerThird;
+
+  }catch(err){
+    console.log("Load failed",err);
+  }
+
+}
+  
 init();
 
 </script>
 
 </body>
 </html>
+
 
 
 
