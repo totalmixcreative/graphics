@@ -178,13 +178,27 @@ async function syncTimeline(){
 
 async function init(){
 
+  /* 1️⃣ LOAD DATA FIRST */
+  await loadData();
+
+  /* safety check */
+  if(!slides || slides.length === 0){
+    console.log("No slides yet...");
+    setTimeout(init,2000);
+    return;
+  }
+
+  /* 2️⃣ sync global timeline */
   await syncTimeline();
 
+  /* 3️⃣ play correct slide */
   playSlide(slides[currentIndex]);
 
+  /* 4️⃣ start rotation */
   startRotation();
 
-  /* occasional resync */
+  /* 5️⃣ periodic updates */
+  setInterval(loadData,120000);
   setInterval(syncTimeline,30000);
 }
 
@@ -194,5 +208,6 @@ init();
 
 </body>
 </html>
+
 
 
