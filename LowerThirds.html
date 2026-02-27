@@ -150,6 +150,9 @@ let index=0;
 let rotationStarted=false;
 let timelineSynced=false;
 
+  const TOTAL_DURATION =
+  HOLD_DURATION + ANIMATION_DURATION;
+
 async function loadData(){
   try{
 
@@ -208,7 +211,11 @@ function rotate(){
 
   setTimeout(()=>{
     wrapper.classList.remove("slide-out");
-    index=(index+1)%items.length;
+    index =
+  Math.floor(
+    Date.now() /
+    (HOLD_DURATION + ANIMATION_DURATION)
+  ) % items.length;
     rotate();
   },HOLD_DURATION+ANIMATION_DURATION);
 }
@@ -220,3 +227,4 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
