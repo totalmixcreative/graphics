@@ -21,8 +21,6 @@ body{
   overflow:hidden;
 }
 
-/* ===== TEXT WRAPPER ===== */
-
 #text-wrapper{
   position:absolute;
   width:100%;
@@ -96,10 +94,13 @@ const ENDPOINT =
 const HOLD_DURATION = 6000;
 const TOTAL_DURATION = HOLD_DURATION + 600;
 
-let slides=[];
-let currentIndex=0;
+/**************** STATE ****************/
 
-/******** PLAY ********/
+let slides = [];
+let currentIndex = 0;
+let rotationStarted = false;
+
+/**************** PLAY SLIDE ****************/
 
 function playSlide(item){
 
@@ -122,9 +123,12 @@ function playSlide(item){
 
 }
 
-/******** ROTATION LOOP ********/
+/**************** ROTATION ****************/
 
 function startRotation(){
+
+  if(rotationStarted) return;
+  rotationStarted = true;
 
   setInterval(()=>{
 
@@ -137,29 +141,29 @@ function startRotation(){
 
     playSlide(item);
 
+    /* sync promo screen */
     localStorage.setItem(
       "currentPromo",
       JSON.stringify(item)
     );
 
   },TOTAL_DURATION);
-
 }
 
-/******** SYNC WITH ENDPOINT ********/
+/**************** SYNC FROM ENDPOINT ****************/
 
 async function syncTimeline(){
 
   try{
 
     const res =
-      await fetch(ENDPOINT+"?t="+Date.now());
+      await fetch(ENDPOINT + "?t=" + Date.now());
 
-    const data=await res.json();
+    const data = await res.json();
 
     if(!data.lowerThird?.length) return;
 
-    slides=data.lowerThird;
+    slides = data.lowerThird;
 
     const timelineIndex =
       Number(data.timelineIndex);
@@ -174,58 +178,29 @@ async function syncTimeline(){
   }
 }
 
-/******** START ********/
+/**************** STARTUP ****************/
 
 async function init(){
 
-  /* 1️⃣ LOAD DATA FIRST */
-  await loadData();
+  await syncTimeline();
 
-  /* safety check */
-  if(!slides || slides.length === 0){
-    console.log("No slides yet...");
+  if(!slides.length){
+    console.log("Waiting for slides...");
     setTimeout(init,2000);
     return;
   }
 
-  /* 2️⃣ sync global timeline */
-  await syncTimeline();
-
-  /* 3️⃣ play correct slide */
   playSlide(slides[currentIndex]);
 
-  /* 4️⃣ start rotation */
   startRotation();
 
-  /* 5️⃣ periodic updates */
-  setInterval(loadData,120000);
+  /* keep venues synced */
   setInterval(syncTimeline,30000);
 }
 
-async function loadData(){
-
-  try{
-
-    const response = await fetch(API_URL + "?t=" + Date.now());
-    const data = await response.json();
-
-    if(!data || !data.lowerThird) return;
-
-    slides = data.lowerThird;
-
-  }catch(err){
-    console.log("Load failed",err);
-  }
-
-}
-  
 init();
 
 </script>
 
 </body>
 </html>
-
-
-
-
