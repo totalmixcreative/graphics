@@ -176,17 +176,23 @@ async function syncTimeline(){
 
 /******** START ********/
 
-await syncTimeline();
+async function init(){
 
-playSlide(slides[currentIndex]);
+  await syncTimeline();
 
-startRotation();
+  playSlide(slides[currentIndex]);
 
-/* occasional resync */
-setInterval(syncTimeline,30000);
+  startRotation();
+
+  /* occasional resync */
+  setInterval(syncTimeline,30000);
+}
+
+init();
 
 </script>
 
 </body>
 </html>
+
 
