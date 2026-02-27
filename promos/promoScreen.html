@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<style>
+
+body{
+  margin:0;
+  overflow:hidden;
+  background:black;
+}
+
+#screen{
+  width:1564px;
+  height:880px;
+  position:relative;
+  overflow:hidden;
+}
+
+/* IMAGE WRAPPER (same role as text-wrapper) */
+
+#promoWrapper{
+  width:100%;
+  height:100%;
+  position:absolute;
+}
+
+#promoImage{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+/* ===== SAME ANIMATION AS LOWER THIRDS ===== */
+
+.slide-in{
+  animation:slideIn .6s ease forwards;
+}
+
+.slide-out{
+  animation:slideOut .6s ease forwards;
+}
+
+@keyframes slideIn{
+  from{
+    transform:translateX(-100%);
+    opacity:0;
+  }
+  to{
+    transform:translateX(0);
+    opacity:1;
+  }
+}
+
+@keyframes slideOut{
+  from{
+    transform:translateX(0);
+    opacity:1;
+  }
+  to{
+    transform:translateX(-100%);
+    opacity:0;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="screen">
+  <div id="promoWrapper">
+      <img id="promoImage">
+  </div>
+</div>
+
+<script>
+
+const BASE =
+"https://totalmixcreative.github.io/graphics/promos/";
+
+const HOLD_DURATION=6000;
+const ANIMATION_DURATION=600;
+
+let currentImage=null;
+
+function getNextImage(promo){
+
+  /* single image */
+  if(typeof promo.image === "string"){
+    return promo.image;
+  }
+
+  /* multiple images */
+  if(Array.isArray(promo.image)){
+
+    const key =
+      "promoIndex_" + promo.headline;
+
+    let index =
+      parseInt(localStorage.getItem(key) || 0);
+
+    const chosen =
+      promo.image[index % promo.image.length];
+
+    index++;
+
+    localStorage.setItem(key,index);
+
+    return chosen;
+  }
+
+  return null;
+}
+
+function playAnimation(newImage){
+
+  const wrapper=document.getElementById("promoWrapper");
+  const img=document.getElementById("promoImage");
+
+  /* SLIDE IN */
+  const preload = new Image();
+  preload.src = BASE + newImage;
+
+  preload.onload = () => {
+    img.src = preload.src;
+};
+
+  wrapper.className="";
+  wrapper.classList.add("slide-in");
+
+  /* SLIDE OUT synced with lower thirds */
+  setTimeout(()=>{
+    wrapper.classList.remove("slide-in");
+    wrapper.classList.add("slide-out");
+  },HOLD_DURATION);
+}
+
+function updateFromStorage(){
+
+  const promo =
+    JSON.parse(localStorage.getItem("currentPromo"));
+
+  if(!promo || !promo.image) return;
+
+  const nextImage = getNextImage(promo);
+
+  if(!nextImage) return;
+
+  /* prevent same image replay */
+  if(nextImage === currentImage) return;
+
+  currentImage = nextImage;
+
+  playAnimation(nextImage);
+}
+
+/* INSTANT SYNC */
+window.addEventListener("storage",(e)=>{
+  if(e.key==="currentPromo"){
+    updateFromStorage();
+  }
+});
+
+/* startup */
+updateFromStorage();
+
+</script>
+
+</body>
+</html>
