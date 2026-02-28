@@ -151,6 +151,7 @@ const ANIMATION_DURATION = 600;
 
 let items = [];
 let currentIndex = -1;
+let pendingIndex = null;
 let animating = false;
 
 /******** LOAD DATA ********/
@@ -171,9 +172,21 @@ async function loadData(){
     const serverIndex =
       data.timelineIndex % items.length;
 
-    followTimeline(serverIndex);
+    function followTimeline(targetIndex){
 
-  }catch(e){
+  if(targetIndex === currentIndex) return;
+
+  /* animation running → queue */
+  if(animating){
+    pendingIndex = targetIndex;
+    return;
+  }
+
+  currentIndex = targetIndex;
+  playSlide(items[currentIndex]);
+}
+
+  catch(e){
     console.log("endpoint retry");
   }
 }
@@ -220,10 +233,17 @@ function playSlide(item){
   },HOLD_DURATION);
 
   setTimeout(()=>{
-    wrapper.classList.remove("slide-out");
-    animating=false;
-  },HOLD_DURATION + ANIMATION_DURATION);
-}
+
+  wrapper.classList.remove("slide-out");
+  animating=false;
+
+  if(pendingIndex !== null){
+    currentIndex = pendingIndex;
+    pendingIndex = null;
+    playSlide(items[currentIndex]);
+  }
+
+},HOLD_DURATION + ANIMATION_DURATION);
 
 /******** POLL MASTER CLOCK ********/
 
@@ -236,3 +256,4 @@ setInterval(loadData,2000);
 
 </body>
 </html>
+
