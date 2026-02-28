@@ -149,6 +149,7 @@ const TOTAL_DURATION = HOLD_DURATION + ANIMATION_DURATION;
 let items=[];
 let index=0;
 let timelineSynced=false;
+let lastRotateTime = 0;
 
 /**************** LOAD DATA ****************/
 
@@ -196,7 +197,7 @@ function rotate(){
     JSON.stringify(item)
   );
 
-  wrapper.className="";
+  wrapper.classList.remove("slide-in","slide-out");
   wrapper.classList.add("slide-in");
 
   setTimeout(()=>{
@@ -221,13 +222,20 @@ setInterval(()=>{
     Math.floor(Date.now()/TOTAL_DURATION)
     % items.length;
 
-  if(globalIndex !== lastIndex){
+ const now = Date.now();
 
-    lastIndex = globalIndex;
-    index = globalIndex;
+if(
+  globalIndex !== lastIndex &&
+  now - lastRotateTime > ANIMATION_DURATION
+){
 
-    rotate();
-  }
+  lastIndex = globalIndex;
+  index = globalIndex;
+
+  lastRotateTime = now;
+
+  rotate();
+}
 
 },250);
 
@@ -240,3 +248,4 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
