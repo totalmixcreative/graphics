@@ -86,6 +86,8 @@ const ENDPOINT =
 
 const HOLD_DURATION = 6000;
 const ANIMATION_DURATION = 600;
+const TOTAL_DURATION =
+  HOLD_DURATION + ANIMATION_DURATION;
 
 /******** STATE ********/
 
@@ -109,7 +111,7 @@ function playSlide(item){
   document.getElementById("subline").textContent =
     item.subline || "";
 
-  /* 🔗 PROMO SCREEN SYNC */
+  /* PROMO SCREEN SYNC */
   localStorage.setItem(
     "currentPromo",
     JSON.stringify(item)
@@ -126,44 +128,55 @@ function playSlide(item){
   setTimeout(()=>{
     wrapper.classList.remove("slide-out");
     animating=false;
-  },HOLD_DURATION + ANIMATION_DURATION);
+  },TOTAL_DURATION);
 }
 
-/******** FOLLOW SERVER TIMELINE ********/
+/******** LOAD DATA ********/
 
-async function syncTimeline(){
-
+async function loadData(){
   try{
 
     const res =
-      await fetch(ENDPOINT + "?t=" + Date.now());
+      await fetch(ENDPOINT+"?t="+Date.now());
 
     const data = await res.json();
 
-    if(!data.lowerThird?.length) return;
+    slides = data.lowerThird || [];
 
-    slides = data.lowerThird;
-
-    const serverIndex =
-      data.timelineIndex % slides.length;
-
-    /* ONLY CHANGE WHEN SERVER CHANGES */
-    if(serverIndex !== currentIndex){
-      currentIndex = serverIndex;
-      playSlide(slides[currentIndex]);
-    }
-
-  }catch(e){
-    console.log("sync retry");
+  }catch(err){
+    console.log("endpoint retry");
   }
 }
 
+/******** GLOBAL TIMELINE SYNC ********/
+
+let lastGlobalIndex = -1;
+
+setInterval(()=>{
+
+  if(!slides.length) return;
+
+  const globalIndex =
+    Math.floor(Date.now()/TOTAL_DURATION)
+    % slides.length;
+
+  if(globalIndex !== lastGlobalIndex){
+
+    lastGlobalIndex = globalIndex;
+    currentIndex = globalIndex;
+
+    playSlide(slides[currentIndex]);
+  }
+
+},250);
+
 /******** START ********/
 
-syncTimeline();
-setInterval(syncTimeline,2000);
+loadData();
+setInterval(loadData,120000);
 
 </script>
 
 </body>
 </html>
+
