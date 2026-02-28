@@ -128,7 +128,7 @@ let items=[];
 let nextItems=[];
 let index=0;
 let animating=false;
-
+let lastTimelineIndex = -1;
 let pendingIndex = null;
 
 /**************** LOAD DATA ****************/
@@ -143,6 +143,21 @@ async function loadData(){
     const data = await res.json();
 
     nextItems = data.lowerThird || [];
+
+    if(
+  data.timelineIndex !== undefined &&
+  items.length
+){
+  const serverIndex =
+    data.timelineIndex % items.length;
+
+  if(serverIndex !== lastTimelineIndex){
+
+    lastTimelineIndex = serverIndex;
+
+    pendingIndex = serverIndex;
+  }
+}
 
   }catch(err){
     console.log("endpoint retry");
@@ -256,4 +271,5 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
