@@ -97,7 +97,7 @@ body{
 
 <div id="banner">
 
-<video id="bgVideo" autoplay muted loop playsinline>
+<video id="bgVideo" autoplay muted loop playsinline preload="auto">
 <source src="https://totalmixcreative.github.io/graphics/carbon%20bottom.mp4">
 </video>
 
@@ -129,6 +129,17 @@ const v=document.getElementById("bgVideo");
 
 v.addEventListener("pause",()=>{
   v.play();
+});
+
+const bg = document.getElementById("bgVideo");
+
+/* prevent Chromium texture reset */
+bg.addEventListener("timeupdate", () => {
+
+  if(bg.currentTime > bg.duration - 0.05){
+    bg.currentTime = 0.001;
+  }
+
 });
 
 /**************** STATE ****************/
@@ -248,7 +259,7 @@ if(globalIndex!==lastIndex){
   }
 }
 
-},2000);
+},1000);
 
 /**************** VIDEO SYNC ****************/
 
@@ -280,6 +291,7 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
 
 
