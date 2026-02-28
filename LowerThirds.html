@@ -149,7 +149,6 @@ const TOTAL_DURATION = HOLD_DURATION + ANIMATION_DURATION;
 let items=[];
 let index=0;
 let timelineSynced=false;
-let animating=false;
 
 /**************** LOAD DATA ****************/
 
@@ -184,16 +183,13 @@ async function loadData(){
 function rotate(){
 
   if(!items.length) return;
-  if(animating) return;
-
-  animating = true;
 
   const item = items[index];
   const wrapper =
     document.getElementById("text-wrapper");
 
-  headline.textContent=item.headline || "";
-  subline.textContent=item.subline || "";
+  headline.textContent = item.headline || "";
+  subline.textContent = item.subline || "";
 
   localStorage.setItem(
     "currentPromo",
@@ -210,13 +206,12 @@ function rotate(){
 
   setTimeout(()=>{
     wrapper.classList.remove("slide-out");
-    animating=false;
   },TOTAL_DURATION);
 }
 
-/**************** GLOBAL CLOCK ****************/
+/**************** GLOBAL CLOCK SYNC ****************/
 
-let lastIndex=-1;
+let lastIndex = -1;
 
 setInterval(()=>{
 
@@ -226,10 +221,10 @@ setInterval(()=>{
     Math.floor(Date.now()/TOTAL_DURATION)
     % items.length;
 
-  if(globalIndex!==lastIndex){
+  if(globalIndex !== lastIndex){
 
-    lastIndex=globalIndex;
-    index=globalIndex;
+    lastIndex = globalIndex;
+    index = globalIndex;
 
     rotate();
   }
@@ -245,10 +240,3 @@ setInterval(loadData,120000);
 
 </body>
 </html>
-
-
-
-
-
-
-
