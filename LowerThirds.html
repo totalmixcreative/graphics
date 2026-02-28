@@ -128,6 +128,7 @@ let items=[];
 let nextItems=[];
 let index=0;
 let animating=false;
+let pendingIndex = null;
 
 /**************** LOAD DATA ****************/
 
@@ -184,10 +185,18 @@ function rotate(){
     wrapper.classList.add("slide-out");
   },HOLD_DURATION);
 
-  setTimeout(()=>{
-    wrapper.classList.remove("slide-out");
-    animating=false;
-  },TOTAL_DURATION);
+ setTimeout(()=>{
+
+  wrapper.classList.remove("slide-out");
+  animating=false;
+
+  if(pendingIndex !== null){
+    index = pendingIndex;
+    pendingIndex = null;
+    rotate();
+  }
+
+},TOTAL_DURATION);
 }
 
 /**************** GLOBAL SYNC CLOCK ****************/
@@ -204,11 +213,15 @@ setInterval(()=>{
 
   if(globalIndex!==lastIndex){
 
-    lastIndex=globalIndex;
-    index=globalIndex;
+  lastIndex=globalIndex;
 
+  if(animating){
+    pendingIndex = globalIndex;
+  }else{
+    index = globalIndex;
     rotate();
   }
+}
 
 },1000);
 
@@ -221,5 +234,6 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
 
