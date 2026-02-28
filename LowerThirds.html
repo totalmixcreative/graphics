@@ -2,10 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Carbon Lower Third</title>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
@@ -88,9 +85,7 @@ body{
   height:100px;
 }
 
-/* ===============================
-   ANIMATIONS (UNCHANGED)
-=============================== */
+/* ===== ANIMATION ===== */
 
 .slide-in{
   animation:slideIn .6s ease forwards;
@@ -139,40 +134,43 @@ body{
 
 <script>
 
-const ENDPOINT_URL =
+/******** CONFIG ********/
+
+const ENDPOINT =
 "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";
 
-const HOLD_DURATION=6000;
-const ANIMATION_DURATION=600;
+const HOLD_DURATION = 6000;
+const ANIMATION_DURATION = 600;
+const TOTAL_DURATION =
+  HOLD_DURATION + ANIMATION_DURATION;
 
-let items=[];
-let index=0;
-let rotationStarted=false;
+/******** STATE ********/
 
-async function loadData(){
-  try{
-    const res=await fetch(ENDPOINT_URL);
-    const data=await res.json();
-    items=data.lowerThird||[];
+let slides = [];
+let currentIndex = -1;
+let animating = false;
 
-    if(items.length&&!rotationStarted){
-      rotationStarted=true;
-      rotate();
-    }
-  }catch(err){
-    console.error(err);
-  }
-}
+/******** PLAY SLIDE ********/
 
-function rotate(){
+function playSlide(item){
 
-  if(!items.length)return;
+  if(animating) return;
+  animating = true;
 
-  const item=items[index];
-  const wrapper=document.getElementById("text-wrapper");
+  const wrapper =
+    document.getElementById("text-wrapper");
 
-  headline.textContent=item.headline;
-  subline.textContent=item.subline;
+  document.getElementById("headline").textContent =
+    item.headline || "";
+
+  document.getElementById("subline").textContent =
+    item.subline || "";
+
+  /* PROMO SCREEN SYNC */
+  localStorage.setItem(
+    "currentPromo",
+    JSON.stringify(item)
+  );
 
   wrapper.className="";
   wrapper.classList.add("slide-in");
@@ -184,10 +182,50 @@ function rotate(){
 
   setTimeout(()=>{
     wrapper.classList.remove("slide-out");
-    index=(index+1)%items.length;
-    rotate();
-  },HOLD_DURATION+ANIMATION_DURATION);
+    animating=false;
+  },TOTAL_DURATION);
 }
+
+/******** LOAD DATA ********/
+
+async function loadData(){
+  try{
+
+    const res =
+      await fetch(ENDPOINT+"?t="+Date.now());
+
+    const data = await res.json();
+
+    slides = data.lowerThird || [];
+
+  }catch(err){
+    console.log("endpoint retry");
+  }
+}
+
+/******** GLOBAL TIMELINE SYNC ********/
+
+let lastGlobalIndex = -1;
+
+setInterval(()=>{
+
+  if(!slides.length) return;
+
+  const globalIndex =
+    Math.floor(Date.now()/TOTAL_DURATION)
+    % slides.length;
+
+  if(globalIndex !== lastGlobalIndex){
+
+    lastGlobalIndex = globalIndex;
+    currentIndex = globalIndex;
+
+    playSlide(slides[currentIndex]);
+  }
+
+},250);
+
+/******** START ********/
 
 loadData();
 setInterval(loadData,120000);
