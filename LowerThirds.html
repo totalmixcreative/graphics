@@ -2,7 +2,10 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<title>Carbon Lower Third</title>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
@@ -85,7 +88,9 @@ body{
   height:100px;
 }
 
-/* ===== ANIMATION ===== */
+/* ===============================
+   ANIMATIONS (UNCHANGED)
+=============================== */
 
 .slide-in{
   animation:slideIn .6s ease forwards;
@@ -136,7 +141,7 @@ body{
 
 /******** CONFIG ********/
 
-const ENDPOINT =
+const ENDPOINT_URL =
 "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";
 
 const HOLD_DURATION = 6000;
@@ -146,7 +151,7 @@ const TOTAL_DURATION =
 
 /******** STATE ********/
 
-let slides = [];
+let items = [];
 let currentIndex = -1;
 let animating = false;
 
@@ -160,10 +165,10 @@ function playSlide(item){
   const wrapper =
     document.getElementById("text-wrapper");
 
-  document.getElementById("headline").textContent =
+  headline.textContent =
     item.headline || "";
 
-  document.getElementById("subline").textContent =
+  subline.textContent =
     item.subline || "";
 
   /* PROMO SCREEN SYNC */
@@ -189,38 +194,39 @@ function playSlide(item){
 /******** LOAD DATA ********/
 
 async function loadData(){
+
   try{
 
     const res =
-      await fetch(ENDPOINT+"?t="+Date.now());
+      await fetch(
+        ENDPOINT_URL + "?t=" + Date.now()
+      );
 
     const data = await res.json();
 
-    slides = data.lowerThird || [];
+    items = data.lowerThird || [];
 
-  }catch(err){
+  }catch(e){
     console.log("endpoint retry");
   }
 }
 
-/******** GLOBAL TIMELINE SYNC ********/
-
-let lastGlobalIndex = -1;
+/******** GLOBAL SYNC CLOCK ********/
 
 setInterval(()=>{
 
-  if(!slides.length) return;
+  if(!items.length) return;
 
   const globalIndex =
-    Math.floor(Date.now()/TOTAL_DURATION)
-    % slides.length;
+    Math.floor(
+      Date.now() / TOTAL_DURATION
+    ) % items.length;
 
-  if(globalIndex !== lastGlobalIndex){
+  if(globalIndex !== currentIndex){
 
-    lastGlobalIndex = globalIndex;
     currentIndex = globalIndex;
 
-    playSlide(slides[currentIndex]);
+    playSlide(items[currentIndex]);
   }
 
 },250);
