@@ -1,23 +1,161 @@
-<script>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Carbon Lower Third</title>
 
-/******** CONFIG ********/
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+
+body{
+  margin:0;
+  overflow:hidden;
+  background:transparent;
+  font-family:'Google Sans', Arial, Helvetica, sans-serif;
+}
+
+/* ===============================
+   TOP BANNER
+=============================== */
+
+#banner{
+  position:absolute;
+  top:0;
+  width:100%;
+  height:220px;
+  overflow:hidden;
+}
+
+/* ===============================
+   LOOPING BACKGROUND VIDEO
+=============================== */
+
+#bgVideo{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:1;
+  pointer-events:none;
+}
+
+/* ===============================
+   CONTENT AREA
+=============================== */
+
+#content{
+  position:absolute;
+  top:40px;
+  left:80px;
+}
+
+/* TEXT */
+
+#text-wrapper{
+  position:relative;
+  z-index:2;
+  color:white;
+
+  margin-left:300px; /* ← PUSH TEXT RIGHT */
+}
+
+#headline{
+  font-size:50px;
+  font-weight:700;
+  margin:0;
+  line-height:1.1;
+}
+
+#subline{
+  font-size:36px;
+  margin-top:6px;
+}
+
+/* ===============================
+   WHAT'S ON LOGO (FRONT LAYER)
+=============================== */
+
+#whatsOn{
+  position:absolute;
+  left:-60px;
+  top:-15px;
+  z-index:3;
+  height:100px;
+}
+
+/* ===============================
+   ANIMATIONS (UNCHANGED)
+=============================== */
+
+.slide-in{
+  animation:slideIn .6s ease forwards;
+}
+
+.slide-out{
+  animation:slideOut .6s ease forwards;
+}
+
+@keyframes slideIn{
+  from{transform:translateX(-100%);opacity:0;}
+  to{transform:translateX(0);opacity:1;}
+}
+
+@keyframes slideOut{
+  from{transform:translateX(0);opacity:1;}
+  to{transform:translateX(-100%);opacity:0;}
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="banner">
+
+  <!-- LOOPING BACKGROUND -->
+  <video id="bgVideo" autoplay muted loop playsinline>
+    <source src="https://totalmixcreative.github.io/graphics/carbon%20bottom.mp4" type="video/mp4">
+  </video>
+
+  <!-- TEXT + LOGO -->
+  <div id="content">
+
+      <div id="text-wrapper">
+          <div id="headline"></div>
+          <div id="subline"></div>
+      </div>
+
+      <img id="whatsOn"
+      src="https://totalmixcreative.github.io/graphics/whatson.png">
+
+  </div>
+
+</div>
+
+<script>
 
 const ENDPOINT_URL =
 "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";
 
 const HOLD_DURATION = 6000;
 const ANIMATION_DURATION = 600;
+const TOTAL_DURATION = HOLD_DURATION + ANIMATION_DURATION;
 
-/******** STATE ********/
+let items=[];
+let index=0;
+let timelineSynced=false;
 
-let items = [];
-let currentIndex = -1;
-let animating = false;
+/* ⭐ ADD HERE */
+let animating=false;
 
-/******** LOAD DATA ********/
+/**************** LOAD DATA ****************/
 
 async function loadData(){
-
   try{
 
     const res =
@@ -25,72 +163,75 @@ async function loadData(){
 
     const data = await res.json();
 
-    if(!data.lowerThird?.length) return;
+    items = data.lowerThird || [];
 
-    items = data.lowerThird;
+    if(
+      !timelineSynced &&
+      items.length &&
+      data.timelineIndex !== undefined
+    ){
+      index =
+        data.timelineIndex % items.length;
 
-    const serverIndex =
-      data.timelineIndex % items.length;
+      timelineSynced = true;
+    }
 
-    followTimeline(serverIndex);
-
-  }catch(e){
-    console.log("endpoint retry");
+  }catch(err){
+    console.error(err);
   }
 }
 
-/******** TIMELINE FOLLOWER ********/
+/**************** PLAY SLIDE ****************/
 
-function followTimeline(targetIndex){
+function rotate(){
 
-  if(targetIndex === currentIndex) return;
-  if(animating) return;
-
-  currentIndex = targetIndex;
-
-  playSlide(items[currentIndex]);
-}
-
-/******** PLAY SLIDE ********/
-
-function playSlide(item){
-
-  const wrapper =
-    document.getElementById("text-wrapper");
+  if(animating && items.length) return;
 
   animating = true;
 
-  headline.textContent =
-    item.headline || "";
+STEP 3 — Release lock AFTER animation
+Find your final timeout:
 
-  subline.textContent =
-    item.subline || "";
+setTimeout(()=>{
+  wrapper.classList.remove("slide-out");
+  animating=false;
+},TOTAL_DURATION);
 
-  /* PROMO SYNC */
-  localStorage.setItem(
-    "currentPromo",
-    JSON.stringify(item)
-  );
+Change to:
 
-  wrapper.className="";
-  wrapper.classList.add("slide-in");
+setTimeout(()=>{
+  wrapper.classList.remove("slide-out");
+  animating = false;
+},TOTAL_DURATION);
 
-  setTimeout(()=>{
-    wrapper.classList.remove("slide-in");
-    wrapper.classList.add("slide-out");
-  },HOLD_DURATION);
+/**************** GLOBAL CLOCK SYNC ****************/
 
-  setTimeout(()=>{
-    wrapper.classList.remove("slide-out");
-    animating=false;
-  },HOLD_DURATION + ANIMATION_DURATION);
-}
+let lastIndex = -1;
 
-/******** POLL MASTER CLOCK ********/
+setInterval(()=>{
+
+  if(!items.length) return;
+
+  const globalIndex =
+    Math.floor(Date.now()/TOTAL_DURATION)
+    % items.length;
+
+  if(globalIndex !== lastIndex){
+
+    lastIndex = globalIndex;
+    index = globalIndex;
+
+    rotate();
+  }
+
+},250);
+
+/**************** STARTUP ****************/
 
 loadData();
-
-/* check server regularly */
-setInterval(loadData,2000);
+setInterval(loadData,120000);
 
 </script>
+
+</body>
+</html>
