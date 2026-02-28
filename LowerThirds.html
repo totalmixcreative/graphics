@@ -11,8 +11,12 @@ body{
   margin:0;
   overflow:hidden;
   background:transparent;
-  font-family:'Google Sans',Arial,Helvetica,sans-serif;
+  font-family:'Google Sans', Arial, Helvetica, sans-serif;
 }
+
+/* ===============================
+   TOP BANNER
+=============================== */
 
 #banner{
   position:absolute;
@@ -22,25 +26,63 @@ body{
   overflow:hidden;
 }
 
+/* ===============================
+   LOOPING BACKGROUND VIDEO
+=============================== */
+
+#bgVideo{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:1;
+  pointer-events:none;
+}
+
+/* ===============================
+   CONTENT AREA
+=============================== */
+
 #content{
   position:absolute;
   top:40px;
   left:80px;
 }
 
+/* TEXT */
+
 #text-wrapper{
-  margin-left:300px;
+  position:relative;
+  z-index:2;
   color:white;
+
+  margin-left:300px; /* ← PUSH TEXT RIGHT */
 }
 
 #headline{
   font-size:50px;
   font-weight:700;
+  margin:0;
+  line-height:1.1;
 }
 
 #subline{
   font-size:36px;
   margin-top:6px;
+}
+
+/* ===============================
+   WHAT'S ON LOGO (FRONT LAYER)
+=============================== */
+
+#whatsOn{
+  position:absolute;
+  left:-60px;
+  top:-15px;
+  z-index:3;
+  height:100px;
 }
 
 /* ===== ANIMATION ===== */
@@ -179,4 +221,5 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
