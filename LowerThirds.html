@@ -128,7 +128,7 @@ let items=[];
 let nextItems=[];
 let index=0;
 let animating=false;
-
+let serverIndex = 0;
 let pendingIndex = null;
 
 /**************** LOAD DATA ****************/
@@ -143,6 +143,12 @@ async function loadData(){
     const data = await res.json();
 
     nextItems = data.lowerThird || [];
+
+if(typeof data.timelineIndex !== "undefined"){
+  serverIndex =
+    data.timelineIndex %
+    (nextItems.length || 1);
+}
 
   }catch(err){
     console.log("endpoint retry");
@@ -208,42 +214,44 @@ setInterval(()=>{
 
   if(!items.length && !nextItems.length) return;
 
-  const globalIndex =
-    Math.floor(Date.now()/TOTAL_DURATION)
-    % (items.length || 1);
+  if(serverIndex !== index){
 
-if(globalIndex!==lastIndex){
-
-  lastIndex=globalIndex;
-
-  if(animating){
-    pendingIndex = globalIndex;
-  }else{
-    index = globalIndex;
-    rotate();
+    if(animating){
+      pendingIndex = serverIndex;
+    }else{
+      index = serverIndex;
+      rotate();
+    }
   }
-}
 
-},1000);
-
+},500);
+  
 /**************** VIDEO SYNC ****************/
 
-const video=document.getElementById("bgVideo");
-const VIDEO_DURATION=20; // seconds
+const video = document.getElementById("bgVideo");
 
-video.addEventListener("loadedmetadata",syncVideo);
+let VIDEO_DURATION = 0;
 
-setInterval(syncVideo,5000);
+/* get REAL duration */
+video.addEventListener("loadedmetadata", () => {
+  VIDEO_DURATION = video.duration;
+  syncVideo();
+});
+
+/* periodic correction */
+setInterval(syncVideo, 5000);
 
 function syncVideo(){
 
-  if(!video.duration) return;
+  if(!VIDEO_DURATION) return;
 
   const target =
-    (Date.now()/1000)%VIDEO_DURATION;
+    (Date.now() / 1000) % VIDEO_DURATION;
 
-  if(Math.abs(video.currentTime-target)>0.5){
-    video.currentTime=target;
+  /* only correct large drift */
+  if(Math.abs(video.currentTime - target) > 0.5){
+    video.currentTime +=
+(target - video.currentTime) * 0.25;
   }
 }
 
@@ -256,3 +264,4 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
