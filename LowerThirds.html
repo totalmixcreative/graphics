@@ -202,29 +202,44 @@ function rotate(){
 
 /**************** GLOBAL SYNC CLOCK ****************/
 
-let lastIndex=-1;
+/**************** SERVER SYNC ****************/
 
-setInterval(()=>{
+let lastServerIndex = -1;
 
-  if(!items.length && !nextItems.length) return;
+setInterval(async ()=>{
 
-  const globalIndex =
-    Math.floor(Date.now()/TOTAL_DURATION)
-    % (items.length || 1);
+  try{
 
-if(globalIndex!==lastIndex){
+    const res =
+      await fetch(ENDPOINT_URL+"?t="+Date.now());
 
-  lastIndex=globalIndex;
+    const data = await res.json();
 
-  if(animating){
-    pendingIndex = globalIndex;
-  }else{
-    index = globalIndex;
-    rotate();
-  }
-}
+    if(!data.lowerThird) return;
 
-},1000);
+    items = data.lowerThird;
+
+    const serverIndex =
+      data.timelineIndex %
+      items.length;
+
+    if(serverIndex !== lastServerIndex){
+
+      lastServerIndex = serverIndex;
+
+      if(animating){
+        pendingIndex = serverIndex;
+      }else{
+        index = serverIndex;
+        rotate();
+      }
+    }
+
+  }catch(e){}
+
+},2000);
+
+  rotate();
 
 /**************** START ****************/
 
@@ -235,3 +250,4 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
