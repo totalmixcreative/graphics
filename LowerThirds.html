@@ -189,13 +189,7 @@ if (data.updated) {
 }
 
 /**************** PLAY SLIDE ****************/
-
-
-  
 function rotate(){
-
-  if(animating) return;
-  animating = true;
 
   if(!items.length) return;
 
@@ -211,7 +205,10 @@ function rotate(){
     JSON.stringify(item)
   );
 
+  // ✅ SAFE animation reset
   wrapper.classList.remove("slide-in","slide-out");
+  void wrapper.offsetWidth;
+
   wrapper.classList.add("slide-in");
 
   setTimeout(()=>{
@@ -220,9 +217,8 @@ function rotate(){
   },HOLD_DURATION);
 
   setTimeout(()=>{
-  wrapper.classList.remove("slide-out");
-  animating = false;
-},TOTAL_DURATION);
+    wrapper.classList.remove("slide-out");
+  },TOTAL_DURATION);
 }
 
 /**************** GLOBAL CLOCK SYNC ****************/
@@ -256,6 +252,7 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
 
 
