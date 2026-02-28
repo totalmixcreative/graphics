@@ -139,6 +139,8 @@ body{
 
 <script>
 
+let animating = false;
+
 const ENDPOINT_URL =
 "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";
 
@@ -182,32 +184,22 @@ async function loadData(){
 
 function rotate(){
 
-  if(!items.length) return;
+  if(animating) return;
+  animating = true;
 
-  const item = items[index];
-  const wrapper =
-    document.getElementById("text-wrapper");
+STEP 3 — Release lock AFTER animation
+Find your final timeout:
 
-  headline.textContent = item.headline || "";
-  subline.textContent = item.subline || "";
+setTimeout(()=>{
+  wrapper.classList.remove("slide-out");
+},TOTAL_DURATION);
 
-  localStorage.setItem(
-    "currentPromo",
-    JSON.stringify(item)
-  );
+Change to:
 
-  wrapper.className="";
-  wrapper.classList.add("slide-in");
-
-  setTimeout(()=>{
-    wrapper.classList.remove("slide-in");
-    wrapper.classList.add("slide-out");
-  },HOLD_DURATION);
-
-  setTimeout(()=>{
-    wrapper.classList.remove("slide-out");
-  },TOTAL_DURATION);
-}
+setTimeout(()=>{
+  wrapper.classList.remove("slide-out");
+  animating = false;
+},TOTAL_DURATION);
 
 /**************** GLOBAL CLOCK SYNC ****************/
 
@@ -240,6 +232,7 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
 
 
