@@ -185,7 +185,7 @@ function rotate(){
   const wrapper =
     document.getElementById("text-wrapper");
 
-  const item = items[index];
+  const item = items[index % items.length];
 
   headline.textContent=item.headline||"";
   subline.textContent=item.subline||"";
@@ -276,5 +276,6 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
 
