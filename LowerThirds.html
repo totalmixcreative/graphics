@@ -224,16 +224,10 @@ let lastIndex=-1;
 
 setInterval(()=>{
 
-  if(!items.length && !nextItems.length) return;
+  if(!items.length) return;
 
   if(serverIndex !== index){
-
-    if(animating){
-      pendingIndex = serverIndex;
-    }else{
-      index = serverIndex;
-      rotate();
-    }
+    pendingIndex = serverIndex;
   }
 
 },500);
@@ -276,6 +270,7 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
 
 
