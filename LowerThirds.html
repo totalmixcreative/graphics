@@ -112,7 +112,7 @@ src="https://totalmixcreative.github.io/graphics/whatson.png">
 </div>
 
 <script>
-
+  
 /**************** CONFIG ****************/
 
 const ENDPOINT_URL =
@@ -130,6 +130,8 @@ let index=0;
 let animating=false;
 let pendingIndex = null;
 
+let serverOffset = 0;
+
 /**************** LOAD DATA ****************/
 
 async function loadData(){
@@ -140,6 +142,11 @@ async function loadData(){
       await fetch(ENDPOINT_URL+"?t="+Date.now());
 
     const data = await res.json();
+
+    if(data.serverTime){
+  serverOffset =
+    data.serverTime - Date.now();
+}
 
     nextItems = data.lowerThird || [];
 
@@ -208,8 +215,9 @@ setInterval(()=>{
   if(!items.length && !nextItems.length) return;
 
   const globalIndex =
-    Math.floor(Date.now()/TOTAL_DURATION)
-    % (items.length || 1);
+    Math.floor(
+ (Date.now()+serverOffset)
+/TOTAL_DURATION)
 
   if(globalIndex!==lastIndex){
 
@@ -234,6 +242,7 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
 
 
