@@ -139,8 +139,6 @@ body{
 
 <script>
 
-let animating = false;
-
 const ENDPOINT_URL =
 "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";
 
@@ -184,13 +182,32 @@ async function loadData(){
 
 function rotate(){
 
-  if(animating) return;
-  animating = true;
+  if(!items.length) return;
 
-setTimeout(()=>{
-  wrapper.classList.remove("slide-out");
-  animating = false;
-},TOTAL_DURATION);
+  const item = items[index];
+  const wrapper =
+    document.getElementById("text-wrapper");
+
+  headline.textContent = item.headline || "";
+  subline.textContent = item.subline || "";
+
+  localStorage.setItem(
+    "currentPromo",
+    JSON.stringify(item)
+  );
+
+  wrapper.className="";
+  wrapper.classList.add("slide-in");
+
+  setTimeout(()=>{
+    wrapper.classList.remove("slide-in");
+    wrapper.classList.add("slide-out");
+  },HOLD_DURATION);
+
+  setTimeout(()=>{
+    wrapper.classList.remove("slide-out");
+  },TOTAL_DURATION);
+}
 
 /**************** GLOBAL CLOCK SYNC ****************/
 
