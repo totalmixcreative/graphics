@@ -164,6 +164,13 @@ async function loadData(){
 
     items = data.lowerThird || [];
 
+// ✅ sync client clock to server
+if (data.updated) {
+  const serverNow = data.updated;
+  const localNow = Date.now();
+  timeOffset = serverNow - localNow;
+}
+
     if(
       !timelineSynced &&
       items.length &&
@@ -179,11 +186,6 @@ async function loadData(){
     console.error(err);
   }
 }
-
-const serverNow = data.updated;
-const localNow = Date.now();
-
-timeOffset = serverNow - localNow;
 
 /**************** PLAY SLIDE ****************/
 
@@ -258,5 +260,6 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
 
