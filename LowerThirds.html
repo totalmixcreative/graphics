@@ -212,60 +212,6 @@ setInterval(()=>{
 
 },1000);
 
-/**************** VIDEO SYNC ****************/
-
-const video=document.getElementById("bgVideo");
-const VIDEO_DURATION=20; // seconds
-
-video.addEventListener("loadedmetadata",syncVideo);
-
-setInterval(syncVideo,5000);
-
-function syncVideo(){
-
-  if(!video.duration) return;
-
-  const target =
-    (Date.now()/1000)%VIDEO_DURATION;
-
-  if(Math.abs(video.currentTime-target)>0.5){
-    video.currentTime=target;
-  }
-}
-
-const VIDEO_DURATION = 20; // seconds
-
-const bgVideo =
-  document.getElementById("bgVideo");
-
-bgVideo.addEventListener("loadedmetadata",()=>{
-
-  syncVideo();
-
-});
-
-/* keep correcting drift */
-setInterval(syncVideo,5000);
-
-function syncVideo(){
-
-  if(!bgVideo.duration) return;
-
-  const nowSeconds =
-    Date.now()/1000;
-
-  const targetTime =
-    nowSeconds % VIDEO_DURATION;
-
-  const drift =
-    Math.abs(bgVideo.currentTime - targetTime);
-
-  /* only correct if noticeable */
-  if(drift > 0.5){
-    bgVideo.currentTime = targetTime;
-  }
-}
-
 /**************** START ****************/
 
 loadData();
@@ -275,4 +221,5 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
