@@ -31,9 +31,6 @@ body{
   height:100%;
   object-fit:cover;
   z-index:1;
-  will-change: transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
 }
 
 /* CONTENT */
@@ -97,7 +94,7 @@ body{
 
 <div id="banner">
 
-<video id="bgVideo" autoplay muted loop playsinline preload="auto">
+<video id="bgVideo" autoplay muted loop playsinline>
 <source src="https://totalmixcreative.github.io/graphics/carbon%20bottom.mp4">
 </video>
 
@@ -125,30 +122,13 @@ const HOLD_DURATION = 6000;
 const ANIMATION_DURATION = 600;
 const TOTAL_DURATION = HOLD_DURATION + ANIMATION_DURATION;
 
-const v=document.getElementById("bgVideo");
-
-v.addEventListener("pause",()=>{
-  v.play();
-});
-
-const bg = document.getElementById("bgVideo");
-
-/* prevent Chromium texture reset */
-bg.addEventListener("timeupdate", () => {
-
-  if(bg.currentTime > bg.duration - 0.05){
-    bg.currentTime = 0.001;
-  }
-
-});
-
 /**************** STATE ****************/
 
 let items=[];
 let nextItems=[];
 let index=0;
 let animating=false;
-let lastTimelineIndex = -1;
+
 let pendingIndex = null;
 
 /**************** LOAD DATA ****************/
@@ -163,21 +143,6 @@ async function loadData(){
     const data = await res.json();
 
     nextItems = data.lowerThird || [];
-
-    if(
-  data.timelineIndex !== undefined &&
-  items.length
-){
-  const serverIndex =
-    data.timelineIndex % items.length;
-
-  if(serverIndex !== lastTimelineIndex){
-
-    lastTimelineIndex = serverIndex;
-
-    pendingIndex = serverIndex;
-  }
-}
 
   }catch(err){
     console.log("endpoint retry");
@@ -291,7 +256,3 @@ setInterval(loadData,120000);
 
 </body>
 </html>
-
-
-
-
