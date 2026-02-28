@@ -139,23 +139,24 @@ body{
 
 <script>
 
+/******** CONFIG ********/
+
 const ENDPOINT_URL =
 "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";
 
 const HOLD_DURATION = 6000;
 const ANIMATION_DURATION = 600;
-const TOTAL_DURATION = HOLD_DURATION + ANIMATION_DURATION;
 
-let items=[];
-let index=0;
-let timelineSynced=false;
-let lastRotateTime = 0;
+/******** STATE ********/
 
+let items = [];
+let currentIndex = -1;
 let animating = false;
 
-/**************** LOAD DATA ****************/
+/******** LOAD DATA ********/
 
 async function loadData(){
+
   try{
 
     const res =
@@ -163,52 +164,54 @@ async function loadData(){
 
     const data = await res.json();
 
-    items = data.lowerThird || [];
+    if(!data.lowerThird?.length) return;
 
-// ✅ sync client clock to server
-if (data.updated) {
-  const serverNow = data.updated;
-  const localNow = Date.now();
-  timeOffset = serverNow - localNow;
-}
+    items = data.lowerThird;
 
-    if(
-      !timelineSynced &&
-      items.length &&
-      data.timelineIndex !== undefined
-    ){
-      index =
-        data.timelineIndex % items.length;
+    const serverIndex =
+      data.timelineIndex % items.length;
 
-      timelineSynced = true;
-    }
+    followTimeline(serverIndex);
 
-  }catch(err){
-    console.error(err);
+  }catch(e){
+    console.log("endpoint retry");
   }
 }
 
-/**************** PLAY SLIDE ****************/
-function rotate(){
+/******** TIMELINE FOLLOWER ********/
 
-  if(!items.length) return;
+function followTimeline(targetIndex){
 
-  const item = items[index];
+  if(targetIndex === currentIndex) return;
+  if(animating) return;
+
+  currentIndex = targetIndex;
+
+  playSlide(items[currentIndex]);
+}
+
+/******** PLAY SLIDE ********/
+
+function playSlide(item){
+
   const wrapper =
     document.getElementById("text-wrapper");
 
-  headline.textContent = item.headline || "";
-  subline.textContent = item.subline || "";
+  animating = true;
 
+  headline.textContent =
+    item.headline || "";
+
+  subline.textContent =
+    item.subline || "";
+
+  /* PROMO SYNC */
   localStorage.setItem(
     "currentPromo",
     JSON.stringify(item)
   );
 
-  // ✅ SAFE animation reset
-  wrapper.classList.remove("slide-in","slide-out");
-  void wrapper.offsetWidth;
-
+  wrapper.className="";
   wrapper.classList.add("slide-in");
 
   setTimeout(()=>{
@@ -218,43 +221,18 @@ function rotate(){
 
   setTimeout(()=>{
     wrapper.classList.remove("slide-out");
-  },TOTAL_DURATION);
+    animating=false;
+  },HOLD_DURATION + ANIMATION_DURATION);
 }
 
-/**************** GLOBAL CLOCK SYNC ****************/
-
-let lastIndex = -1;
-
-setInterval(()=>{
-
-  if(!items.length) return;
-
-  const globalIndex =
-    Math.floor(Date.now()/TOTAL_DURATION)
-    % items.length;
-
-  if(globalIndex !== lastIndex){
-
-    lastIndex = globalIndex;
-    index = globalIndex;
-
-    rotate();
-  }
-
-},250);
-
-/**************** STARTUP ****************/
+/******** POLL MASTER CLOCK ********/
 
 loadData();
-setInterval(loadData,120000);
+
+/* check server regularly */
+setInterval(loadData,2000);
 
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
