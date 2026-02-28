@@ -185,7 +185,8 @@ async function loadData(){
 
 function rotate(){
 
-  if(animating) return;
+  if(animating && items.length) return;
+
   animating = true;
 
 STEP 3 — Release lock AFTER animation
@@ -193,6 +194,7 @@ Find your final timeout:
 
 setTimeout(()=>{
   wrapper.classList.remove("slide-out");
+  animating=false;
 },TOTAL_DURATION);
 
 Change to:
@@ -233,6 +235,7 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
 
 
