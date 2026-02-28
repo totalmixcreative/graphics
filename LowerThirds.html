@@ -1,142 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Carbon Lower Third</title>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&display=swap" rel="stylesheet">
-
-<style>
-
-body{
-  margin:0;
-  overflow:hidden;
-  background:transparent;
-  font-family:'Google Sans', Arial, Helvetica, sans-serif;
-}
-
-/* ===============================
-   TOP BANNER
-=============================== */
-
-#banner{
-  position:absolute;
-  top:0;
-  width:100%;
-  height:220px;
-  overflow:hidden;
-}
-
-/* ===============================
-   LOOPING BACKGROUND VIDEO
-=============================== */
-
-#bgVideo{
-  position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  z-index:1;
-  pointer-events:none;
-}
-
-/* ===============================
-   CONTENT AREA
-=============================== */
-
-#content{
-  position:absolute;
-  top:40px;
-  left:80px;
-}
-
-/* TEXT */
-
-#text-wrapper{
-  position:relative;
-  z-index:2;
-  color:white;
-
-  margin-left:300px; /* ← PUSH TEXT RIGHT */
-}
-
-#headline{
-  font-size:50px;
-  font-weight:700;
-  margin:0;
-  line-height:1.1;
-}
-
-#subline{
-  font-size:36px;
-  margin-top:6px;
-}
-
-/* ===============================
-   WHAT'S ON LOGO (FRONT LAYER)
-=============================== */
-
-#whatsOn{
-  position:absolute;
-  left:-60px;
-  top:-15px;
-  z-index:3;
-  height:100px;
-}
-
-/* ===============================
-   ANIMATIONS (UNCHANGED)
-=============================== */
-
-.slide-in{
-  animation:slideIn .6s ease forwards;
-}
-
-.slide-out{
-  animation:slideOut .6s ease forwards;
-}
-
-@keyframes slideIn{
-  from{transform:translateX(-100%);opacity:0;}
-  to{transform:translateX(0);opacity:1;}
-}
-
-@keyframes slideOut{
-  from{transform:translateX(0);opacity:1;}
-  to{transform:translateX(-100%);opacity:0;}
-}
-
-</style>
-</head>
-
-<body>
-
-<div id="banner">
-
-  <!-- LOOPING BACKGROUND -->
-  <video id="bgVideo" autoplay muted loop playsinline>
-    <source src="https://totalmixcreative.github.io/graphics/carbon%20bottom.mp4" type="video/mp4">
-  </video>
-
-  <!-- TEXT + LOGO -->
-  <div id="content">
-
-      <div id="text-wrapper">
-          <div id="headline"></div>
-          <div id="subline"></div>
-      </div>
-
-      <img id="whatsOn"
-      src="https://totalmixcreative.github.io/graphics/whatson.png">
-
-  </div>
-
-</div>
-
 <script>
 
 /******** CONFIG ********/
@@ -146,8 +7,6 @@ const ENDPOINT_URL =
 
 const HOLD_DURATION = 6000;
 const ANIMATION_DURATION = 600;
-const TOTAL_DURATION =
-  HOLD_DURATION + ANIMATION_DURATION;
 
 /******** STATE ********/
 
@@ -155,15 +14,51 @@ let items = [];
 let currentIndex = -1;
 let animating = false;
 
+/******** LOAD DATA ********/
+
+async function loadData(){
+
+  try{
+
+    const res =
+      await fetch(ENDPOINT_URL+"?t="+Date.now());
+
+    const data = await res.json();
+
+    if(!data.lowerThird?.length) return;
+
+    items = data.lowerThird;
+
+    const serverIndex =
+      data.timelineIndex % items.length;
+
+    followTimeline(serverIndex);
+
+  }catch(e){
+    console.log("endpoint retry");
+  }
+}
+
+/******** TIMELINE FOLLOWER ********/
+
+function followTimeline(targetIndex){
+
+  if(targetIndex === currentIndex) return;
+  if(animating) return;
+
+  currentIndex = targetIndex;
+
+  playSlide(items[currentIndex]);
+}
+
 /******** PLAY SLIDE ********/
 
 function playSlide(item){
 
-  if(animating) return;
-  animating = true;
-
   const wrapper =
     document.getElementById("text-wrapper");
+
+  animating = true;
 
   headline.textContent =
     item.headline || "";
@@ -171,7 +66,7 @@ function playSlide(item){
   subline.textContent =
     item.subline || "";
 
-  /* PROMO SCREEN SYNC */
+  /* PROMO SYNC */
   localStorage.setItem(
     "currentPromo",
     JSON.stringify(item)
@@ -188,55 +83,14 @@ function playSlide(item){
   setTimeout(()=>{
     wrapper.classList.remove("slide-out");
     animating=false;
-  },TOTAL_DURATION);
+  },HOLD_DURATION + ANIMATION_DURATION);
 }
 
-/******** LOAD DATA ********/
-
-async function loadData(){
-
-  try{
-
-    const res =
-      await fetch(
-        ENDPOINT_URL + "?t=" + Date.now()
-      );
-
-    const data = await res.json();
-
-    items = data.lowerThird || [];
-
-  }catch(e){
-    console.log("endpoint retry");
-  }
-}
-
-/******** GLOBAL SYNC CLOCK ********/
-
-setInterval(()=>{
-
-  if(!items.length) return;
-
-  const globalIndex =
-    Math.floor(
-      Date.now() / TOTAL_DURATION
-    ) % items.length;
-
-  if(globalIndex !== currentIndex){
-
-    currentIndex = globalIndex;
-
-    playSlide(items[currentIndex]);
-  }
-
-},250);
-
-/******** START ********/
+/******** POLL MASTER CLOCK ********/
 
 loadData();
-setInterval(loadData,120000);
+
+/* check server regularly */
+setInterval(loadData,2000);
 
 </script>
-
-</body>
-</html>
