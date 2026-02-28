@@ -150,7 +150,6 @@ let items=[];
 let index=0;
 let timelineSynced=false;
 let lastRotateTime = 0;
-let timeOffset = 0;
 
 /**************** LOAD DATA ****************/
 
@@ -222,34 +221,39 @@ function rotate(){
 
 let lastIndex = -1;
 
-setInterval(()=>{
+setInterval(async ()=>{
 
   if(!items.length) return;
 
-  // ✅ USE SERVER-SYNCED TIME
-  const syncedNow =
-    Date.now() + timeOffset;
+  try{
 
-  const globalIndex =
-    Math.floor(syncedNow / TOTAL_DURATION)
-    % items.length;
+    const res =
+      await fetch(ENDPOINT_URL+"?t="+Date.now());
 
-  const now = Date.now();
+    const data = await res.json();
 
-  if(
-    globalIndex !== lastIndex &&
-    now - lastRotateTime > ANIMATION_DURATION
-  ){
+    if(
+      data.timelineIndex !== undefined &&
+      items.length
+    ){
 
-    lastIndex = globalIndex;
-    index = globalIndex;
+      const globalIndex =
+        data.timelineIndex % items.length;
 
-    lastRotateTime = now;
+      if(globalIndex !== lastIndex){
 
-    rotate();
+        lastIndex = globalIndex;
+        index = globalIndex;
+
+        rotate();
+      }
+    }
+
+  }catch(e){
+    console.error(e);
   }
 
-},250);
+},1000);
 
 /**************** STARTUP ****************/
 
@@ -260,6 +264,7 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
 
 
