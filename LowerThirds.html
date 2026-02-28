@@ -150,6 +150,18 @@ if(typeof data.timelineIndex !== "undefined"){
     (nextItems.length || 1);
 }
 
+/* ✅ BOOTSTRAP PLAYBACK */
+if(!items.length && nextItems.length){
+  index = serverIndex;
+  rotate();
+}
+
+if(typeof data.timelineIndex !== "undefined"){
+  serverIndex =
+    data.timelineIndex %
+    (nextItems.length || 1);
+}
+
   }catch(err){
     console.log("endpoint retry");
   }
@@ -264,4 +276,5 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
