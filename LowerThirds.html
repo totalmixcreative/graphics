@@ -150,6 +150,7 @@ let items=[];
 let index=0;
 let timelineSynced=false;
 let lastRotateTime = 0;
+let timeOffset = 0;
 
 /**************** LOAD DATA ****************/
 
@@ -178,6 +179,11 @@ async function loadData(){
     console.error(err);
   }
 }
+
+const serverNow = data.updated;
+const localNow = Date.now();
+
+timeOffset = serverNow - localNow;
 
 /**************** PLAY SLIDE ****************/
 
@@ -218,24 +224,28 @@ setInterval(()=>{
 
   if(!items.length) return;
 
+  // ✅ USE SERVER-SYNCED TIME
+  const syncedNow =
+    Date.now() + timeOffset;
+
   const globalIndex =
-    Math.floor(Date.now()/TOTAL_DURATION)
+    Math.floor(syncedNow / TOTAL_DURATION)
     % items.length;
 
- const now = Date.now();
+  const now = Date.now();
 
-if(
-  globalIndex !== lastIndex &&
-  now - lastRotateTime > ANIMATION_DURATION
-){
+  if(
+    globalIndex !== lastIndex &&
+    now - lastRotateTime > ANIMATION_DURATION
+  ){
 
-  lastIndex = globalIndex;
-  index = globalIndex;
+    lastIndex = globalIndex;
+    index = globalIndex;
 
-  lastRotateTime = now;
+    lastRotateTime = now;
 
-  rotate();
-}
+    rotate();
+  }
 
 },250);
 
@@ -248,4 +258,5 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
