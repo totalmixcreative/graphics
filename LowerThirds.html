@@ -151,6 +151,8 @@ let index=0;
 let timelineSynced=false;
 let lastRotateTime = 0;
 
+let animating = false;
+
 /**************** LOAD DATA ****************/
 
 async function loadData(){
@@ -188,7 +190,12 @@ if (data.updated) {
 
 /**************** PLAY SLIDE ****************/
 
+
+  
 function rotate(){
+
+  if(animating) return;
+  animating = true;
 
   if(!items.length) return;
 
@@ -213,47 +220,32 @@ function rotate(){
   },HOLD_DURATION);
 
   setTimeout(()=>{
-    wrapper.classList.remove("slide-out");
-  },TOTAL_DURATION);
+  wrapper.classList.remove("slide-out");
+  animating = false;
+},TOTAL_DURATION);
 }
 
 /**************** GLOBAL CLOCK SYNC ****************/
 
 let lastIndex = -1;
 
-setInterval(async ()=>{
+setInterval(()=>{
 
   if(!items.length) return;
 
-  try{
+  const globalIndex =
+    Math.floor(Date.now()/TOTAL_DURATION)
+    % items.length;
 
-    const res =
-      await fetch(ENDPOINT_URL+"?t="+Date.now());
+  if(globalIndex !== lastIndex){
 
-    const data = await res.json();
+    lastIndex = globalIndex;
+    index = globalIndex;
 
-    if(
-      data.timelineIndex !== undefined &&
-      items.length
-    ){
-
-      const globalIndex =
-        data.timelineIndex % items.length;
-
-      if(globalIndex !== lastIndex){
-
-        lastIndex = globalIndex;
-        index = globalIndex;
-
-        rotate();
-      }
-    }
-
-  }catch(e){
-    console.error(e);
+    rotate();
   }
 
-},1000);
+},250);
 
 /**************** STARTUP ****************/
 
@@ -264,6 +256,7 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
 
 
