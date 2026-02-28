@@ -128,7 +128,7 @@ let items=[];
 let nextItems=[];
 let index=0;
 let animating=false;
-let serverIndex = 0;
+
 let pendingIndex = null;
 
 /**************** LOAD DATA ****************/
@@ -143,24 +143,6 @@ async function loadData(){
     const data = await res.json();
 
     nextItems = data.lowerThird || [];
-
-if(typeof data.timelineIndex !== "undefined"){
-  serverIndex =
-    data.timelineIndex %
-    (nextItems.length || 1);
-}
-
-/* ✅ BOOTSTRAP PLAYBACK */
-if(!items.length && nextItems.length){
-  index = serverIndex;
-  rotate();
-}
-
-if(typeof data.timelineIndex !== "undefined"){
-  serverIndex =
-    data.timelineIndex %
-    (nextItems.length || 1);
-}
 
   }catch(err){
     console.log("endpoint retry");
@@ -185,7 +167,7 @@ function rotate(){
   const wrapper =
     document.getElementById("text-wrapper");
 
-  const item = items[index % items.length];
+  const item = items[index];
 
   headline.textContent=item.headline||"";
   subline.textContent=item.subline||"";
@@ -209,17 +191,11 @@ function rotate(){
   wrapper.classList.remove("slide-out");
   animating=false;
 
-if(pendingIndex !== null &&
-   pendingIndex !== index){
-
-  index = pendingIndex;
-  pendingIndex = null;
-
-}else{
-  index = (index + 1) % items.length;
-}
-
-rotate();
+  if(pendingIndex !== null){
+    index = pendingIndex;
+    pendingIndex = null;
+    rotate();
+  }
 
 },TOTAL_DURATION);
 }
@@ -230,42 +206,25 @@ let lastIndex=-1;
 
 setInterval(()=>{
 
-  if(!items.length) return;
+  if(!items.length && !nextItems.length) return;
 
-  if(serverIndex !== index){
-    pendingIndex = serverIndex;
-  }
+  const globalIndex =
+    Math.floor(Date.now()/TOTAL_DURATION)
+    % (items.length || 1);
 
-},500);
-  
-/**************** VIDEO SYNC ****************/
+if(globalIndex!==lastIndex){
 
-const video = document.getElementById("bgVideo");
+  lastIndex=globalIndex;
 
-let VIDEO_DURATION = 0;
-
-/* get REAL duration */
-video.addEventListener("loadedmetadata", () => {
-  VIDEO_DURATION = video.duration;
-  syncVideo();
-});
-
-/* periodic correction */
-setInterval(syncVideo, 5000);
-
-function syncVideo(){
-
-  if(!VIDEO_DURATION) return;
-
-  const target =
-    (Date.now() / 1000) % VIDEO_DURATION;
-
-  /* only correct large drift */
-  if(Math.abs(video.currentTime - target) > 0.5){
-    video.currentTime +=
-(target - video.currentTime) * 0.25;
+  if(animating){
+    pendingIndex = globalIndex;
+  }else{
+    index = globalIndex;
+    rotate();
   }
 }
+
+},1000);
 
 /**************** START ****************/
 
@@ -276,8 +235,3 @@ setInterval(loadData,120000);
 
 </body>
 </html>
-
-
-
-
-
