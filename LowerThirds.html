@@ -31,6 +31,9 @@ body{
   height:100%;
   object-fit:cover;
   z-index:1;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 /* CONTENT */
@@ -121,6 +124,12 @@ const ENDPOINT_URL =
 const HOLD_DURATION = 6000;
 const ANIMATION_DURATION = 600;
 const TOTAL_DURATION = HOLD_DURATION + ANIMATION_DURATION;
+
+const v=document.getElementById("bgVideo");
+
+v.addEventListener("pause",()=>{
+  v.play();
+});
 
 /**************** STATE ****************/
 
@@ -239,7 +248,7 @@ if(globalIndex!==lastIndex){
   }
 }
 
-},1000);
+},2000);
 
 /**************** VIDEO SYNC ****************/
 
@@ -271,5 +280,6 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
 
