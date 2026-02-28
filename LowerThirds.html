@@ -2,7 +2,10 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<title>Carbon Lower Third</title>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
@@ -85,7 +88,9 @@ body{
   height:100px;
 }
 
-/* ===== ANIMATION ===== */
+/* ===============================
+   ANIMATIONS (UNCHANGED)
+=============================== */
 
 .slide-in{
   animation:slideIn .6s ease forwards;
@@ -111,53 +116,63 @@ body{
 <body>
 
 <div id="banner">
+
+  <!-- LOOPING BACKGROUND -->
+  <video id="bgVideo" autoplay muted loop playsinline>
+    <source src="https://totalmixcreative.github.io/graphics/carbon%20bottom.mp4" type="video/mp4">
+  </video>
+
+  <!-- TEXT + LOGO -->
   <div id="content">
-    <div id="text-wrapper">
-      <div id="headline"></div>
-      <div id="subline"></div>
-    </div>
+
+      <div id="text-wrapper">
+          <div id="headline"></div>
+          <div id="subline"></div>
+      </div>
+
+      <img id="whatsOn"
+      src="https://totalmixcreative.github.io/graphics/whatson.png">
+
   </div>
+
 </div>
 
 <script>
 
-/******** CONFIG ********/
-
-const ENDPOINT =
+const ENDPOINT_URL =
 "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";
 
-const HOLD_DURATION = 6000;
-const ANIMATION_DURATION = 600;
-const TOTAL_DURATION =
-  HOLD_DURATION + ANIMATION_DURATION;
+const HOLD_DURATION=6000;
+const ANIMATION_DURATION=600;
 
-/******** STATE ********/
+let items=[];
+let index=0;
+let rotationStarted=false;
 
-let slides = [];
-let currentIndex = -1;
-let animating = false;
+async function loadData(){
+  try{
+    const res=await fetch(ENDPOINT_URL);
+    const data=await res.json();
+    items=data.lowerThird||[];
 
-/******** PLAY SLIDE ********/
+    if(items.length&&!rotationStarted){
+      rotationStarted=true;
+      rotate();
+    }
+  }catch(err){
+    console.error(err);
+  }
+}
 
-function playSlide(item){
+function rotate(){
 
-  if(animating) return;
-  animating = true;
+  if(!items.length)return;
 
-  const wrapper =
-    document.getElementById("text-wrapper");
+  const item=items[index];
+  const wrapper=document.getElementById("text-wrapper");
 
-  document.getElementById("headline").textContent =
-    item.headline || "";
-
-  document.getElementById("subline").textContent =
-    item.subline || "";
-
-  /* PROMO SCREEN SYNC */
-  localStorage.setItem(
-    "currentPromo",
-    JSON.stringify(item)
-  );
+  headline.textContent=item.headline;
+  subline.textContent=item.subline;
 
   wrapper.className="";
   wrapper.classList.add("slide-in");
@@ -169,50 +184,10 @@ function playSlide(item){
 
   setTimeout(()=>{
     wrapper.classList.remove("slide-out");
-    animating=false;
-  },TOTAL_DURATION);
+    index=(index+1)%items.length;
+    rotate();
+  },HOLD_DURATION+ANIMATION_DURATION);
 }
-
-/******** LOAD DATA ********/
-
-async function loadData(){
-  try{
-
-    const res =
-      await fetch(ENDPOINT+"?t="+Date.now());
-
-    const data = await res.json();
-
-    slides = data.lowerThird || [];
-
-  }catch(err){
-    console.log("endpoint retry");
-  }
-}
-
-/******** GLOBAL TIMELINE SYNC ********/
-
-let lastGlobalIndex = -1;
-
-setInterval(()=>{
-
-  if(!slides.length) return;
-
-  const globalIndex =
-    Math.floor(Date.now()/TOTAL_DURATION)
-    % slides.length;
-
-  if(globalIndex !== lastGlobalIndex){
-
-    lastGlobalIndex = globalIndex;
-    currentIndex = globalIndex;
-
-    playSlide(slides[currentIndex]);
-  }
-
-},250);
-
-/******** START ********/
 
 loadData();
 setInterval(loadData,120000);
@@ -221,5 +196,3 @@ setInterval(loadData,120000);
 
 </body>
 </html>
-
-
