@@ -112,8 +112,6 @@ src="https://totalmixcreative.github.io/graphics/whatson.png">
 </div>
 
 <script>
-  
-/**************** CONFIG ****************/
 
 const ENDPOINT_URL =
 "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";
@@ -122,20 +120,14 @@ const HOLD_DURATION = 6000;
 const ANIMATION_DURATION = 600;
 const TOTAL_DURATION = HOLD_DURATION + ANIMATION_DURATION;
 
-/**************** STATE ****************/
-
 let items=[];
-let nextItems=[];
 let index=0;
+let timelineSynced=false;
 let animating=false;
-let pendingIndex = null;
-
-let serverOffset = 0;
 
 /**************** LOAD DATA ****************/
 
 async function loadData(){
-
   try{
 
     const res =
@@ -143,15 +135,21 @@ async function loadData(){
 
     const data = await res.json();
 
-    if(data.serverTime){
-  serverOffset =
-    data.serverTime - Date.now();
-}
+    items = data.lowerThird || [];
 
-    nextItems = data.lowerThird || [];
+    if(
+      !timelineSynced &&
+      items.length &&
+      data.timelineIndex !== undefined
+    ){
+      index =
+        data.timelineIndex % items.length;
+
+      timelineSynced = true;
+    }
 
   }catch(err){
-    console.log("endpoint retry");
+    console.error(err);
   }
 }
 
@@ -159,26 +157,18 @@ async function loadData(){
 
 function rotate(){
 
+  if(!items.length) return;
   if(animating) return;
-  if(!items.length && !nextItems.length) return;
 
-  /* safe swap */
-  if(nextItems.length){
-    items = nextItems;
-    nextItems = [];
-  }
+  animating = true;
 
-  animating=true;
-
+  const item = items[index];
   const wrapper =
     document.getElementById("text-wrapper");
 
-  const item = items[index];
+  headline.textContent=item.headline || "";
+  subline.textContent=item.subline || "";
 
-  headline.textContent=item.headline||"";
-  subline.textContent=item.subline||"";
-
-  /* notify promo screen */
   localStorage.setItem(
     "currentPromo",
     JSON.stringify(item)
@@ -192,48 +182,35 @@ function rotate(){
     wrapper.classList.add("slide-out");
   },HOLD_DURATION);
 
- setTimeout(()=>{
-
-  wrapper.classList.remove("slide-out");
-  animating=false;
-
-  if(pendingIndex !== null){
-    index = pendingIndex;
-    pendingIndex = null;
-    rotate();
-  }
-
-},TOTAL_DURATION);
+  setTimeout(()=>{
+    wrapper.classList.remove("slide-out");
+    animating=false;
+  },TOTAL_DURATION);
 }
 
-/**************** GLOBAL SYNC CLOCK ****************/
+/**************** GLOBAL CLOCK ****************/
 
 let lastIndex=-1;
 
 setInterval(()=>{
 
-  if(!items.length && !nextItems.length) return;
+  if(!items.length) return;
 
   const globalIndex =
-    Math.floor(
- (Date.now()+serverOffset)
-/TOTAL_DURATION)
+    Math.floor(Date.now()/TOTAL_DURATION)
+    % items.length;
 
   if(globalIndex!==lastIndex){
 
-  lastIndex=globalIndex;
+    lastIndex=globalIndex;
+    index=globalIndex;
 
-  if(animating){
-    pendingIndex = globalIndex;
-  }else{
-    index = globalIndex;
     rotate();
   }
-}
 
-},1000);
+},250);
 
-/**************** START ****************/
+/**************** STARTUP ****************/
 
 loadData();
 setInterval(loadData,120000);
@@ -242,6 +219,7 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
 
 
