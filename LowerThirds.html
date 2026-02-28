@@ -149,6 +149,7 @@ const TOTAL_DURATION = HOLD_DURATION + ANIMATION_DURATION;
 let items=[];
 let index=0;
 let timelineSynced=false;
+let animating = false;
 
 /**************** LOAD DATA ****************/
 
@@ -182,6 +183,9 @@ async function loadData(){
 
 function rotate(){
 
+  if(animating) return;
+  animating = true;
+
   if(!items.length) return;
 
   const item = items[index];
@@ -199,10 +203,10 @@ function rotate(){
   wrapper.className="";
   wrapper.classList.add("slide-in");
 
-  setTimeout(()=>{
-    wrapper.classList.remove("slide-in");
-    wrapper.classList.add("slide-out");
-  },HOLD_DURATION);
+setTimeout(()=>{
+  wrapper.classList.remove("slide-out");
+  animating = false;
+},TOTAL_DURATION);
 
   setTimeout(()=>{
     wrapper.classList.remove("slide-out");
@@ -240,3 +244,4 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
