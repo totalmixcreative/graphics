@@ -209,11 +209,17 @@ function rotate(){
   wrapper.classList.remove("slide-out");
   animating=false;
 
-  if(pendingIndex !== null){
-    index = pendingIndex;
-    pendingIndex = null;
-    rotate();
-  }
+if(pendingIndex !== null &&
+   pendingIndex !== index){
+
+  index = pendingIndex;
+  pendingIndex = null;
+
+}else{
+  index = (index + 1) % items.length;
+}
+
+rotate();
 
 },TOTAL_DURATION);
 }
@@ -270,6 +276,7 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
 
 
