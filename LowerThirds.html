@@ -149,8 +149,6 @@ const TOTAL_DURATION = HOLD_DURATION + ANIMATION_DURATION;
 let items=[];
 let index=0;
 let timelineSynced=false;
-
-/* ⭐ ADD HERE */
 let animating=false;
 
 /**************** LOAD DATA ****************/
@@ -185,28 +183,40 @@ async function loadData(){
 
 function rotate(){
 
-  if(animating && items.length) return;
+  if(!items.length) return;
+  if(animating) return;
 
   animating = true;
 
-STEP 3 — Release lock AFTER animation
-Find your final timeout:
+  const item = items[index];
+  const wrapper =
+    document.getElementById("text-wrapper");
 
-setTimeout(()=>{
-  wrapper.classList.remove("slide-out");
-  animating=false;
-},TOTAL_DURATION);
+  headline.textContent=item.headline || "";
+  subline.textContent=item.subline || "";
 
-Change to:
+  localStorage.setItem(
+    "currentPromo",
+    JSON.stringify(item)
+  );
 
-setTimeout(()=>{
-  wrapper.classList.remove("slide-out");
-  animating = false;
-},TOTAL_DURATION);
+  wrapper.className="";
+  wrapper.classList.add("slide-in");
 
-/**************** GLOBAL CLOCK SYNC ****************/
+  setTimeout(()=>{
+    wrapper.classList.remove("slide-in");
+    wrapper.classList.add("slide-out");
+  },HOLD_DURATION);
 
-let lastIndex = -1;
+  setTimeout(()=>{
+    wrapper.classList.remove("slide-out");
+    animating=false;
+  },TOTAL_DURATION);
+}
+
+/**************** GLOBAL CLOCK ****************/
+
+let lastIndex=-1;
 
 setInterval(()=>{
 
@@ -216,10 +226,10 @@ setInterval(()=>{
     Math.floor(Date.now()/TOTAL_DURATION)
     % items.length;
 
-  if(globalIndex !== lastIndex){
+  if(globalIndex!==lastIndex){
 
-    lastIndex = globalIndex;
-    index = globalIndex;
+    lastIndex=globalIndex;
+    index=globalIndex;
 
     rotate();
   }
@@ -235,6 +245,7 @@ setInterval(loadData,120000);
 
 </body>
 </html>
+
 
 
 
