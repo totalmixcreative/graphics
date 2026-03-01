@@ -139,6 +139,8 @@ body{
 
 <script>
 
+/**************** CONFIG ****************/
+
 const ENDPOINT_URL =
 "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";
 
@@ -146,55 +148,59 @@ const HOLD_DURATION = 6000;
 const ANIMATION_DURATION = 600;
 const TOTAL_DURATION = HOLD_DURATION + ANIMATION_DURATION;
 
+/**************** STATE ****************/
+
 let items=[];
 let index=0;
-let timelineSynced=false;
-let animating=false;
+let rotationStarted=false;
 
 /**************** LOAD DATA ****************/
 
 async function loadData(){
-  try{
 
-    const res =
-      await fetch(ENDPOINT_URL+"?t="+Date.now());
+  try{
+    const res = await fetch(
+      ENDPOINT_URL + "?t=" + Date.now()
+    );
 
     const data = await res.json();
 
     items = data.lowerThird || [];
 
-    if(
-      !timelineSynced &&
-      items.length &&
-      data.timelineIndex !== undefined
-    ){
-      index =
-        data.timelineIndex % items.length;
+    if(items.length && !rotationStarted){
+      rotationStarted = true;
 
-      timelineSynced = true;
+      /* JOIN GLOBAL TIMELINE */
+      index =
+        Math.floor(Date.now()/TOTAL_DURATION)
+        % items.length;
+
+      rotate();
     }
 
   }catch(err){
     console.error(err);
   }
+
 }
 
-/**************** PLAY SLIDE ****************/
+/**************** ROTATION ****************/
 
 function rotate(){
 
   if(!items.length) return;
-  if(animating) return;
-
-  animating = true;
 
   const item = items[index];
   const wrapper =
     document.getElementById("text-wrapper");
 
-  headline.textContent=item.headline || "";
-  subline.textContent=item.subline || "";
+  headline.textContent =
+    item.headline || "";
 
+  subline.textContent =
+    item.subline || "";
+
+  /* PROMO SCREEN SYNC */
   localStorage.setItem(
     "currentPromo",
     JSON.stringify(item)
@@ -209,34 +215,19 @@ function rotate(){
   },HOLD_DURATION);
 
   setTimeout(()=>{
+
     wrapper.classList.remove("slide-out");
-    animating=false;
+
+    index =
+      Math.floor(Date.now()/TOTAL_DURATION)
+      % items.length;
+
+    rotate();
+
   },TOTAL_DURATION);
 }
 
-/**************** GLOBAL CLOCK ****************/
-
-let lastIndex=-1;
-
-setInterval(()=>{
-
-  if(!items.length) return;
-
-  const globalIndex =
-    Math.floor(Date.now()/TOTAL_DURATION)
-    % items.length;
-
-  if(globalIndex!==lastIndex){
-
-    lastIndex=globalIndex;
-    index=globalIndex;
-
-    rotate();
-  }
-
-},250);
-
-/**************** STARTUP ****************/
+/**************** START ****************/
 
 loadData();
 setInterval(loadData,120000);
@@ -245,9 +236,3 @@ setInterval(loadData,120000);
 
 </body>
 </html>
-
-
-
-
-
-
