@@ -95,20 +95,16 @@ function getNextImage(promo){
   /* multiple images */
   if(Array.isArray(promo.image)){
 
-    const key =
-      "promoIndex_" + promo.headline;
+    const TOTAL_DURATION =
+      HOLD_DURATION + ANIMATION_DURATION;
 
-    let index =
-      parseInt(localStorage.getItem(key) || 0);
+    const timelineIndex =
+      Math.floor(Date.now() / TOTAL_DURATION);
 
-    const chosen =
-      promo.image[index % promo.image.length];
+    const imageIndex =
+      timelineIndex % promo.image.length;
 
-    index++;
-
-    localStorage.setItem(key,index);
-
-    return chosen;
+    return promo.image[imageIndex];
   }
 
   return null;
@@ -169,4 +165,5 @@ updateFromStorage();
 </script>
 
 </body>
+
 </html>
