@@ -87,19 +87,14 @@ let currentImage=null;
 
 function getNextImage(promo){
 
-  /* single image */
   if(typeof promo.image === "string"){
     return promo.image;
   }
 
-  /* multiple images */
   if(Array.isArray(promo.image)){
 
-    const TOTAL_DURATION =
-      HOLD_DURATION + ANIMATION_DURATION;
-
     const timelineIndex =
-      Math.floor(Date.now() / TOTAL_DURATION);
+      Math.floor(Date.now() / 8000); // match endpoint ROTATION_SECONDS
 
     const imageIndex =
       timelineIndex % promo.image.length;
