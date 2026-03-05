@@ -16,6 +16,7 @@ width:100%;
 height:100%;
 overflow:hidden;
 background:black;
+cursor:none;
 }
 	
 /* ===============================
@@ -169,6 +170,14 @@ border:none;
 	
 	<script>
 
+setInterval(() => {
+  window.focus();
+}, 5000);
+
+setInterval(()=>{
+ location.reload();
+},21600000); // 6 hours
+
 const params = new URLSearchParams(window.location.search);
 const venue = params.get("venue") || "carbon";
 
@@ -179,3 +188,4 @@ document.getElementById("headerFrame").src =
 
 </body>
 </html>
+
