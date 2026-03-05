@@ -109,24 +109,19 @@ function getNextImage(promo){
 
 function playAnimation(newImage){
 
-  const wrapper = document.getElementById("promoWrapper");
-  const img = document.getElementById("promoImage");
+  const wrapper=document.getElementById("promoWrapper");
+  const img=document.getElementById("promoImage");
 
-  const preload = new Image();
+  img.src = BASE + newImage;
 
-  preload.onload = () => {
+  wrapper.className="";
+  wrapper.classList.add("slide-in");
 
-    img.src = preload.src;
-
-    wrapper.className="";
-    wrapper.classList.add("slide-in");
-
-    setTimeout(()=>{
-      wrapper.classList.remove("slide-in");
-      wrapper.classList.add("slide-out");
-    },HOLD_DURATION);
-
-  };
+  setTimeout(()=>{
+    wrapper.classList.remove("slide-in");
+    wrapper.classList.add("slide-out");
+  },HOLD_DURATION);
+}
 
   preload.src = BASE + newImage;
 
@@ -148,7 +143,12 @@ function updateFromStorage(){
 
   currentImage = nextImage;
 
+const preload = new Image();
+preload.src = BASE + nextImage;
+
+preload.onload = () => {
   playAnimation(nextImage);
+};
 }
 
 /* INSTANT SYNC */
