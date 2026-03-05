@@ -17,6 +17,21 @@ height:100%;
 overflow:hidden;
 background:black;
 }
+	
+/* ===============================
+   LOOPING BACKGROUND VIDEO
+=============================== */
+
+#bgVideo{
+  position:absolute;
+  top:0;
+  left:10;
+  width:360px;
+  height:100%;
+  object-fit:cover;
+  z-index:1;
+  pointer-events:none;
+}
 
 /* ============================
 SIGNAGE CANVAS
@@ -41,11 +56,11 @@ HEADER
 
 position:absolute;
 
-top:60px;
-left:60px;
+top:18px;
+left:20px;
 
-width:300px;
-height:120px;
+width:100%;
+height:100%;
 
 z-index:50;
 
@@ -59,8 +74,8 @@ SIDEBAR
 
 position:absolute;
 
-top:200px;
-left:60px;
+top:180px;
+	left:30px;
 
 width:329px;
 height:680px;
@@ -77,10 +92,11 @@ PROMO AREA
 
 position:absolute;
 
-top:120px;
-left:420px;
+width:100%;
+top:0px;
+left:359px;
 
-right:60px;
+right:0px;
 bottom:220px;
 
 z-index:10;
@@ -94,17 +110,18 @@ LOWER THIRD
 #lowerthird{
 
 position:absolute;
-
-left:60px;
+width:100%;
+left:0px;
 right:60px;
 
-bottom:60px;
+bottom:0px;
 
 height:220px;
 
 z-index:100;
 
 }
+	
 
 /* ============================
 IFRAMES
@@ -128,7 +145,7 @@ border:none;
 <div id="canvas">
 
 <div id="header">
-<iframe src="logo.html?site=carbon"></iframe>
+<iframe id="headerFrame"></iframe>
 </div>
 
 <div id="sidebar">
@@ -142,8 +159,23 @@ border:none;
 <div id="lowerthird">
 <iframe src="LowerThirds.html"></iframe>
 </div>
+	
+	 <!-- LOOPING BACKGROUND -->
+  <video id="bgVideo" autoplay muted loop playsinline>
+    <source src="https://totalmixcreative.github.io/graphics/Side%20Bar%20BG.mp4" type="video/mp4">
+  </video>
 
 </div>
+	
+	<script>
+
+const params = new URLSearchParams(window.location.search);
+const venue = params.get("venue") || "carbon";
+
+document.getElementById("headerFrame").src =
+"logo.html?site=" + venue;
+
+</script>
 
 </body>
 </html>

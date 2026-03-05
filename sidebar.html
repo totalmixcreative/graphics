@@ -7,6 +7,7 @@
 <meta charset="utf-8" />
 <style>
 body {
+	background-color: #FFFFFF;
   margin: 0;
   overflow: hidden;
   font-family: 'PT Sans Narrow', system-ui, sans-serif;
@@ -14,21 +15,21 @@ body {
   font-weight: 400;
 }
 
-.viewport { width: 359px; overflow: hidden; }
+.viewport { width: 329px; overflow: hidden; }
 .slider {
   position: relative;
-  width: 359px;
+  width: 329px;
   height: 1000px; /* or exact total height of your card */
 }
 .card {
   position: absolute;
-  width: 359px;
+  width: 329px;
   opacity: 0;
   transform: translateX(100%);
 }
 
 .team-img {
-  width: 359px;
+  width: 329px;
   height: 324px;
   background-size: cover;
   background-position: center;
@@ -99,7 +100,7 @@ font-weight: 700;
 
 <script>
 const API = "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";   // ← PUT YOUR /exec URL HERE
-const SLIDE_WIDTH = 359;
+const SLIDE_WIDTH = 329;
 
 let sliderInterval = null;
 let lastUpdated = null;
@@ -174,11 +175,7 @@ function render(matches) {
           ${displayLabel}
         </div>
 
-        ${m.channelImg ? `
-          <div class="channel" data-channel="${m.channel}">
-            <img src="https://drive.google.com/thumbnail?id=${m.channelImg}&sz=w1000&v=${imageVersion}">
-          </div>` : ""}
-      </div>
+        
     `;
 
     // Make first card visible immediately
