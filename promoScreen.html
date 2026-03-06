@@ -86,6 +86,7 @@ const HOLD_DURATION=6000;
 const ANIMATION_DURATION=600;
 
 let currentImage=null;
+let serverOffset = 0;
 
 function getNextImage(promo){
 
@@ -96,7 +97,7 @@ function getNextImage(promo){
   if(Array.isArray(promo.image)){
 
     const timelineIndex =
-      Math.floor(Date.now() / 8000); // match endpoint ROTATION_SECONDS
+      Math.floor((Date.now()+serverOffset) / 8000); // match endpoint ROTATION_SECONDS
 
     const imageIndex =
       timelineIndex % promo.image.length;
@@ -144,6 +145,8 @@ function updateFromStorage(){
   currentImage = nextImage;
 
   playAnimation(nextImage);
+	
+serverOffset = promo.serverOffset || 0;
 }
 
 /* INSTANT SYNC */

@@ -153,6 +153,7 @@ const TOTAL_DURATION = HOLD_DURATION + ANIMATION_DURATION;
 let items=[];
 let index=0;
 let rotationStarted=false;
+let serverOffset = 0;
 
 /**************** LOAD DATA ****************/
 
@@ -172,8 +173,8 @@ async function loadData(){
 
       /* JOIN GLOBAL TIMELINE */
       index =
-        Math.floor(Date.now()/TOTAL_DURATION)
-        % items.length;
+  Math.floor((Date.now()+serverOffset)/TOTAL_DURATION)
+  % items.length;
 
       rotate();
     }
@@ -202,9 +203,12 @@ function rotate(){
 
   /* PROMO SCREEN SYNC */
   localStorage.setItem(
-    "currentPromo",
-    JSON.stringify(item)
-  );
+  "currentPromo",
+  JSON.stringify({
+    ...item,
+    serverOffset
+  })
+);
 
   wrapper.className="";
   wrapper.classList.add("slide-in");
@@ -231,6 +235,7 @@ function rotate(){
 
 loadData();
 setInterval(loadData,120000);
+serverOffset = data.updated - Date.now();
 
 </script>
 
