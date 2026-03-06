@@ -106,15 +106,12 @@ let sliderInterval = null;
 let lastUpdated = null;
 let currentMatches = [];
 let imageVersion = Date.now();
-let serverOffset = 0;
 
 /**************** FETCH DATA ****************/
 async function fetchData() {
   try {
     const res = await fetch(API + "?_=" + Date.now());
     const data = await res.json();
-
-serverOffset = data.updated - Date.now();
 
    const newMatches = JSON.stringify(data.matches || []);
 const oldMatches = JSON.stringify(currentMatches || []);
@@ -133,7 +130,7 @@ if (newMatches !== oldMatches) {
 
 /**************** TIME LOGIC ****************/
 function calculateLabel(m) {
-  const now = Date.now() + serverOffset;
+  const now = Date.now();
 
   if (now >= m.startTime && now <= m.endTime) {
     return "LIVE NOW";
@@ -208,8 +205,8 @@ setInterval(()=>{
   if(!cards.length) return;
 
   const globalIndex =
-  Math.floor((Date.now()+serverOffset)/SIDEBAR_DURATION)
-  % cards.length;
+    Math.floor(Date.now()/SIDEBAR_DURATION)
+    % cards.length;
 
   if(globalIndex === lastSidebarIndex)
     return;
