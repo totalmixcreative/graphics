@@ -30,21 +30,6 @@ body{
 }
 
 /* ===============================
-   LOOPING BACKGROUND VIDEO
-=============================== */
-
-#bgVideo{
-  position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  z-index:1;
-  pointer-events:none;
-}
-
-/* ===============================
    CONTENT AREA
 =============================== */
 
@@ -117,11 +102,6 @@ body{
 
 <div id="banner">
 
-  <!-- LOOPING BACKGROUND -->
-  <video id="bgVideo" autoplay muted loop playsinline>
-    <source src="https://totalmixcreative.github.io/graphics/carbon%20bottom.mp4" type="video/mp4">
-  </video>
-
   <!-- TEXT + LOGO -->
   <div id="content">
 
@@ -138,6 +118,32 @@ body{
 </div>
 
 <script>
+
+/* ============================
+SERVER TIME
+============================ */
+
+let serverTimeOffset = 0;
+
+async function syncServerTime(){
+
+try{
+
+const res = await fetch("https://worldtimeapi.org/api/timezone/Europe/London");
+const data = await res.json();
+
+const serverNow = new Date(data.datetime);
+const localNow = new Date();
+
+serverTimeOffset = serverNow - localNow;
+
+}catch(e){
+
+console.log("Server time sync failed, using local clock");
+
+}
+
+}	
 
 /**************** CONFIG ****************/
 
@@ -194,6 +200,9 @@ function rotate(){
   const item = items[index];
   const wrapper =
     document.getElementById("text-wrapper");
+	
+const timelinePosition =
+  (Date.now() + serverOffset) % TOTAL_DURATION;
 
   headline.textContent =
     item.headline || "";
@@ -202,40 +211,60 @@ function rotate(){
     item.subline || "";
 
   /* PROMO SCREEN SYNC */
-  localStorage.setItem(
-  "currentPromo",
-  JSON.stringify({
-    ...item,
-    serverOffset
-  })
+  const timelineIndex =
+Math.floor((Date.now()+serverOffset)/TOTAL_DURATION);
+
+const imageIndex =
+Array.isArray(item.image)
+? timelineIndex % item.image.length
+: 0;
+
+localStorage.setItem(
+"currentPromo",
+JSON.stringify({
+  ...item,
+  serverOffset,
+  imageIndex
+})
 );
 
   wrapper.className="";
+
+if(timelinePosition < HOLD_DURATION){
+
   wrapper.classList.add("slide-in");
 
   setTimeout(()=>{
     wrapper.classList.remove("slide-in");
     wrapper.classList.add("slide-out");
-  },HOLD_DURATION);
+  }, HOLD_DURATION - timelinePosition);
 
-  setTimeout(()=>{
+}else{
 
-    wrapper.classList.remove("slide-out");
+  wrapper.classList.add("slide-out");
 
-    index =
-      Math.floor(Date.now()/TOTAL_DURATION)
-      % items.length;
+}
 
-    rotate();
+const nextDelay = Math.max(50, TOTAL_DURATION - timelinePosition);
 
-  },TOTAL_DURATION);
+setTimeout(()=>{
+
+  wrapper.classList.remove("slide-out");
+
+  index =
+    Math.floor((Date.now()+serverOffset)/TOTAL_DURATION)
+    % items.length;
+
+  rotate();
+
+}, nextDelay);
+
 }
 
 /**************** START ****************/
 
 loadData();
 setInterval(loadData,120000);
-serverOffset = data.updated - Date.now();
 
 </script>
 

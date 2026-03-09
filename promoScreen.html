@@ -88,25 +88,6 @@ const ANIMATION_DURATION=600;
 let currentImage=null;
 let serverOffset = 0;
 
-function getNextImage(promo){
-
-  if(typeof promo.image === "string"){
-    return promo.image;
-  }
-
-  if(Array.isArray(promo.image)){
-
-    const timelineIndex =
-      Math.floor((Date.now()+serverOffset) / 8000); // match endpoint ROTATION_SECONDS
-
-    const imageIndex =
-      timelineIndex % promo.image.length;
-
-    return promo.image[imageIndex];
-  }
-
-  return null;
-}
 
 function playAnimation(newImage){
 
@@ -114,17 +95,22 @@ function playAnimation(newImage){
   const img = document.getElementById("promoImage");
 
   const preload = new Image();
+
+  preload.onload = () => {
+
+    img.src = preload.src;
+
+    wrapper.className="";
+    wrapper.classList.add("slide-in");
+
+    setTimeout(()=>{
+      wrapper.classList.remove("slide-in");
+      wrapper.classList.add("slide-out");
+    }, HOLD_DURATION);
+
+  };
+
   preload.src = BASE + newImage;
-
-  img.src = preload.src;
-
-  wrapper.className="";
-  wrapper.classList.add("slide-in");
-
-  setTimeout(()=>{
-    wrapper.classList.remove("slide-in");
-    wrapper.classList.add("slide-out");
-  },HOLD_DURATION);
 
 }
 
@@ -135,18 +121,23 @@ function updateFromStorage(){
 
   if(!promo || !promo.image) return;
 
-  const nextImage = getNextImage(promo);
+  /* APPLY SERVER OFFSET FIRST */
+
+  serverOffset = promo.serverOffset || 0;
+
+  const nextImage =
+  Array.isArray(promo.image)
+  ? promo.image[promo.imageIndex]
+  : promo.image;
 
   if(!nextImage) return;
 
-  /* prevent same image replay */
   if(nextImage === currentImage) return;
 
   currentImage = nextImage;
 
   playAnimation(nextImage);
-	
-serverOffset = promo.serverOffset || 0;
+
 }
 
 /* INSTANT SYNC */
@@ -158,6 +149,9 @@ window.addEventListener("storage",(e)=>{
 
 /* startup */
 updateFromStorage();
+
+/* KEEP IN SYNC WITH LT */
+setInterval(updateFromStorage,500);
 	
 	
 </script>

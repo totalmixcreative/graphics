@@ -15,21 +15,21 @@ body {
   font-weight: 400;
 }
 
-.viewport { width: 329px; overflow: hidden; }
+.viewport { width: 359px; overflow: hidden; }
 .slider {
   position: relative;
-  width: 329px;
+  width: 359px;
   height: 1000px; /* or exact total height of your card */
 }
 .card {
   position: absolute;
-  width: 329px;
+  width: 359px;
   opacity: 0;
   transform: translateX(100%);
 }
 
 .team-img {
-  width: 329px;
+  width: 359px;
   height: 324px;
   background-size: cover;
   background-position: center;
@@ -100,8 +100,10 @@ font-weight: 700;
 
 <script>
 const API = "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";   // ← PUT YOUR /exec URL HERE
-const SLIDE_WIDTH = 329;
+const SLIDE_WIDTH = 359;
 
+let serverNow = 0;
+let serverOffset = 0;
 let sliderInterval = null;
 let lastUpdated = null;
 let currentMatches = [];
@@ -113,15 +115,20 @@ async function fetchData() {
     const res = await fetch(API + "?_=" + Date.now());
     const data = await res.json();
 
-   const newMatches = JSON.stringify(data.matches || []);
-const oldMatches = JSON.stringify(currentMatches || []);
+    serverNow = data.updated;
+	serverOffset = data.updated - Date.now();
 
-if (newMatches !== oldMatches) {
-  lastUpdated = data.updated;
-  imageVersion = data.updated;
-  currentMatches = data.matches || [];
-  render(currentMatches);
-}
+    const newMatches = JSON.stringify(data.matches || []);
+    const oldMatches = JSON.stringify(currentMatches || []);
+
+    if (newMatches !== oldMatches) {
+
+      lastUpdated = data.updated;
+      imageVersion = data.updated;
+      currentMatches = data.matches || [];
+      render(currentMatches);
+
+    }
 
   } catch (err) {
     console.error("Fetch error:", err);
@@ -129,18 +136,38 @@ if (newMatches !== oldMatches) {
 }
 
 /**************** TIME LOGIC ****************/
-function calculateLabel(m) {
-  const now = Date.now();
+function calculateLabel(m){
 
-  if (now >= m.startTime && now <= m.endTime) {
+  const now = Date.now() + serverOffset;
+
+  if(now >= m.startTime && now <= m.endTime){
     return "LIVE NOW";
   }
 
-  if (now < m.startTime && (m.startTime - now) <= 60 * 60 * 1000) {
-    return "UP NEXT";
+  if(now < m.startTime && (m.startTime - now) <= 60*60*1000){
+
+    const start = new Date(m.startTime);
+
+    let hours = start.getHours();
+    const minutes = start.getMinutes();
+
+    const ampm = hours >= 12 ? "PM" : "AM";
+
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+
+    if(minutes === 0){
+      return `UP NEXT • ${hours}${ampm}`;
+    }
+
+    const padded =
+      minutes.toString().padStart(2,"0");
+
+    return `UP NEXT • ${hours}:${padded}${ampm}`;
   }
 
   return m.label;
+
 }
 
 /**************** RENDER ****************/
@@ -205,7 +232,7 @@ setInterval(()=>{
   if(!cards.length) return;
 
   const globalIndex =
-    Math.floor(Date.now()/SIDEBAR_DURATION)
+    Math.floor((serverNow + (Date.now()-lastUpdated))/SIDEBAR_DURATION)
     % cards.length;
 
   if(globalIndex === lastSidebarIndex)

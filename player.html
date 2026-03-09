@@ -16,37 +16,32 @@ width:100%;
 height:100%;
 overflow:hidden;
 background:black;
-cursor:none;
 }
-	
+
 /* ===============================
-   LOOPING BACKGROUND VIDEO
+SIDEBAR LOOPING BACKGROUND VIDEO
 =============================== */
 
-#bgVideo{
-  position:absolute;
-  top:0;
-  left:10;
-  width:360px;
-  height:100%;
-  object-fit:cover;
-  z-index:1;
-  pointer-events:none;
+#SBbgVideo{
+position:absolute;
+top:0;
+left:0px;
+width:360px;
+height:100%;
+object-fit:cover;
+z-index:1;
+pointer-events:none;
 }
-
+	
 /* ============================
 SIGNAGE CANVAS
 ============================ */
 
 #canvas{
-
 position:relative;
-
 width:1920px;
 height:1080px;
-
 margin:auto;
-
 }
 
 /* ============================
@@ -54,17 +49,12 @@ HEADER
 ============================ */
 
 #header{
-
 position:absolute;
-
 top:18px;
-left:20px;
-
+left:30px;
 width:100%;
 height:100%;
-
 z-index:50;
-
 }
 
 /* ============================
@@ -72,17 +62,14 @@ SIDEBAR
 ============================ */
 
 #sidebar{
-
 position:absolute;
-
-top:180px;
-	left:30px;
-
-width:329px;
-height:680px;
-
+top:190px;
+left:61px;
+width:359px;
+height:900px;
 z-index:40;
-
+	transform:scale(0.83);
+transform-origin: top left;
 }
 
 /* ============================
@@ -90,55 +77,118 @@ PROMO AREA
 ============================ */
 
 #promo{
-
 position:absolute;
-
 width:100%;
 top:0px;
-left:359px;
-
+left:360px;
 right:0px;
 bottom:220px;
-
 z-index:10;
-
 }
 
+/* ===============================
+   LT LOOPING BACKGROUND VIDEO
+=============================== */
+
+#LTbgVideo{
+  position:absolute;
+
+  left:0;
+  right:60px;     /* match lowerthird */
+
+  bottom:0;
+  height:220px;
+
+  width:auto;
+
+  object-fit:cover;
+
+  z-index:99;
+  pointer-events:none;
+}
+	
 /* ============================
 LOWER THIRD
 ============================ */
 
 #lowerthird{
-
 position:absolute;
 width:100%;
 left:0px;
 right:60px;
-
 bottom:0px;
-
 height:220px;
-
 z-index:100;
-
 }
-	
 
 /* ============================
 IFRAMES
 ============================ */
 
 iframe{
-
 width:100%;
 height:100%;
-
 border:none;
+}
 
+/* ============================
+CARBON NIGHT MODE
+============================ */
+
+#nightMode{
+position:fixed;
+top:0;
+left:0;
+width:100vw;
+height:100vh;
+background:black;
+opacity:0;
+pointer-events:none;
+transition:opacity 1.5s ease;
+z-index:9999;
+}
+
+#nightVideo{
+position:absolute;
+width:100%;
+height:100%;
+object-fit:cover;
+opacity:0;
+transition:opacity 2s;
+}
+
+#nightLogo{
+position:absolute;
+top:0;
+left:0;
+pointer-events:none;
+opacity:0;
+transition:opacity 2s;
+}
+
+@keyframes logoGlow{
+0%{filter:brightness(1);}
+100%{filter:brightness(1.25);}
+}
+
+/* ============================
+TRANSITION FADE
+============================ */
+
+#transitionBlack{
+position:fixed;
+top:0;
+left:0;
+width:100vw;
+height:100vh;
+background:black;
+opacity:0;
+transition:opacity 1.2s ease;
+z-index:9998;
+pointer-events:none;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -161,22 +211,73 @@ border:none;
 <iframe src="LowerThirds.html"></iframe>
 </div>
 	
-	 <!-- LOOPING BACKGROUND -->
-  <video id="bgVideo" autoplay muted loop playsinline>
-    <source src="https://totalmixcreative.github.io/graphics/Side%20Bar%20BG.mp4" type="video/mp4">
+<!-- LT LOOPING BACKGROUND -->
+  <video id="LTbgVideo" autoplay muted loop playsinline>
+    <source src="https://totalmixcreative.github.io/graphics/carbon%20bottom.mp4" type="video/mp4">
   </video>
 
+<!-- Sidebar background video -->
+
+<video id="SBbgVideo" autoplay muted loop playsinline>
+<source src="https://totalmixcreative.github.io/graphics/Side%20Bar%20BG.mp4" type="video/mp4">
+</video>
+
 </div>
+
+<!-- Transition layer -->
+
+<div id="transitionBlack"></div>
+
+<!-- Night mode layer -->
+
+<div id="nightMode">
+
+<video id="nightVideo" autoplay muted playsinline loop></video>
+
+<img src="https://totalmixcreative.github.io/graphics/Carbon/Carbon%20Logo.png" id="nightLogo">
+
+</div>
+
+<script>
 	
-	<script>
+/* ============================
+SERVER TIME
+============================ */
 
-setInterval(() => {
-  window.focus();
-}, 5000);
+let serverTimeOffset = 0;
 
-setInterval(()=>{
- location.reload();
-},21600000); // 6 hours
+async function syncServerTime(){
+
+try{
+
+const res = await fetch("https://worldtimeapi.org/api/timezone/Europe/London");
+const data = await res.json();
+
+const serverNow = new Date(data.datetime);
+const localNow = new Date();
+
+serverTimeOffset = serverNow - localNow;
+
+}catch(e){
+
+console.log("Server time sync failed, using local clock");
+
+}
+
+}
+
+function now(){
+
+return new Date(Date.now() + serverTimeOffset);
+
+}
+
+syncServerTime();
+setInterval(syncServerTime,600000); // resync every 10 minutes
+
+/* ============================
+VENUE PARAMETER
+============================ */
 
 const params = new URLSearchParams(window.location.search);
 const venue = params.get("venue") || "carbon";
@@ -184,8 +285,242 @@ const venue = params.get("venue") || "carbon";
 document.getElementById("headerFrame").src =
 "logo.html?site=" + venue;
 
+/* ============================
+VIDEO LIST
+============================ */
+
+const videos = [];
+
+for(let i=1;i<=20;i++){
+videos.push(`https://totalmixcreative.github.io/graphics/Carbon/${i}.mp4`);
+}
+
+/* ============================
+ELEMENT REFERENCES
+============================ */
+
+const transition = document.getElementById("transitionBlack");
+const nightVideo = document.getElementById("nightVideo");
+const nightLayer = document.getElementById("nightMode");
+const nightLogo = document.getElementById("nightLogo");
+
+let nightActive = false;
+
+/* ============================
+NIGHT MODE SCHEDULE
+============================ */
+
+function isNightMode(){
+
+let nowTime = now();
+
+let day = nowTime.getDay();
+let hour = nowTime.getHours();
+let minute = nowTime.getMinutes();
+
+
+/* NORMAL SCHEDULE */
+
+let weekend = (day === 5 || day === 6);
+
+return weekend && (hour >= 22 || hour < 4);
+
+}
+
+/* ============================
+VIDEO ROTATION
+============================ */
+
+let currentIndex = -1;
+
+function loadNightVideo(){
+
+let nowTime = now();
+
+/* MASTER TIMELINE START
+   (first Friday you want the sequence to begin) */
+
+const start = new Date("2026-03-08T22:00:00");
+
+/* minutes since timeline start */
+
+const diffMinutes =
+  Math.floor((nowTime - start) / 60000);
+
+/* 30 minute slots */
+
+const slot =
+  Math.floor(diffMinutes / 30);
+
+const index =
+  slot % videos.length;
+
+/* change video only if needed */
+
+if(index !== currentIndex){
+
+currentIndex = index;
+
+nightVideo.src = videos[index];
+nightVideo.play();
+
+}
+
+}
+/* ============================
+MODE CONTROL
+============================ */
+
+function isNightStart(){
+
+let nowTime = now();
+
+let hour = nowTime.getHours();
+let minute = nowTime.getMinutes();
+
+return hour === 22 && minute === 0;
+
+}
+	
+function updateMode(){
+
+if(isNightMode()){
+
+if(!nightActive){
+
+nightActive = true;
+
+/* fade signage to black */
+
+transition.style.opacity = 1;
+
+setTimeout(()=>{
+
+nightLayer.style.opacity = 1;
+transition.style.opacity = 0;
+
+/* if it's exactly 22:00 run full intro */
+
+if(isNightStart()){
+
+setTimeout(()=>{
+
+nightLogo.style.opacity = 1;
+
+setTimeout(()=>{
+
+loadNightVideo();
+nightVideo.style.opacity = 1;
+
+},2000);
+
+},5000);
+
+}
+
+/* otherwise skip intro and start video */
+
+else{
+
+loadNightVideo();
+nightLogo.style.opacity = 1;
+nightVideo.style.opacity = 1;
+
+}
+
+},1200);
+
+}else{
+
+/* already in night mode – check if video needs changing */
+
+loadNightVideo();
+
+}
+
+}
+
+else if(!isNightMode() && nightActive){
+
+nightActive = false;
+
+transition.style.opacity = 1;
+
+setTimeout(()=>{
+
+nightLayer.style.opacity = 0;
+nightVideo.pause();
+transition.style.opacity = 0;
+
+},1200);
+
+}
+
+}
+	
+/* ============================
+SYNC VIDEO
+============================ */
+	
+const sbVideo = document.getElementById("SBbgVideo");
+const ltVideo = document.getElementById("LTbgVideo");
+
+function setVideoPosition(video){
+
+  if(!video.duration) return;
+
+  const serverTime = now().getTime();
+
+  const durationMs = video.duration * 1000;
+
+  const position = (serverTime % durationMs) / 1000;
+
+  video.currentTime = position;
+
+}
+
+function syncVideos(){
+
+  setVideoPosition(sbVideo);
+  setVideoPosition(ltVideo);
+
+}
+
+/* sync immediately once metadata loads */
+sbVideo.addEventListener("loadedmetadata", syncVideos);
+ltVideo.addEventListener("loadedmetadata", syncVideos);
+
+/* small drift correction */
+setInterval(()=>{
+
+  const serverTime = now().getTime();
+
+  [sbVideo, ltVideo].forEach(video => {
+
+    if(!video.duration) return;
+
+    const durationMs = video.duration * 1000;
+
+    const expected = (serverTime % durationMs) / 1000;
+
+    if(Math.abs(video.currentTime - expected) > 0.3){
+      video.currentTime = expected;
+    }
+
+  });
+
+},3000);
+
+/* ============================
+CHECK EVERY 30 SECONDS
+============================ */
+
+setInterval(updateMode,30000);
+
+updateMode();
+
+
 </script>
 
 </body>
 </html>
-
