@@ -240,29 +240,78 @@ pointer-events:none;
 
 <script>
 
-	window.addEventListener("storage",(e)=>{
+let currentLTTheme = "";
 
-  if(e.key !== "currentPromo") return;
+function getNthMonday(year, month, n){
 
-  const data = JSON.parse(e.newValue);
+  const firstDay = new Date(year, month, 1);
+  const firstMondayOffset = (8 - firstDay.getDay()) % 7;
+  return new Date(year, month, 1 + firstMondayOffset + (n-1)*7);
 
-  if(!data || !data.theme) return;
+}
+
+function getLowerThirdTheme(){
+
+  const nowTime = now();
+  const year = nowTime.getFullYear();
+
+  /* ST PATRICKS DAY */
+  const stpStart = new Date(year,2,17,10,0,0);
+  const stpEnd = new Date(year,2,18,3,0,0);
+
+  if(nowTime >= stpStart && nowTime <= stpEnd){
+    return "stpatricks";
+  }
+
+  /* HALLOWEEN */
+  const halloweenStart = getNthMonday(year,9,2); // Oct
+  halloweenStart.setHours(10,0,0);
+
+  const halloweenEnd = new Date(year,10,1,4,0,0);
+
+  if(nowTime >= halloweenStart && nowTime <= halloweenEnd){
+    return "halloween";
+  }
+
+  /* CHRISTMAS */
+  const christmasStart = getNthMonday(year,10,4); // Nov
+  christmasStart.setHours(10,0,0);
+
+  const christmasEnd = new Date(year+1,0,1,4,0,0);
+
+  if(nowTime >= christmasStart && nowTime <= christmasEnd){
+    return "christmas";
+  }
+
+  return "default";
+}
+
+function applyLowerThirdTheme(){
+
+  const theme = getLowerThirdTheme();
+  if(theme === currentLTTheme) return;
+
+  currentLTTheme = theme;
 
   const ltVideo = document.getElementById("LTbgVideo");
 
-  if(data.theme === "stpatricks"){
+  const videos = {
+    default:
+      "https://totalmixcreative.github.io/graphics/carbon%20bottom.mp4",
 
-    ltVideo.src =
-    "https://totalmixcreative.github.io/graphics/LT_green.mp4";
+    stpatricks:
+      "https://totalmixcreative.github.io/graphics/LT_green.mp4",
 
-  }else{
+    halloween:
+      "https://totalmixcreative.github.io/graphics/LT_orange.mp4",
 
-    ltVideo.src =
-    "https://totalmixcreative.github.io/graphics/carbon%20bottom.mp4";
+    christmas:
+      "https://totalmixcreative.github.io/graphics/LT_christmas.mp4"
+  };
 
-  }
-
-});	
+  ltVideo.querySelector("source").src = videos[theme];
+  ltVideo.load();
+}
 	
 /* ============================
 SERVER TIME
@@ -545,6 +594,9 @@ setInterval(updateMode,30000);
 
 updateMode();
 
+/* APPLY LT THEME */
+applyLowerThirdTheme();
+setInterval(applyLowerThirdTheme,60000);
 
 </script>
 
