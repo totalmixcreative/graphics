@@ -239,6 +239,30 @@ pointer-events:none;
 </div>
 
 <script>
+
+	window.addEventListener("storage",(e)=>{
+
+  if(e.key !== "currentPromo") return;
+
+  const data = JSON.parse(e.newValue);
+
+  if(!data || !data.theme) return;
+
+  const ltVideo = document.getElementById("LTbgVideo");
+
+  if(data.theme === "stpatricks"){
+
+    ltVideo.src =
+    "https://totalmixcreative.github.io/graphics/LT_green.mp4";
+
+  }else{
+
+    ltVideo.src =
+    "https://totalmixcreative.github.io/graphics/carbon%20bottom.mp4";
+
+  }
+
+});	
 	
 /* ============================
 SERVER TIME
