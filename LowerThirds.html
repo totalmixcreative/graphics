@@ -224,7 +224,8 @@ localStorage.setItem(
 JSON.stringify({
   ...item,
   serverOffset,
-  imageIndex
+  imageIndex,
+  theme: item.theme || "default"
 })
 );
 
