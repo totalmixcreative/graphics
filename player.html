@@ -321,11 +321,12 @@ let minute = nowTime.getMinutes();
 
 /* NORMAL SCHEDULE */
 
-let weekend = (day === 5 || day === 6);
-
-return weekend && (hour >= 22 || hour < 4);
-
-}
+return (
+  (day === 5 && hour >= 22) ||   // Friday night
+  (day === 6 && hour < 4)  ||    // Saturday early morning
+  (day === 6 && hour >= 22) ||   // Saturday night
+  (day === 0 && hour < 4)        // Sunday early morning
+);
 
 /* ============================
 VIDEO ROTATION
