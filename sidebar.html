@@ -38,6 +38,15 @@ body {
 
 .info { display: flex; flex-direction: column; gap: 8px; text-align: center;}
 .competition img { height: 60px; margin: 10px 0 20px; }
+    
+.competition.fallback-text {
+  font-size: 30px;
+  text-align: center;
+  text-transform: uppercase;
+  padding: 4px 6px;
+  margin-top: 20px;
+  font-weight: 700;
+}
 
 .fixture .team {
   font-size: 35px;
@@ -88,6 +97,7 @@ font-weight: 700;
 
 .competition[data-competition*="Six Nations"] img { height: 70px; }
 .competition[data-competition*="BetMGM Premier League"] img { height: 100px; }
+.competition[data-competition*="FIFA World Cup 2026"] img { height: 100px; }
 .competition[data-competition*="F1"] img { height: 40px; }
 .competition[data-competition*="Boxing"] img { height: 40px; }
 </style>
@@ -182,28 +192,33 @@ function render(matches) {
     card.className = "card";
 
     card.innerHTML = `
-      <div class="team-img"
-           style="background-image:url('https://drive.google.com/thumbnail?id=${m.homeImg}&sz=w1000&v=${imageVersion}')"></div>
+  <div class="team-img"
+       style="background-image:url('https://drive.google.com/thumbnail?id=${m.homeImg}&sz=w1000&v=${imageVersion}')"></div>
 
-      <div class="info">
-        ${m.competitionImg ? `
-          <div class="competition" data-competition="${m.competition}">
-            <img src="https://drive.google.com/thumbnail?id=${m.competitionImg}&sz=w1000&v=${imageVersion}">
-          </div>` : ""}
+  <div class="info">
 
-        <div class="fixture">
-          <div class="team home">${m.home}</div>
-          ${m.away ? `<div class="versus">v</div>` : ""}
-          ${m.away ? `<div class="team away">${m.away}</div>` : ""}
-        </div>
+    ${m.competitionImg ? `
+      <div class="competition" data-competition="${m.competition}">
+        <img src="https://drive.google.com/thumbnail?id=${m.competitionImg}&sz=w1000&v=${imageVersion}">
+      </div>` : `
+      <div class="competition fallback-text">
+        ${m.competition}
+      </div>
+    `}
 
-        <div class="time ${displayLabel === 'LIVE NOW' ? 'live' : ''}">
-          ${displayLabel === 'LIVE NOW' ? '<span class="live-dot"></span>' : ''}
-          ${displayLabel}
-        </div>
+    <div class="fixture">
+      <div class="team home">${m.home}</div>
+      ${m.away ? `<div class="versus">v</div>` : ""}
+      ${m.away ? `<div class="team away">${m.away}</div>` : ""}
+    </div>
 
-        
-    `;
+    <div class="time ${displayLabel === 'LIVE NOW' ? 'live' : ''}">
+      ${displayLabel === 'LIVE NOW' ? '<span class="live-dot"></span>' : ''}
+      ${displayLabel}
+    </div>
+
+  </div>
+`;
 
     // Make first card visible immediately
     if (i === 0) {
