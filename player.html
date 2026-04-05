@@ -399,7 +399,7 @@ return (
   (day === 6 && hour < 4)  ||    // Saturday early morning
   (day === 6 && hour >= 22) ||   // Saturday night
   (day === 0 && hour < 4) ||       // Sunday early morning
-  (day === 0 && hour < 22) ||     // Sunday night
+  (day === 0 && hour >= 22) ||     // Sunday night
   (day === 1 && hour < 4)        // Monday early morning
 );
 }
