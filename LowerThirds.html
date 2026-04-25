@@ -140,28 +140,9 @@ LOGO FLIP
 </div>
 
 <script>
-    
+
 let rotateTimeout = null;
 let rotateLoop = null;
-    
-let lastTravelRun = 0;
-    
-// HARD RESET OF EXPIRED TRAVEL STATE
-(function(){
-
-  const state = JSON.parse(localStorage.getItem("travelState"));
-
-  if(!state) return;
-
-  const now = Date.now();
-  const end = state.start + (state.duration * 1000);
-
-  if(now > end){
-    localStorage.removeItem("travelState");
-  }
-
-})();
-
 
 /**************** CONFIG ****************/
 
@@ -178,7 +159,6 @@ let items = [];
 let index = 0;
 let rotationStarted = false;
 let serverOffset = 0;
-
 
 /**************** LOAD DATA ****************/
 
@@ -212,18 +192,19 @@ async function loadData(){
 
 }
 
-
 /**************** ROTATION ****************/
 
 function rotate(){
 
-  if(ltPaused || travelRunning) return;
   if(!items.length) return;
 
   const item = items[index];
 
   const wrapper =
     document.getElementById("text-wrapper");
+
+  const headline = document.getElementById("headline");
+  const subline = document.getElementById("subline");
 
   headline.textContent =
     item.headline || "";
@@ -251,333 +232,43 @@ function rotate(){
   );
 
   wrapper.className = "";
-
   wrapper.classList.add("slide-in");
 
   rotateTimeout = setTimeout(()=>{
-  wrapper.classList.remove("slide-in");
-  wrapper.classList.add("slide-out");
-}, HOLD_DURATION);
+    wrapper.classList.remove("slide-in");
+    wrapper.classList.add("slide-out");
+  }, HOLD_DURATION);
 
   rotateLoop = setTimeout(()=>{
 
-  wrapper.classList.remove("slide-out");
+    wrapper.classList.remove("slide-out");
 
-  index =
-    Math.floor((Date.now()+serverOffset)/TOTAL_DURATION)
-    % items.length;
+    index =
+      Math.floor((Date.now()+serverOffset)/TOTAL_DURATION)
+      % items.length;
 
-  rotate();
+    rotate();
 
-}, TOTAL_DURATION);
-
-}
-
-/* ============================
-STATE
-============================ */
-
-let ltPaused = false;
-let travelRunning = false;
-let serverTimeOffset = 0;
-
-
-/* ============================
-LOGO CONTROL
-============================ */
-
-function showTravelLogo(){
-
-  const logo = document.getElementById("whatsOn");
-
-  logo.classList.remove("flip-in","flip-out");
-  logo.classList.add("flip-out");
-
-  setTimeout(()=>{
-
-    logo.src =
-      "https://totalmixcreative.github.io/graphics/travel.png";
-
-    logo.classList.remove("flip-out");
-    logo.classList.add("flip-in");
-
-  },500);
+  }, TOTAL_DURATION);
 
 }
 
-function showWhatsOnLogo(){
+/**************** INIT ****************/
 
-  const logo = document.getElementById("whatsOn");
-
-  logo.classList.remove("flip-in","flip-out");
-  logo.classList.add("flip-out");
-
-  setTimeout(()=>{
-
-    logo.src =
-      "https://totalmixcreative.github.io/graphics/whatson.png";
-
-    logo.classList.remove("flip-out");
-    logo.classList.add("flip-in");
-
-  },500);
-
-}
-
-
-/* ============================
-TEXT UPDATE
-============================ */
-
-function showTravelCountdown(headlineText, sublineText){
-
-  const headline = document.getElementById("headline");
-  const subline = document.getElementById("subline");
-
-  headline.textContent = headlineText;
-  subline.textContent = sublineText;
-
-}
-
-
-/* ============================
-LOWER THIRD CONTROL
-============================ */
-
-function pauseLowerThird(){
-
-  ltPaused = true;
-
-  if(rotateTimeout){
-    clearTimeout(rotateTimeout);
-    rotateTimeout = null;
-  }
-
-  if(rotateLoop){
-    clearTimeout(rotateLoop);
-    rotateLoop = null;
-  }
-
-}
-
-function resumeLowerThird(){
-
-  ltPaused = false;
-
-  rotate();
-
-}
-
-
-/* ============================
-TRAVEL START
-============================ */
-
-function startTravel(){
-
-  pauseLowerThird();
-  showTravelLogo();
-
-  let travelData;
-
-  try{
-    travelData =
-      JSON.parse(localStorage.getItem("travelSlides")) || {};
-  }catch(e){
-    travelData = {};
-  }
-
-  const slides = travelData.slides || [];
-
-  const duration =
-    travelData.duration ||
-    (slides.length * 15) ||
-    30;
-
-  console.log("Starting travel with duration:", duration);
-
-  localStorage.setItem(
-    "travelState",
-    JSON.stringify({
-      active: true,
-      start: Date.now(),
-      duration: duration
-    })
-  );
-
-  travelRunning = true;
-
-  startTravelCountdown(duration);
-
-}
-    
-function startWeekendTravel(){
-
-  pauseLowerThird();
-  showTravelLogo();
-
-  // 👇 flag weekend mode
-  localStorage.setItem("travelMode", "weekend");
-
-  const duration = 15;
-
-  localStorage.setItem(
-    "travelState",
-    JSON.stringify({
-      active: true,
-      start: Date.now(),
-      duration: duration
-    })
-  );
-
-  travelRunning = true;
-
-  startTravelCountdown(duration);
-
-}
-
-
-/* ============================
-TRAVEL END
-============================ */
-
-function endTravel(){
-
-  localStorage.removeItem("travelState");
-  localStorage.removeItem("travelMode"); // 👈 ADD THIS
-
-  setTimeout(()=>{
-
-    showWhatsOnLogo();
-    resumeLowerThird();
-
-  },600);
-
-}
-
-
-/* ============================
-TRAVEL COUNTDOWN
-============================ */
-
-function startTravelCountdown(duration){
-
-  const now = new Date(Date.now() + serverTimeOffset);
-
-  const hours = now.getHours();
-  const minutesNow = now.getMinutes().toString().padStart(2,"0");
-  const updateTime = `${hours}:${minutesNow}`;
-
-  let remaining = duration;
-
-  const timer = setInterval(()=>{
-
-    const minutes = Math.floor(remaining/60);
-    const seconds = remaining % 60;
-
-    if(remaining <= 10){
-
-      showTravelCountdown(
-        `Latest Update at ${updateTime}`,
-        "Next travel update in 30 minutes"
-      );
-
-    }else{
-
-      showTravelCountdown(
-        `Latest Update at ${updateTime}`,
-        `${minutes}:${seconds.toString().padStart(2,"0")}`
-      );
-
-    }
-
-    remaining--;
-
-    if(remaining <= 0){
-
-      clearInterval(timer);
-      endTravel();
-      travelRunning = false;
-
-    }
-
-  },1000);
-
-}
-
-
-/* ============================
-TRAVEL SCHEDULER
-============================ */
-
-setTimeout(() => {
-  setInterval(checkTravel,1000);
-}, 5000); // wait 5 seconds after load
-
-function checkTravel(){
-
-  const now = new Date(Date.now() + serverTimeOffset);
-
-  const minute = now.getMinutes();
-  const second = now.getSeconds();
-
-  const nowTime = Date.now();
-
-const hour = now.getHours();
-
-const day = now.getDay(); // 0 = Sunday, 6 = Saturday
-
-if(
-  (minute === 15 || minute === 45) &&
-  second < 10 &&
-  hour >= 6 && hour < 22 &&
-  !travelRunning
-){
-
-  lastTravelRun = nowTime;
-  travelRunning = true;
-
-  const timelinePosition =
-    (Date.now() + serverOffset) % TOTAL_DURATION;
-
-  const delay = TOTAL_DURATION - timelinePosition;
-
-  if(day === 0 || day === 6){
-    setTimeout(startWeekendTravel, delay); // 👈 WEEKEND
-  }else{
-    setTimeout(startTravel, delay); // 👈 WEEKDAY
-  }
-
-}
-
-}
-	
-loadData();
-setInterval(loadData,120000);
-    
 window.addEventListener("load", () => {
 
-  const day = new Date().getDay(); // 0 = Sun, 6 = Sat
+  // ensure no leftover travel state anywhere
+  localStorage.removeItem("travelState");
+  localStorage.removeItem("travelMode");
 
-  if(checkTravelState() && day >= 1 && day <= 5){
-    startTravel();
-  }else{
-    localStorage.removeItem("travelState"); // clean stale data
-    showWhatsOnLogo();
-    resumeLowerThird();
-  }
+  rotate();
 
 });
-    
-setInterval(() => {
 
-  if(!checkTravelState() && travelRunning){
-    travelRunning = false;
-    showWhatsOnLogo();
-    resumeLowerThird();
-  }
+/**************** POLLING ****************/
 
-}, 1000);
+loadData();
+setInterval(loadData,120000);
 
 </script>
 
