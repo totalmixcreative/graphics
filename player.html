@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+    <title>Signage Player</title>
 
 <style>
 
@@ -232,7 +233,7 @@ pointer-events:none;
 
 <div id="nightMode">
 
-<video id="nightVideo" autoplay muted playsinline loop></video>
+<video id="nightVideo" autoplay muted playsinline></video>
 
 <img src="https://totalmixcreative.github.io/graphics/Carbon/Carbon%20Logo.png" id="nightLogo">
 
@@ -367,6 +368,22 @@ const videos = [];
 for(let i=1;i<=20;i++){
 videos.push(`https://totalmixcreative.github.io/graphics/Carbon/${i}.mp4`);
 }
+    
+/* SATURDAY PLAYLIST */
+
+const saturdayVideos = [
+  "https://totalmixcreative.github.io/graphics/Night%20Shift/Abba.mp4",
+  "https://totalmixcreative.github.io/graphics/Night%20Shift/BuzzBallz.mp4",
+  "https://totalmixcreative.github.io/graphics/Night%20Shift/Cocktails.mp4",
+  "https://totalmixcreative.github.io/graphics/Night%20Shift/Free%20Entry.mp4",
+  "https://totalmixcreative.github.io/graphics/Night%20Shift/Free%20Pool.mp4",
+  "https://totalmixcreative.github.io/graphics/Night%20Shift/ITFC.mp4",
+  "https://totalmixcreative.github.io/graphics/Night%20Shift/Karaoke.mp4",
+  "https://totalmixcreative.github.io/graphics/Night%20Shift/Shots.mp4",
+  "https://totalmixcreative.github.io/graphics/Night%20Shift/Shots1.mp4",
+  "https://totalmixcreative.github.io/graphics/Night%20Shift/Sport.mp4",
+  "https://totalmixcreative.github.io/graphics/Night%20Shift/wardley.mp4"
+];
 
 /* ============================
 ELEMENT REFERENCES
@@ -378,6 +395,50 @@ const nightLayer = document.getElementById("nightMode");
 const nightLogo = document.getElementById("nightLogo");
 
 let nightActive = false;
+    
+/* MODE DETECTION */
+
+function getNightModeType(){
+
+  let nowTime = now();
+  let day = nowTime.getDay();
+  let hour = nowTime.getHours();
+
+  if((day === 5 && hour >= 22) || (day === 6 && hour < 4)){
+    return "timeline";
+  }
+
+  if((day === 6 && hour >= 22) || (day === 0 && hour < 4)){
+    return "playlist";
+  }
+
+  return "timeline";
+}
+
+/* PLAYLIST */
+
+let playlistIndex = 0;
+
+function playPlaylist(){
+
+  nightVideo.src = saturdayVideos[playlistIndex];
+  nightVideo.play();
+
+  playlistIndex++;
+
+  if(playlistIndex >= saturdayVideos.length){
+    playlistIndex = 0;
+  }
+
+}
+
+nightVideo.addEventListener("ended", () => {
+
+  if(getNightModeType() === "playlist"){
+    playPlaylist();
+  }
+
+});
 
 /* ============================
 NIGHT MODE SCHEDULE
@@ -412,36 +473,41 @@ let currentIndex = -1;
 
 function loadNightVideo(){
 
-let nowTime = now();
+  const mode = getNightModeType();
 
-/* MASTER TIMELINE START
-   (first Friday you want the sequence to begin) */
+  /* SATURDAY */
+  if(mode === "playlist"){
+    nightVideo.loop = false;
+    nightLogo.style.opacity = 0;
+    playPlaylist();
+    return;
+  }
 
-const start = new Date("2026-03-08T22:00:00");
+  /* FRIDAY */
+  nightVideo.loop = true;
+  nightLogo.style.opacity = 1;
 
-/* minutes since timeline start */
+  let nowTime = now();
 
-const diffMinutes =
-  Math.floor((nowTime - start) / 60000);
+  const start = new Date("2026-03-08T22:00:00");
 
-/* 30 minute slots */
+  const diffMinutes =
+    Math.floor((nowTime - start) / 60000);
 
-const slot =
-  Math.floor(diffMinutes / 30);
+  const slot =
+    Math.floor(diffMinutes / 30);
 
-const index =
-  slot % videos.length;
+  const index =
+    slot % videos.length;
 
-/* change video only if needed */
+  if(index !== currentIndex){
 
-if(index !== currentIndex){
+    currentIndex = index;
 
-currentIndex = index;
+    nightVideo.src = videos[index];
+    nightVideo.play();
 
-nightVideo.src = videos[index];
-nightVideo.play();
-
-}
+  }
 
 }
 /* ============================
@@ -461,77 +527,72 @@ return hour === 22 && minute === 0;
 	
 function updateMode(){
 
-if(isNightMode()){
+  if(isNightMode()){
 
-if(!nightActive){
+    if(!nightActive){
 
-nightActive = true;
+      nightActive = true;
 
-/* fade signage to black */
+      transition.style.opacity = 1;
 
-transition.style.opacity = 1;
+      setTimeout(()=>{
 
-setTimeout(()=>{
+        nightLayer.style.opacity = 1;
+        transition.style.opacity = 0;
 
-nightLayer.style.opacity = 1;
-transition.style.opacity = 0;
+        /* if it's exactly 22:00 run full intro */
+        if(isNightStart()){
 
-/* if it's exactly 22:00 run full intro */
+          setTimeout(()=>{
 
-if(isNightStart()){
+            /* only show logo if NOT Saturday */
+            if(getNightModeType() !== "playlist"){
+              nightLogo.style.opacity = 1;
+            }
 
-setTimeout(()=>{
+            setTimeout(()=>{
+              loadNightVideo();
+              nightVideo.style.opacity = 1;
+            },2000);
 
-nightLogo.style.opacity = 1;
+          },5000);
 
-setTimeout(()=>{
+        }else{
 
-loadNightVideo();
-nightVideo.style.opacity = 1;
+          loadNightVideo();
+          nightVideo.style.opacity = 1;
 
-},2000);
+          if(getNightModeType() !== "playlist"){
+            nightLogo.style.opacity = 1;
+          }
 
-},5000);
+        }
 
-}
+      },1200);
 
-/* otherwise skip intro and start video */
+    }else{
 
-else{
+      /* DO NOT interrupt Saturday playlist */
+      if(getNightModeType() !== "playlist"){
+        loadNightVideo();
+      }
 
-loadNightVideo();
-nightLogo.style.opacity = 1;
-nightVideo.style.opacity = 1;
+    }
 
-}
+  } 
+  else if(nightActive){
 
-},1200);
+    nightActive = false;
 
-}else{
+    transition.style.opacity = 1;
 
-/* already in night mode – check if video needs changing */
+    setTimeout(()=>{
+      nightLayer.style.opacity = 0;
+      nightVideo.pause();
+      transition.style.opacity = 0;
+    },1200);
 
-loadNightVideo();
-
-}
-
-}
-
-else if(!isNightMode() && nightActive){
-
-nightActive = false;
-
-transition.style.opacity = 1;
-
-setTimeout(()=>{
-
-nightLayer.style.opacity = 0;
-nightVideo.pause();
-transition.style.opacity = 0;
-
-},1200);
-
-}
+  }
 
 }
 	
