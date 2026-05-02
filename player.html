@@ -234,6 +234,7 @@ pointer-events:none;
 <div id="nightMode">
 
 <video id="nightVideo" autoplay muted playsinline></video>
+<video id="nightVideoNext" muted playsinline style="display:none;"></video>    
 
 <img src="https://totalmixcreative.github.io/graphics/Carbon/Carbon%20Logo.png" id="nightLogo">
 
@@ -313,6 +314,8 @@ function applyLowerThirdTheme(){
   ltVideo.querySelector("source").src = videos[theme];
   ltVideo.load();
 }
+    
+const nightVideoNext = document.getElementById("nightVideoNext");
 	
 /* ============================
 SERVER TIME
@@ -421,13 +424,38 @@ let playlistIndex = 0;
 
 function playPlaylist(){
 
-  nightVideo.src = saturdayVideos[playlistIndex];
-  nightVideo.play();
+  const current = nightVideo;
+  const next = nightVideoNext;
 
-  playlistIndex++;
+  // set next video source in advance
+  next.src = saturdayVideos[playlistIndex];
+  next.load();
 
-  if(playlistIndex >= saturdayVideos.length){
-    playlistIndex = 0;
+  // when current ends, instantly swap
+  current.onended = () => {
+
+    current.src = next.src;
+    current.play();
+    current.style.opacity = 1;
+
+    playlistIndex++;
+
+    if(playlistIndex >= saturdayVideos.length){
+      playlistIndex = 0;
+    }
+
+    // preload the next-next video
+    next.src = saturdayVideos[playlistIndex];
+    next.load();
+
+  };
+
+  // start first video if nothing playing
+  if(!current.src){
+    current.src = saturdayVideos[playlistIndex];
+    current.play();
+
+    playlistIndex++;
   }
 
 }
