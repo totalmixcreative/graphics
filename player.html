@@ -358,6 +358,9 @@ VENUE PARAMETER
 const params = new URLSearchParams(window.location.search);
 const venue = params.get("venue") || "carbon";
 
+document.title = 
+venue.charAt(0).toUpperCase() + venue.slice(1) + " Signage Player";
+
 document.getElementById("headerFrame").src =
 "logo.html?site=" + venue;
 
