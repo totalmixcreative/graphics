@@ -409,11 +409,24 @@ function getNightModeType(){
   let day = nowTime.getDay();
   let hour = nowTime.getHours();
 
+  /* FRIDAY NIGHT (timeline stays) */
   if((day === 5 && hour >= 22) || (day === 6 && hour < 4)){
     return "timeline";
   }
 
+  /* SATURDAY NIGHT (playlist for all venues) */
   if((day === 6 && hour >= 22) || (day === 0 && hour < 4)){
+    return "playlist";
+  }
+
+  /* WEEKNIGHTS (CARBON ONLY → playlist) */
+  if(
+    venue === "carbon" &&
+    (
+      (day >= 1 && day <= 4 && hour >= 22) || // Mon–Thur nights
+      (day >= 2 && day <= 5 && hour < 4)      // Tue–Fri early morning
+    )
+  ){
     return "playlist";
   }
 
