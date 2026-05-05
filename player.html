@@ -143,9 +143,8 @@ left:0;
 width:100vw;
 height:100vh;
 background:black;
-opacity:0;
-pointer-events:none;
-transition:opacity 1.5s ease;
+transform:translateX(100%);
+transition:transform 1.2s ease;
 z-index:9999;
 }
 
@@ -484,12 +483,28 @@ let minute = nowTime.getMinutes();
 /* NORMAL SCHEDULE */
 
 return (
-  (day === 5 && hour >= 22) ||   // Friday night
-  (day === 6 && hour < 4)  ||    // Saturday early morning
-  (day === 6 && hour >= 22) ||   // Saturday night
-  (day === 0 && hour < 4) ||       // Sunday early morning
-  (day === 0 && hour >= 22) ||     // Sunday night
-  (day === 1 && hour < 4)        // Monday early morning
+
+  /* FRIDAY NIGHT (ALL VENUES) */
+  (day === 5 && hour >= 22) ||
+  (day === 6 && hour < 4)  ||
+
+  /* SATURDAY NIGHT (ALL VENUES) */
+  (day === 6 && hour >= 22) ||
+  (day === 0 && hour < 4) ||
+
+  /* SUNDAY NIGHT (ALL VENUES) */
+  (day === 0 && hour >= 22) ||
+  (day === 1 && hour < 4) ||
+
+  /* WEEKNIGHTS — CARBON ONLY */
+  (
+    venue === "carbon" &&
+    (
+      (day >= 1 && day <= 4 && hour >= 22) ||  // Mon–Thur nights
+      (day >= 2 && day <= 5 && hour < 4)       // Tue–Fri early morning
+    )
+  )
+
 );
 }
 
@@ -565,7 +580,7 @@ function updateMode(){
 
       setTimeout(()=>{
 
-        nightLayer.style.opacity = 1;
+        nightLayer.style.transform = "translateX(0)";
         transition.style.opacity = 0;
 
         /* if it's exactly 22:00 run full intro */
@@ -615,7 +630,7 @@ function updateMode(){
     transition.style.opacity = 1;
 
     setTimeout(()=>{
-      nightLayer.style.opacity = 0;
+      nightLayer.style.transform = "translateX(100%)";
       nightVideo.pause();
       transition.style.opacity = 0;
     },1200);
