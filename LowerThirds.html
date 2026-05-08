@@ -231,35 +231,26 @@ function rotate(){
   if(!items.length) return;
 
   const timelineIndex =
-  Math.floor(getElapsedTime()/TOTAL_DURATION);
+    Math.floor(getElapsedTime()/TOTAL_DURATION);
 
-index = timelineIndex % items.length;
+  const newIndex =
+    timelineIndex % items.length;
 
-if(timelineIndex !== lastTimelineIndex){
+  if(newIndex === lastTimelineIndex)
+    return;
 
-  lastTimelineIndex = timelineIndex;
+  lastTimelineIndex = newIndex;
 
-  wrapper.classList.remove("slide-out");
-
-  wrapper.classList.remove("slide-in");
-
-  void wrapper.offsetWidth;
-
-  wrapper.classList.add("slide-in");
-
-}
-    
-lastTimelineIndex = timelineIndex;
-
-const item = items[index];
-    
-animationStarted = true;
+  const item = items[newIndex];
 
   const wrapper =
     document.getElementById("text-wrapper");
 
-  const headline = document.getElementById("headline");
-  const subline = document.getElementById("subline");
+  const headline =
+    document.getElementById("headline");
+
+  const subline =
+    document.getElementById("subline");
 
   headline.textContent =
     item.headline || "";
@@ -267,30 +258,29 @@ animationStarted = true;
   subline.textContent =
     item.subline || "";
 
-  /* PROMO SCREEN SYNC */
-
-  const timelineIndex =
-  Math.floor(getElapsedTime()/TOTAL_DURATION);
-
   const imageIndex =
-  Array.isArray(item.image)
-  ? timelineIndex % item.image.length
-  : 0;
+    Array.isArray(item.image)
+    ? timelineIndex % item.image.length
+    : 0;
 
-localStorage.setItem(
-  "currentPromo",
-  JSON.stringify({
-    image: item.image,
-    imageIndex: imageIndex,
-    headline: item.headline,
-    subline: item.subline,
-    timestamp: getElapsedTime()
-  })
-);
+  localStorage.setItem(
+    "currentPromo",
+    JSON.stringify({
+      image: item.image,
+      imageIndex: imageIndex,
+      headline: item.headline,
+      subline: item.subline,
+      timestamp: getElapsedTime()
+    })
+  );
 
-wrapper.className = "";
-wrapper.classList.add("slide-in");
-    
+  wrapper.classList.remove("slide-in");
+  wrapper.classList.remove("slide-out");
+
+  void wrapper.offsetWidth;
+
+  wrapper.classList.add("slide-in");
+
 }
 
 /**************** POLLING ****************/
