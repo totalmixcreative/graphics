@@ -135,8 +135,6 @@ async function fetchData() {
     const res = await fetch(API + "?_=" + Date.now());
     const data = await res.json();
 
-	serverOffset = data.updated - Date.now();
-
     const newMatches = JSON.stringify(data.matches || []);
     const oldMatches = JSON.stringify(currentMatches || []);
 
@@ -300,7 +298,36 @@ setInterval(() => {
 }, 1000);
 
 /**************** INITIAL LOAD ****************/
+
+async function syncServerTime(){
+
+  try{
+
+    const res = await fetch(
+      "https://timeapi.world/timezone/Europe/London"
+    );
+
+    const data = await res.json();
+
+    const serverNow = new Date(data.datetime);
+    const localNow = new Date();
+
+    serverOffset = serverNow - localNow;
+
+  }catch(e){
+
+    console.log("Server time sync failed");
+
+  }
+
+}
+    
 async function init(){
+
+  await syncServerTime();
+
+  /* resync every 5 mins */
+  setInterval(syncServerTime,300000);
 
   await fetchData();
 
