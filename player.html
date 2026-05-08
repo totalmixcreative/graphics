@@ -316,11 +316,6 @@ function now(){
   return new Date(Date.now() + serverTimeOffset);
 }
 
-syncServerTime();
-
-/* resync every 5 mins */
-setInterval(syncServerTime,300000);
-
 /* ============================
 VENUE PARAMETER
 ============================ */
@@ -576,48 +571,60 @@ function syncVideos(){
 sbVideo.addEventListener("loadedmetadata", syncVideos);
 ltVideo.addEventListener("loadedmetadata", syncVideos);
 
-/* small drift correction */
-setInterval(()=>{
-
-  const elapsed = getElapsedTime();
-
-  [sbVideo, ltVideo].forEach(video => {
-
-    if(!video.duration) return;
-
-    const durationMs = video.duration * 1000;
-
-    const expected = (elapsed % durationMs) / 1000;
-
-    if(Math.abs(video.currentTime - expected) > 0.1){
-      video.currentTime = expected;
-    }
-
-  });
-
-  /* NIGHT PLAYLIST SYNC */
-  if(isNightMode()){
-    syncPlaylistVideo();
-  }
-
-},1000);
-
 /* ============================
 CHECK EVERY 30 SECONDS
 ============================ */
 
-loadPlaylistManifest();
+async function init(){
 
-/* refresh manifest every 10 mins */
-setInterval(loadPlaylistManifest,600000);
+  await syncServerTime();
 
-setInterval(updateMode,30000);
+  /* resync every 5 mins */
+  setInterval(syncServerTime,300000);
 
-updateMode();
+  await loadPlaylistManifest();
 
-/* APPLY LT THEME */
-applyLowerThirdTheme();
-setInterval(applyLowerThirdTheme,60000);
+  /* refresh manifest every 10 mins */
+  setInterval(loadPlaylistManifest,600000);
+
+  syncVideos();
+
+  /* small drift correction */
+  setInterval(()=>{
+
+    const elapsed = getElapsedTime();
+
+    [sbVideo, ltVideo].forEach(video => {
+
+      if(!video.duration) return;
+
+      const durationMs = video.duration * 1000;
+
+      const expected = (elapsed % durationMs) / 1000;
+
+      if(Math.abs(video.currentTime - expected) > 0.1){
+        video.currentTime = expected;
+      }
+
+    });
+
+    /* NIGHT PLAYLIST SYNC */
+    if(isNightMode()){
+      syncPlaylistVideo();
+    }
+
+  },1000);
+
+  setInterval(updateMode,30000);
+
+  updateMode();
+
+  applyLowerThirdTheme();
+  setInterval(applyLowerThirdTheme,60000);
+
+}
+
+init();
 
 </script>
 

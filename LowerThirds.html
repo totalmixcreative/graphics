@@ -173,11 +173,6 @@ function now(){
   return new Date(Date.now() + serverTimeOffset);
 }
 
-syncServerTime();
-
-/* resync every 5 mins */
-setInterval(syncServerTime,300000);
-
 /**************** CONFIG ****************/
 
 const ENDPOINT_URL =
@@ -291,22 +286,22 @@ function rotate(){
 
 }
 
-/**************** INIT ****************/
-
-window.addEventListener("load", () => {
-
-  // ensure no leftover travel state anywhere
-  localStorage.removeItem("travelState");
-  localStorage.removeItem("travelMode");
-
-  rotate();
-
-});
-
 /**************** POLLING ****************/
 
-loadData();
-setInterval(loadData,120000);
+async function init(){
+
+  await syncServerTime();
+
+  /* resync every 5 mins */
+  setInterval(syncServerTime,300000);
+
+  await loadData();
+
+  setInterval(loadData,120000);
+
+}
+
+init();
 
 </script>
 

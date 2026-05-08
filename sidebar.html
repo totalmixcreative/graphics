@@ -112,12 +112,22 @@ font-weight: 700;
 const API = "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";   // ← PUT YOUR /exec URL HERE
 const SLIDE_WIDTH = 359;
 
-let serverNow = 0;
 let serverOffset = 0;
 let sliderInterval = null;
 let lastUpdated = null;
 let currentMatches = [];
 let imageVersion = Date.now();
+    
+const MASTER_EPOCH =
+  new Date("2026-01-01T00:00:00Z").getTime();
+
+function now(){
+  return Date.now() + serverOffset;
+}
+
+function getElapsedTime(){
+  return now() - MASTER_EPOCH;
+}
 
 /**************** FETCH DATA ****************/
 async function fetchData() {
@@ -125,7 +135,6 @@ async function fetchData() {
     const res = await fetch(API + "?_=" + Date.now());
     const data = await res.json();
 
-    serverNow = data.updated;
 	serverOffset = data.updated - Date.now();
 
     const newMatches = JSON.stringify(data.matches || []);
@@ -247,8 +256,8 @@ setInterval(()=>{
   if(!cards.length) return;
 
   const globalIndex =
-    Math.floor((serverNow + (Date.now()-lastUpdated))/SIDEBAR_DURATION)
-    % cards.length;
+  Math.floor(getElapsedTime()/SIDEBAR_DURATION)
+  % cards.length;
 
   if(globalIndex === lastSidebarIndex)
     return;
@@ -291,8 +300,15 @@ setInterval(() => {
 }, 1000);
 
 /**************** INITIAL LOAD ****************/
-fetchData();
-setInterval(fetchData, 30000);
+async function init(){
+
+  await fetchData();
+
+  setInterval(fetchData,30000);
+
+}
+
+init();
 
 /**************** OBS KEEP ALIVE ****************/
 setInterval(() => {
