@@ -3,7 +3,7 @@ name: Build Playlist Manifest
 on:
   push:
     paths:
-      - 'Night Shift/**'
+      - 'Nights/**'
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
 
           first=true
 
-          for file in Night\ Shift/*.mp4; do
+          for file in Nights/*.mp4; do
 
             duration=$(ffprobe \
               -v error \
