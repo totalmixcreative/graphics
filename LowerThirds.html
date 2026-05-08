@@ -252,38 +252,41 @@ function rotate(){
   Math.floor(getElapsedTime()/TOTAL_DURATION);
 
   const imageIndex =
-    Array.isArray(item.image)
-    ? timelineIndex % item.image.length
-    : 0;
+  Array.isArray(item.image)
+  ? timelineIndex % item.image.length
+  : 0;
 
-  localStorage.setItem(
+localStorage.setItem(
   "currentPromo",
   JSON.stringify({
-    ...item,
-    imageIndex
+    image: item.image,
+    imageIndex: imageIndex,
+    headline: item.headline,
+    subline: item.subline,
+    timestamp: getElapsedTime()
   })
 );
 
-  wrapper.className = "";
-  wrapper.classList.add("slide-in");
+wrapper.className = "";
+wrapper.classList.add("slide-in");
 
-  rotateTimeout = setTimeout(()=>{
-    wrapper.classList.remove("slide-in");
-    wrapper.classList.add("slide-out");
-  }, HOLD_DURATION);
+rotateTimeout = setTimeout(()=>{
+  wrapper.classList.remove("slide-in");
+  wrapper.classList.add("slide-out");
+}, HOLD_DURATION);
 
-  rotateLoop = setTimeout(()=>{
+rotateLoop = setTimeout(()=>{
 
-    wrapper.classList.remove("slide-out");
+  wrapper.classList.remove("slide-out");
 
-    index =
-  Math.floor(getElapsedTime()/TOTAL_DURATION)
-  % items.length;
+  index =
+    Math.floor(getElapsedTime()/TOTAL_DURATION)
+    % items.length;
 
-    rotate();
+  rotate();
 
-  }, TOTAL_DURATION);
-
+}, TOTAL_DURATION);
+    
 }
 
 /**************** POLLING ****************/
