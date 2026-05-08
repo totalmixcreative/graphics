@@ -1,0 +1,55 @@
+name: Build Playlist Manifest
+
+on:
+  push:
+    paths:
+      - 'Night Shift/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ffmpeg
+        run: sudo apt-get install ffmpeg -y
+
+      - name: Generate playlist manifest
+        run: |
+          echo '{"videos":[' > night-playlist.json
+
+          first=true
+
+          for file in Night\ Shift/*.mp4; do
+
+            duration=$(ffprobe \
+              -v error \
+              -show_entries format=duration \
+              -of default=noprint_wrappers=1:nokey=1 \
+              "$file")
+
+            url=$(echo "$file" | sed 's/ /%20/g')
+
+            if [ "$first" = true ]; then
+              first=false
+            else
+              echo ',' >> night-playlist.json
+            fi
+
+            echo "{\"src\":\"https://totalmixcreative.github.io/graphics/$url\",\"duration\":$duration}" >> night-playlist.json
+
+          done
+
+          echo ']}' >> night-playlist.json
+
+      - name: Commit updated manifest
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          git add night-playlist.json
+
+          git commit -m "Auto update playlist manifest" || echo "No changes"
+
+          git push
