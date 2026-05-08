@@ -235,11 +235,19 @@ function rotate(){
 
 index = timelineIndex % items.length;
 
-if(
-  timelineIndex === lastTimelineIndex &&
-  animationStarted
-)
-  return;
+if(timelineIndex !== lastTimelineIndex){
+
+  lastTimelineIndex = timelineIndex;
+
+  wrapper.classList.remove("slide-out");
+
+  wrapper.classList.remove("slide-in");
+
+  void wrapper.offsetWidth;
+
+  wrapper.classList.add("slide-in");
+
+}
     
 lastTimelineIndex = timelineIndex;
 
