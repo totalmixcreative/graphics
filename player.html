@@ -153,39 +153,6 @@ position:absolute;
 width:100%;
 height:100%;
 object-fit:cover;
-opacity:0;
-transition:opacity 2s;
-}
-
-#nightLogo{
-position:absolute;
-top:0;
-left:0;
-pointer-events:none;
-opacity:0;
-transition:opacity 2s;
-}
-
-@keyframes logoGlow{
-0%{filter:brightness(1);}
-100%{filter:brightness(1.25);}
-}
-
-/* ============================
-TRANSITION FADE
-============================ */
-
-#transitionBlack{
-position:fixed;
-top:0;
-left:0;
-width:100vw;
-height:100vh;
-background:black;
-opacity:0;
-transition:opacity 1.2s ease;
-z-index:9998;
-pointer-events:none;
 }
 
 </style>
@@ -224,18 +191,11 @@ pointer-events:none;
 
 </div>
 
-<!-- Transition layer -->
-
-<div id="transitionBlack"></div>
-
 <!-- Night mode layer -->
 
 <div id="nightMode">
 
 <video id="nightVideo" autoplay muted playsinline></video>
-<video id="nightVideoNext" muted playsinline style="display:none;"></video>    
-
-<img src="https://totalmixcreative.github.io/graphics/Carbon/Carbon%20Logo.png" id="nightLogo">
 
 </div>
 
@@ -314,42 +274,52 @@ function applyLowerThirdTheme(){
   ltVideo.load();
 }
     
-const nightVideoNext = document.getElementById("nightVideoNext");
+
 	
 /* ============================
 SERVER TIME
 ============================ */
 
+const MASTER_EPOCH =
+new Date("2026-01-01T00:00:00Z").getTime();
+
+function getElapsedTime(){
+  return now().getTime() - MASTER_EPOCH;
+}    
+    
 let serverTimeOffset = 0;
 
 async function syncServerTime(){
 
-try{
+  try{
 
-const res = await fetch("https://worldtimeapi.org/api/timezone/Europe/London");
-const data = await res.json();
+    const res = await fetch(
+      "https://timeapi.world/timezone/Europe/London"
+    );
 
-const serverNow = new Date(data.datetime);
-const localNow = new Date();
+    const data = await res.json();
 
-serverTimeOffset = serverNow - localNow;
+    const serverNow = new Date(data.datetime);
+    const localNow = new Date();
 
-}catch(e){
+    serverTimeOffset = serverNow - localNow;
 
-console.log("Server time sync failed, using local clock");
+  }catch(e){
 
-}
+    console.log("Server time sync failed");
+
+  }
 
 }
 
 function now(){
-
-return new Date(Date.now() + serverTimeOffset);
-
+  return new Date(Date.now() + serverTimeOffset);
 }
 
 syncServerTime();
-setInterval(syncServerTime,600000); // resync every 10 minutes
+
+/* resync every 5 mins */
+setInterval(syncServerTime,300000);
 
 /* ============================
 VENUE PARAMETER
@@ -363,125 +333,122 @@ venue.charAt(0).toUpperCase() + venue.slice(1) + " Signage Player";
 
 document.getElementById("headerFrame").src =
 "logo.html?site=" + venue;
+    
+let playlistManifest = [];
 
-/* ============================
-VIDEO LIST
-============================ */
+let playlistTimeline = [];
+let totalPlaylistDuration = 0;
 
-const videos = [];
+async function loadPlaylistManifest(){
 
-for(let i=1;i<=20;i++){
-videos.push(`https://totalmixcreative.github.io/graphics/Carbon/${i}.mp4`);
+  try{
+
+    const res = await fetch(
+      "night-playlist.json?t=" + Date.now()
+    );
+
+    const data = await res.json();
+
+    playlistManifest = data.videos || [];
+
+    buildPlaylistTimeline();
+
+  }catch(e){
+
+    console.log("Playlist manifest failed");
+
+  }
+
+}
+
+function buildPlaylistTimeline(){
+
+  playlistTimeline = [];
+  totalPlaylistDuration = 0;
+
+  playlistManifest.forEach((video, i)=>{
+
+    playlistTimeline.push({
+      index: i,
+      start: totalPlaylistDuration,
+      end: totalPlaylistDuration + video.duration
+    });
+
+    totalPlaylistDuration += video.duration;
+
+  });
+
 }
     
-/* SATURDAY PLAYLIST */
+    function syncPlaylistVideo(){
 
-const saturdayVideos = [
-  "https://totalmixcreative.github.io/graphics/Night%20Shift/Abba.mp4",
-  "https://totalmixcreative.github.io/graphics/Night%20Shift/BuzzBallz.mp4",
-  "https://totalmixcreative.github.io/graphics/Night%20Shift/Cocktails.mp4",
-  "https://totalmixcreative.github.io/graphics/Night%20Shift/Free%20Entry.mp4",
-  "https://totalmixcreative.github.io/graphics/Night%20Shift/Free%20Pool.mp4",
-  "https://totalmixcreative.github.io/graphics/Night%20Shift/ITFC.mp4",
-  "https://totalmixcreative.github.io/graphics/Night%20Shift/Karaoke.mp4",
-  "https://totalmixcreative.github.io/graphics/Night%20Shift/Shots.mp4",
-  "https://totalmixcreative.github.io/graphics/Night%20Shift/Shots1.mp4",
-  "https://totalmixcreative.github.io/graphics/Night%20Shift/Sport.mp4",
-  "https://totalmixcreative.github.io/graphics/Night%20Shift/wardley.mp4"
-];
+  if(!playlistTimeline.length) return;
+
+  const elapsed =
+    Math.floor(getElapsedTime() / 1000);
+
+  const playlistTime =
+    elapsed % totalPlaylistDuration;
+
+  let activeVideo = null;
+
+  for(const video of playlistTimeline){
+
+    if(
+      playlistTime >= video.start &&
+      playlistTime < video.end
+    ){
+      activeVideo = video;
+      break;
+    }
+
+  }
+
+  if(!activeVideo) return;
+
+  const expectedSrc =
+    playlistManifest[activeVideo.index].src;
+
+  const localTime =
+    playlistTime - activeVideo.start;
+
+  if(!nightVideo.src.endsWith(expectedSrc)){
+
+    nightVideo.src = expectedSrc;
+
+    nightVideo.addEventListener(
+      "loadedmetadata",
+      ()=>{
+
+        nightVideo.currentTime = localTime;
+        nightVideo.play();
+
+      },
+      { once:true }
+    );
+
+  }else{
+
+    if(
+      Math.abs(
+        nightVideo.currentTime - localTime
+      ) > 0.3
+    ){
+      nightVideo.currentTime = localTime;
+    }
+
+  }
+
+}
 
 /* ============================
 ELEMENT REFERENCES
 ============================ */
 
-const transition = document.getElementById("transitionBlack");
 const nightVideo = document.getElementById("nightVideo");
 const nightLayer = document.getElementById("nightMode");
-const nightLogo = document.getElementById("nightLogo");
 
 let nightActive = false;
-    
-/* MODE DETECTION */
-
-function getNightModeType(){
-
-  let nowTime = now();
-  let day = nowTime.getDay();
-  let hour = nowTime.getHours();
-
-  /* FRIDAY NIGHT (timeline stays) */
-  if((day === 5 && hour >= 22) || (day === 6 && hour < 4)){
-    return "timeline";
-  }
-
-  /* SATURDAY NIGHT (playlist for all venues) */
-  if((day === 6 && hour >= 22) || (day === 0 && hour < 4)){
-    return "playlist";
-  }
-
-  /* WEEKNIGHTS (CARBON ONLY → playlist) */
-  if(
-    venue === "carbon" &&
-    (
-      (day >= 1 && day <= 4 && hour >= 22) || // Mon–Thur nights
-      (day >= 2 && day <= 5 && hour < 4)      // Tue–Fri early morning
-    )
-  ){
-    return "playlist";
-  }
-
-  return "timeline";
-}
-
-/* PLAYLIST */
-
-let playlistIndex = 0;
-
-function playPlaylist(){
-
-  const current = nightVideo;
-  const next = nightVideoNext;
-
-  // set next video source in advance
-  next.src = saturdayVideos[playlistIndex];
-  next.load();
-
-  // when current ends, instantly swap
-  current.onended = () => {
-
-    current.src = next.src;
-    current.play();
-    current.style.opacity = 1;
-
-    playlistIndex++;
-
-    if(playlistIndex >= saturdayVideos.length){
-      playlistIndex = 0;
-    }
-
-    // preload the next-next video
-    next.src = saturdayVideos[playlistIndex];
-    next.load();
-
-  };
-
-  // start first video if nothing playing
-  if(!current.src){
-    current.src = saturdayVideos[playlistIndex];
-    current.play();
-
-    playlistIndex++;
-  }
-
-}
-
-nightVideo.addEventListener("ended", () => {
-
-  if(getNightModeType() === "playlist"){
-    playPlaylist();
-  }
-
-});
 
 /* ============================
 NIGHT MODE SCHEDULE
@@ -489,86 +456,40 @@ NIGHT MODE SCHEDULE
 
 function isNightMode(){
 
-let nowTime = now();
+  const nowTime = now();
 
-let day = nowTime.getDay();
-let hour = nowTime.getHours();
-let minute = nowTime.getMinutes();
+  const day = nowTime.getDay();
+  const hour = nowTime.getHours();
 
+  /* CARBON = EVERY NIGHT */
+  if(venue === "carbon"){
 
-/* NORMAL SCHEDULE */
-
-return (
-
-  /* FRIDAY NIGHT (ALL VENUES) */
-  (day === 5 && hour >= 22) ||
-  (day === 6 && hour < 4)  ||
-
-  /* SATURDAY NIGHT (ALL VENUES) */
-  (day === 6 && hour >= 22) ||
-  (day === 0 && hour < 4) ||
-
-  /* SUNDAY NIGHT (ALL VENUES) */
-  (day === 0 && hour >= 22) ||
-  (day === 1 && hour < 4) ||
-
-  /* WEEKNIGHTS — CARBON ONLY */
-  (
-    venue === "carbon" &&
-    (
-      (day >= 1 && day <= 4 && hour >= 22) ||  // Mon–Thur nights
-      (day >= 2 && day <= 5 && hour < 4)       // Tue–Fri early morning
-    )
-  )
-
-);
-}
-
-/* ============================
-VIDEO ROTATION
-============================ */
-
-let currentIndex = -1;
-
-function loadNightVideo(){
-
-  const mode = getNightModeType();
-
-  /* SATURDAY */
-  if(mode === "playlist"){
-    nightVideo.loop = false;
-    nightLogo.style.opacity = 0;
-    playPlaylist();
-    return;
-  }
-
-  /* FRIDAY */
-  nightVideo.loop = true;
-  nightLogo.style.opacity = 1;
-
-  let nowTime = now();
-
-  const start = new Date("2026-03-08T22:00:00");
-
-  const diffMinutes =
-    Math.floor((nowTime - start) / 60000);
-
-  const slot =
-    Math.floor(diffMinutes / 30);
-
-  const index =
-    slot % videos.length;
-
-  if(index !== currentIndex){
-
-    currentIndex = index;
-
-    nightVideo.src = videos[index];
-    nightVideo.play();
+    return (
+      (hour >= 22) ||
+      (hour < 4)
+    );
 
   }
 
+  /* MILL = FRI/SAT ONLY */
+  if(venue === "mill"){
+
+    return (
+
+      (day === 5 && hour >= 22) ||
+      (day === 6 && hour < 4) ||
+
+      (day === 6 && hour >= 22) ||
+      (day === 0 && hour < 4)
+
+    );
+
+  }
+
+  return false;
+
 }
+
 /* ============================
 MODE CONTROL
 ============================ */
@@ -592,69 +513,37 @@ function updateMode(){
 
       nightActive = true;
 
-      transition.style.opacity = 1;
+      nightLayer.style.transform = "translateX(0)";
 
-      setTimeout(()=>{
+      /* full intro exactly at 22:00 */
+      if(isNightStart()){
 
-        nightLayer.style.transform = "translateX(0)";
-        transition.style.opacity = 0;
+        setTimeout(()=>{
 
-        /* if it's exactly 22:00 run full intro */
-        if(isNightStart()){
+          syncPlaylistVideo();
 
-          setTimeout(()=>{
+        },5000);
 
-            /* only show logo if NOT Saturday */
-            if(getNightModeType() !== "playlist"){
-              nightLogo.style.opacity = 1;
-            }
+      }else{
 
-            setTimeout(()=>{
-              loadNightVideo();
-              nightVideo.style.opacity = 1;
-            },2000);
+        syncPlaylistVideo();
 
-          },5000);
-
-        }else{
-
-          loadNightVideo();
-          nightVideo.style.opacity = 1;
-
-          if(getNightModeType() !== "playlist"){
-            nightLogo.style.opacity = 1;
-          }
-
-        }
-
-      },1200);
-
-    }else{
-
-      /* DO NOT interrupt Saturday playlist */
-      if(getNightModeType() !== "playlist"){
-        loadNightVideo();
       }
 
     }
 
-  } 
-  else if(nightActive){
+  }else if(nightActive){
 
     nightActive = false;
 
-    transition.style.opacity = 1;
+    nightLayer.style.transform = "translateX(100%)";
 
-    setTimeout(()=>{
-      nightLayer.style.transform = "translateX(100%)";
-      nightVideo.pause();
-      transition.style.opacity = 0;
-    },1200);
+    nightVideo.pause();
 
   }
 
 }
-	
+    
 /* ============================
 SYNC VIDEO
 ============================ */
@@ -666,11 +555,11 @@ function setVideoPosition(video){
 
   if(!video.duration) return;
 
-  const serverTime = now().getTime();
+  const elapsed = getElapsedTime();
 
   const durationMs = video.duration * 1000;
 
-  const position = (serverTime % durationMs) / 1000;
+  const position = (elapsed % durationMs) / 1000;
 
   video.currentTime = position;
 
@@ -690,7 +579,7 @@ ltVideo.addEventListener("loadedmetadata", syncVideos);
 /* small drift correction */
 setInterval(()=>{
 
-  const serverTime = now().getTime();
+  const elapsed = getElapsedTime();
 
   [sbVideo, ltVideo].forEach(video => {
 
@@ -698,19 +587,29 @@ setInterval(()=>{
 
     const durationMs = video.duration * 1000;
 
-    const expected = (serverTime % durationMs) / 1000;
+    const expected = (elapsed % durationMs) / 1000;
 
-    if(Math.abs(video.currentTime - expected) > 0.3){
+    if(Math.abs(video.currentTime - expected) > 0.1){
       video.currentTime = expected;
     }
 
   });
 
-},3000);
+  /* NIGHT PLAYLIST SYNC */
+  if(isNightMode()){
+    syncPlaylistVideo();
+  }
+
+},1000);
 
 /* ============================
 CHECK EVERY 30 SECONDS
 ============================ */
+
+loadPlaylistManifest();
+
+/* refresh manifest every 10 mins */
+setInterval(loadPlaylistManifest,600000);
 
 setInterval(updateMode,30000);
 

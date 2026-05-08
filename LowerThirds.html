@@ -143,6 +143,40 @@ LOGO FLIP
 
 let rotateTimeout = null;
 let rotateLoop = null;
+    
+let serverTimeOffset = 0;
+
+async function syncServerTime(){
+
+  try{
+
+    const res = await fetch(
+      "https://timeapi.world/timezone/Europe/London"
+    );
+
+    const data = await res.json();
+
+    const serverNow = new Date(data.datetime);
+    const localNow = new Date();
+
+    serverTimeOffset = serverNow - localNow;
+
+  }catch(e){
+
+    console.log("Server time sync failed");
+
+  }
+
+}
+
+function now(){
+  return new Date(Date.now() + serverTimeOffset);
+}
+
+syncServerTime();
+
+/* resync every 5 mins */
+setInterval(syncServerTime,300000);
 
 /**************** CONFIG ****************/
 
@@ -152,13 +186,18 @@ const ENDPOINT_URL =
 const HOLD_DURATION = 6000;
 const ANIMATION_DURATION = 600;
 const TOTAL_DURATION = HOLD_DURATION + ANIMATION_DURATION;
+const MASTER_EPOCH =
+new Date("2026-01-01T00:00:00Z").getTime();
+    
+function getElapsedTime(){
+  return now().getTime() - MASTER_EPOCH;
+}
 
 /**************** STATE ****************/
 
 let items = [];
 let index = 0;
 let rotationStarted = false;
-let serverOffset = 0;
 
 /**************** LOAD DATA ****************/
 
@@ -178,9 +217,9 @@ async function loadData(){
 
       rotationStarted = true;
 
-      index =
-        Math.floor((Date.now()+serverOffset)/TOTAL_DURATION)
-        % items.length;
+index =
+Math.floor(getElapsedTime() / TOTAL_DURATION)
+% items.length;
 
       rotate();
 
@@ -215,7 +254,7 @@ function rotate(){
   /* PROMO SCREEN SYNC */
 
   const timelineIndex =
-    Math.floor((Date.now()+serverOffset)/TOTAL_DURATION);
+  Math.floor(getElapsedTime()/TOTAL_DURATION);
 
   const imageIndex =
     Array.isArray(item.image)
@@ -223,13 +262,12 @@ function rotate(){
     : 0;
 
   localStorage.setItem(
-    "currentPromo",
-    JSON.stringify({
-      ...item,
-      serverOffset,
-      imageIndex
-    })
-  );
+  "currentPromo",
+  JSON.stringify({
+    ...item,
+    imageIndex
+  })
+);
 
   wrapper.className = "";
   wrapper.classList.add("slide-in");
@@ -244,8 +282,8 @@ function rotate(){
     wrapper.classList.remove("slide-out");
 
     index =
-      Math.floor((Date.now()+serverOffset)/TOTAL_DURATION)
-      % items.length;
+  Math.floor(getElapsedTime()/TOTAL_DURATION)
+  % items.length;
 
     rotate();
 
