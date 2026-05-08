@@ -235,12 +235,17 @@ function rotate(){
 
 index = timelineIndex % items.length;
 
-if(timelineIndex === lastTimelineIndex)
+if(
+  timelineIndex === lastTimelineIndex &&
+  animationStarted
+)
   return;
-
+    
 lastTimelineIndex = timelineIndex;
 
 const item = items[index];
+    
+animationStarted = true;
 
   const wrapper =
     document.getElementById("text-wrapper");
