@@ -33,26 +33,6 @@ body{
   height:100%;
   object-fit:cover;
 }
-	
-#travelWrapper{
-  position:absolute;
-	top:0;
-	left:0;
-	right:0;
-	bottom:0;
-	display:none;
-	overflow:hidden;
-}
-	
-	#travelWrapper iframe{
-		position:absolute;
-		top:0;
-		left:0;
-		width:100%;
-		height:100%;
-		border:0;
-		display:block;
-	}
 
 /* ===== SAME ANIMATION AS LOWER THIRDS ===== */
 
@@ -94,12 +74,8 @@ body{
 <div id="screen">
 
   <div id="promoWrapper">
-      <img id="promoImage">
-  </div>
-
-  <div id="travelWrapper">
-      <iframe src="travel.html"></iframe>
-  </div>
+   <div id="promoContainer"></div>
+</div>
 
 </div>
 
@@ -113,7 +89,7 @@ const ANIMATION_DURATION=600;
 
 let currentImage=null;
 let serverOffset = 0;
-let currentMode = "promo";
+let lastTimestamp = null;
 
 
 function playAnimation(newImage){
@@ -142,55 +118,6 @@ function playAnimation(newImage){
 }
 
 function updateFromStorage(){
-
-  const travelState =
-  JSON.parse(localStorage.getItem("travelState"));
-
-if(travelState && travelState.active){
-
-  if(currentMode !== "travel"){
-
-    const promo = document.getElementById("promoWrapper");
-const travel = document.getElementById("travelWrapper");
-
-promo.classList.remove("slide-in");
-promo.classList.add("slide-out");
-
-setTimeout(()=>{
-  promo.style.display="none";
-  travel.style.display="block";
-
-  travel.classList.remove("slide-out");
-  travel.classList.add("slide-in");
-},600);
-
-    currentMode="travel";
-
-  }
-
-  return;
-
-}
-	
-	if(currentMode === "travel"){
-
-  const promo = document.getElementById("promoWrapper");
-const travel = document.getElementById("travelWrapper");
-
-travel.classList.remove("slide-in");
-travel.classList.add("slide-out");
-
-setTimeout(()=>{
-  travel.style.display="none";
-  promo.style.display="block";
-
-  promo.classList.remove("slide-out");
-  promo.classList.add("slide-in");
-},600);
-
-  currentMode="promo";
-
-}
 	
   const promo =
     JSON.parse(localStorage.getItem("currentPromo"));
@@ -208,7 +135,14 @@ setTimeout(()=>{
 
   if(!nextImage) return;
 
-  if(nextImage === currentImage) return;
+  if(
+  nextImage === currentImage &&
+  promo.timestamp === lastTimestamp
+){
+  return;
+}
+
+lastTimestamp = promo.timestamp;
 
   currentImage = nextImage;
 
@@ -218,7 +152,7 @@ setTimeout(()=>{
 
 /* INSTANT SYNC */
 window.addEventListener("storage",(e)=>{
-  if(e.key==="currentPromo" || e.key==="travelState"){
+  if(e.key==="currentPromo"){
     updateFromStorage();
   }
 });

@@ -6,6 +6,17 @@
 <link href="https://fonts.googleapis.com/css2?family=PT+Sans+Narrow:wght@400;700&display=swap" rel="stylesheet">
 <meta charset="utf-8" />
 <style>
+	
+@font-face{
+  font-family:'DINWC';
+  src:url(
+    'https://totalmixcreative.github.io/graphics/DINNextLTPro-BlackCondensed.ttf'
+  ) format('truetype');
+
+  font-weight:normal;
+  font-style:normal;
+}
+	
 body {
 	background-color: #FFFFFF;
   margin: 0;
@@ -14,6 +25,8 @@ body {
   text-transform: uppercase;
   font-weight: 400;
 }
+	
+
 
 .viewport { width: 359px; overflow: hidden; }
 .slider {
@@ -35,8 +48,26 @@ body {
   background-position: center;
   background-repeat: no-repeat;
 }
+	
+	.wc-img {
+  width: 359px;
+  height: 324px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin:-40px 0 15px;
+}
+
 
 .info { display: flex; flex-direction: column; gap: 8px; text-align: center;}
+	.infowc{
+  display:flex;
+  flex-direction:column;
+  text-align:center;
+		gap: 0;
+
+  padding-bottom:40px;
+}
 .competition img { height: 60px; margin: 10px 0 20px; }
     
 .competition.fallback-text {
@@ -86,14 +117,471 @@ font-weight: 700;
   50% { opacity: 0.2; }
   100% { opacity: 1; }
 }
+	
 
-.channel[data-channel^="SS"] img { height: 30px; }
-.channel[data-channel^="TNT"] img { height: 40px; }
-.channel[data-channel^="Prime"] img { height: 40px; }
-.channel[data-channel^="DAZN"] img { height: 25px; }
-.channel[data-channel^="BBC1"] img { height: 25px; }
-.channel[data-channel^="ITV1"] img { height: 25px; }
-.channel[data-channel^="ITV4"] img { height: 25px; }
+.wc-flags{
+  display:flex;
+  justify-content:center;
+  gap:60px;
+  margin:-35px 0 25px;
+}
+
+.wc-flag{
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  overflow:hidden;
+  box-shadow:0 0 15px rgba(0,0,0,.2);
+}
+
+.wc-flag img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.wc-countdown{
+  margin-top:25px;
+  text-align:center;
+}
+
+.wc-days-number{
+  font-family:'DINWC',sans-serif;
+  font-size:110px;
+  line-height:.9;
+  font-weight:900;
+  color:#000;
+}
+
+.wc-days-label{
+  font-family:'DINWC',sans-serif;
+  font-size:42px;
+  line-height:1;
+  color:#1020ff;
+  text-transform:uppercase;
+	margin:-7px 0 25px;
+}
+	
+.wc-cta{
+  margin-top:20px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.wc-cta img{
+  width:350px;
+  height:auto;
+  display:block;
+}
+
+.wc-fixture .team,
+.wc-fixture .versus{
+  font-family:'DINWC',sans-serif;
+}
+
+.wc-fixture .team{
+  font-size:48px;
+  line-height:.9;
+  text-transform:uppercase;
+}
+
+.wc-fixture .versus{
+  font-size:24px;
+  line-height:1;
+}
+
+.wc-qr{
+  display:flex;
+  justify-content:center;
+  margin-top:25px;
+}
+
+.wc-qr img{
+  width:230px;
+  height:auto;
+  display:block;
+}
+
+.wc-book{
+  margin-top:20px;
+  font-family:'DINWC',sans-serif;
+  font-size:42px;
+  line-height:.9;
+  text-align:center;
+}	
+.wc-slide-2 .wc-fixture{
+  margin-top:-20px;
+}
+
+/**************** WC ANIMATIONS ****************/
+.wc-fixture-animate{
+  animation:
+    wcFixtureIn .7s cubic-bezier(.22,1,.36,1);
+
+  animation-delay:.55s;
+  animation-fill-mode:both;
+}
+
+@keyframes wcFixtureIn{
+
+  0%{
+    opacity:0;
+    transform:translateY(35px);
+  }
+
+  100%{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+}
+
+/* COUNTDOWN */
+
+.wc-countdown-animate{
+  animation:
+    wcCountdownIn .9s cubic-bezier(.22,1,.36,1);
+
+  animation-delay:.9s;
+  animation-fill-mode:both;
+}
+
+@keyframes wcCountdownIn{
+
+  0%{
+    opacity:0;
+    transform:scale(.6);
+  }
+
+  70%{
+    transform:scale(1.06);
+  }
+
+  100%{
+    opacity:1;
+    transform:scale(1);
+  }
+
+}
+
+/* CTA */
+
+.wc-cta-animate{
+  animation:
+    wcCTAIn .7s ease-out;
+
+  animation-delay:1.25s;
+  animation-fill-mode:both;
+}
+
+@keyframes wcCTAIn{
+
+  0%{
+    opacity:0;
+    transform:translateY(30px);
+  }
+
+  100%{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+}
+	
+.wc-slide-1{
+  position:relative;
+  overflow:hidden;
+}
+
+.wc-img{
+  position:relative;
+  z-index:1;
+}
+
+.infowc{
+  position:relative;
+  z-index:2;
+}
+
+.wc-confetti{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  overflow:hidden;
+  z-index:999;
+  width:450px;
+  height:950px;
+}
+	
+/* HERO */
+
+.wc-img{
+  animation:
+    wcHeroReveal .8s cubic-bezier(.22,1,.36,1);
+}
+
+@keyframes wcHeroReveal{
+
+  0%{
+    opacity:0;
+    transform:scale(1.08);
+  }
+
+  100%{
+    opacity:1;
+    transform:scale(1);
+  }
+
+}
+
+/* FLAGS */
+
+.wc-flags-animate{
+  animation:
+    wcFlagsIn .8s cubic-bezier(.22,1,.36,1);
+
+  animation-delay:.25s;
+  animation-fill-mode:both;
+}
+
+@keyframes wcFlagsIn{
+
+  0%{
+    opacity:0;
+    transform:
+      translateY(50px)
+      scale(.7);
+  }
+
+  100%{
+    opacity:1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+
+}
+
+/**************** WC SLIDE 3 ****************/
+
+.wc-slide-3 .infowc{
+  padding-top:10px;
+}
+
+.wc-watch{
+  font-family:'DINWC',sans-serif;
+  text-align:center;
+  line-height:.82;
+  margin-top:-10px;
+}
+
+.watch-blue{
+  font-size:72px;
+  color:#1020ff;
+}
+
+.watch-red{
+  font-size:78px;
+  color:#e10600;
+}
+
+.watch-black{
+  font-size:72px;
+  color:#000;
+}
+
+.wc-features{
+  margin-top:45px;
+
+  font-family:'DINWC',sans-serif;
+
+  font-size:28px;
+  line-height:1.1;
+
+  text-align:center;
+}
+
+.wc-slogan{
+  margin-top:40px;
+
+  font-family:'DINWC',sans-serif;
+
+  font-size:34px;
+  text-align:center;
+}
+
+.wc-reminder{
+  margin-top:40px;
+
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+  gap:14px;
+
+  text-align:center;
+}
+
+.wc-reminder-number{
+  font-family:'DINWC',sans-serif;
+  font-size:58px;
+  line-height:1;
+  color:#e10600;
+}
+
+.wc-reminder-label{
+  font-family:'DINWC',sans-serif;
+  font-size:58px;
+  line-height:1;
+  color:#1020ff;
+
+  margin-bottom:8px;
+}
+
+/**************** NEW CONFETTI ****************/
+
+	.wc-slide{
+  position:relative;
+  overflow:hidden;
+  min-height:1000px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #f5f7ff 45%,
+      #eef1ff 100%
+    );
+}
+
+.wc-confetti{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:2;
+}
+
+.wc-img{
+  position:relative;
+  z-index:1;
+}
+
+.infowc{
+  position:relative;
+  z-index:3;
+}
+
+.confetti{
+  width:14px;
+  height:14px;
+
+  position:absolute;
+  top:-20px;
+
+  opacity:.9;
+
+  animation:
+    confettiFall 7s linear infinite;
+
+  transform-origin:center;
+}
+
+/* England colours */
+
+.confetti:nth-child(1){
+  background:#ffffff;
+  left:8%;
+  animation-delay:0s;
+}
+
+.confetti:nth-child(2){
+  background:#e10600;
+  left:18%;
+  animation-delay:-1s;
+}
+
+.confetti:nth-child(3){
+  background:#1020ff;
+  left:28%;
+  animation-delay:-2s;
+}
+
+.confetti:nth-child(4){
+  background:#ffffff;
+  left:38%;
+  animation-delay:-3s;
+}
+
+.confetti:nth-child(5){
+  background:#e10600;
+  left:48%;
+  animation-delay:-1.5s;
+}
+
+.confetti:nth-child(6){
+  background:#1020ff;
+  left:58%;
+  animation-delay:-2.5s;
+}
+
+.confetti:nth-child(7){
+  background:#ffffff;
+  left:68%;
+  animation-delay:-4s;
+}
+
+.confetti:nth-child(8){
+  background:#e10600;
+  left:78%;
+  animation-delay:-2s;
+}
+
+.confetti:nth-child(9){
+  background:#1020ff;
+  left:88%;
+  animation-delay:-3.5s;
+}
+
+.confetti:nth-child(10){
+  background:#ffffff;
+  left:96%;
+  animation-delay:-5s;
+}
+
+@keyframes confettiFall{
+
+  0%{
+    transform:
+      translateY(-10vh)
+      rotate(0deg);
+  }
+
+  25%{
+    transform:
+      translate(-10px,25vh)
+      rotate(180deg);
+  }
+
+  50%{
+    transform:
+      translate(12px,55vh)
+      rotate(360deg);
+  }
+
+  75%{
+    transform:
+      translate(-14px,80vh)
+      rotate(540deg);
+  }
+
+  100%{
+    transform:
+      translate(10px,120vh)
+      rotate(720deg);
+  }
+
+}
 
 .competition[data-competition*="Six Nations"] img { height: 70px; }
 .competition[data-competition*="BetMGM Premier League"] img { height: 100px; }
@@ -117,7 +605,10 @@ let sliderInterval = null;
 let lastUpdated = null;
 let currentMatches = [];
 let imageVersion = Date.now();
-    
+	
+let latestEnglandWorldCup = null;
+let worldCupTakeover = false;
+	
 const MASTER_EPOCH =
   new Date("2026-01-01T00:00:00Z").getTime();
 
@@ -128,30 +619,134 @@ function now(){
 function getElapsedTime(){
   return now() - MASTER_EPOCH;
 }
+	
+const FLAG_BASE =
+  "https://totalmixcreative.github.io/graphics/flags/";
+
+const FLAG_MAP = {
+
+  // UEFA
+  "England": "gb-eng",
+  "Scotland": "gb-sct",
+  "France": "fr",
+  "Germany": "de",
+  "Spain": "es",
+  "Portugal": "pt",
+  "Netherlands": "nl",
+  "Belgium": "be",
+  "Croatia": "hr",
+  "Norway": "no",
+  "Sweden": "se",
+  "Switzerland": "ch",
+  "Austria": "at",
+  "Turkey": "tr",
+  "Bosnia and Herzegovina": "ba",
+  "Czech Republic": "cz",
+
+  // CONMEBOL
+  "Argentina": "ar",
+  "Brazil": "br",
+  "Uruguay": "uy",
+  "Paraguay": "py",
+  "Colombia": "co",
+  "Ecuador": "ec",
+
+  // CONCACAF
+  "USA": "us",
+  "Canada": "ca",
+  "Mexico": "mx",
+  "Panama": "pa",
+  "Curacao": "cw",
+  "Haiti": "ht",
+
+  // AFC
+  "Japan": "jp",
+  "South Korea": "kr",
+  "Australia": "au",
+  "Iran": "ir",
+  "Iraq": "iq",
+  "Saudi Arabia": "sa",
+  "Qatar": "qa",
+  "Jordan": "jo",
+  "Uzbekistan": "uz",
+
+  // CAF
+  "Morocco": "ma",
+  "South Africa": "za",
+  "Egypt": "eg",
+  "Algeria": "dz",
+  "Tunisia": "tn",
+  "Senegal": "sn",
+  "Ghana": "gh",
+  "Ivory Coast": "ci",
+  "DR Congo": "cd",
+  "Cape Verde": "cv",
+
+  // OFC
+  "New Zealand": "nz"
+
+};
 
 /**************** FETCH DATA ****************/
 async function fetchData() {
-  try {
-    const res = await fetch(API + "?_=" + Date.now());
-    const data = await res.json();
 
-    const newMatches = JSON.stringify(data.matches || []);
-    const oldMatches = JSON.stringify(currentMatches || []);
+  try {
+
+    const res =
+      await fetch(API + "?_=" + Date.now());
+
+    const data =
+      await res.json();
+
+    const newMatches =
+      JSON.stringify(data.matches || []);
+
+    const oldMatches =
+      JSON.stringify(currentMatches || []);
 
     if (newMatches !== oldMatches) {
 
       lastUpdated = data.updated;
+
       imageVersion = data.updated;
-      currentMatches = data.matches || [];
-      render(currentMatches);
+
+      currentMatches =
+  (data.matches || []).filter(m => {
+
+    const isWorldCup =
+      /world cup/i.test(
+        m.competition || ""
+      );
+
+    return !isWorldCup;
+
+  });
+
+      latestEnglandWorldCup =
+        data.englandWorldCup || null;
+
+      // Only render normal sidebar
+      // if takeover isn't active
+      if(!worldCupTakeover){
+
+        render(currentMatches);
+
+lastSidebarIndex = -1;
+
+      }
 
     }
 
   } catch (err) {
-    console.error("Fetch error:", err);
-  }
-}
 
+    console.error(
+      "Fetch error:",
+      err
+    );
+
+  }
+
+}
 /**************** TIME LOGIC ****************/
 function calculateLabel(m){
 
@@ -191,6 +786,7 @@ function calculateLabel(m){
 function render(matches) {
   const slider = document.getElementById("slider");
   slider.innerHTML = "";
+	lastSidebarIndex = -1;
 
   matches.forEach((m, i) => {
     const displayLabel = calculateLabel(m);
@@ -239,6 +835,305 @@ function render(matches) {
 
 }
 
+function renderWorldCupTakeover(match){
+	
+const homeFlag =
+  `${FLAG_BASE}${FLAG_MAP[match.home]}.svg`;
+
+const awayFlag =
+  `${FLAG_BASE}${FLAG_MAP[match.away]}.svg`;
+	
+const countdownParts =
+  match.countdown.split(" ");
+
+const countdownNumber =
+  countdownParts[0];
+
+const countdownLabel =
+  countdownParts.slice(1).join(" ");
+
+  const slider =
+    document.getElementById("slider");
+
+  slider.innerHTML = "";
+
+  const card =
+    document.createElement("div");
+
+  card.className = "card";
+
+  card.innerHTML = `
+
+<!-- SLIDE 1 -->
+<div class="wc-slide wc-slide-1">
+
+
+  <div class="wc-img"
+    style="
+      background-image:url(
+        'https://totalmixcreative.github.io/graphics/wchero.png'
+      )">
+  </div>
+
+<div class="wc-confetti">
+
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+
+</div>
+
+  <div class="infowc wc-animate">
+
+    <div class="wc-flags wc-flags-animate">
+
+      <div class="wc-flag">
+        <img src="${homeFlag}">
+      </div>
+
+      <div class="wc-flag">
+        <img src="${awayFlag}">
+      </div>
+
+    </div>
+
+    <div class="fixture wc-fixture wc-fixture-animate">
+
+      <div class="team home">
+        ${match.home}
+      </div>
+
+      <div class="versus">v</div>
+
+      <div class="team away">
+        ${match.away}
+      </div>
+
+    </div>
+
+    <div class="wc-countdown wc-countdown-animate">
+
+      <div class="wc-days-number">
+        ${countdownNumber}
+      </div>
+
+      <div class="wc-days-label">
+        ${countdownLabel}
+      </div>
+
+    </div>
+
+    <div class="wc-cta wc-cta-animate">
+      <img
+        src="https://totalmixcreative.github.io/graphics/comeonengland.png"
+        alt="Come On England"
+      >
+    </div>
+
+  </div>
+
+</div>
+
+<!-- SLIDE 2 -->
+<div class="wc-slide wc-slide-2"
+     style="display:none;">
+
+  <div class="wc-img"
+    style="
+      background-image:url(
+        'https://totalmixcreative.github.io/graphics/wchero.png'
+      )">
+  </div>
+<div class="wc-confetti">
+
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+
+</div>
+
+  <div class="infowc">
+
+    <div class="fixture wc-fixture">
+
+      <div class="team home">
+        ${match.home}
+      </div>
+
+      <div class="versus">v</div>
+
+      <div class="team away">
+        ${match.away}
+      </div>
+
+    </div>
+
+    <div class="wc-qr">
+      <img
+        src="https://totalmixcreative.github.io/graphics/QR.png"
+        alt="QR Code"
+      >
+    </div>
+
+    <div class="wc-book">
+      SCAN THIS
+      <br>
+      TO BOOK YOUR TABLE
+    </div>
+
+  </div>
+
+</div>
+
+<!-- SLIDE 3 -->
+<div class="wc-slide wc-slide-3"
+     style="display:none;">
+
+  <div class="wc-img"
+    style="
+      background-image:url(
+        'https://totalmixcreative.github.io/graphics/wchero.png'
+      )">
+  </div>
+
+<div class="wc-confetti">
+
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+  <div class="confetti"></div>
+
+</div>
+
+  <div class="infowc">
+
+    <div class="wc-watch">
+
+      <div class="watch-blue">
+        WATCH
+      </div>
+
+      <div class="watch-red">
+        ENGLAND
+      </div>
+
+      <div class="watch-black">
+        HERE
+      </div>
+
+    </div>
+
+    <div class="wc-features">
+
+      • OVER 20 SCREENS<br>
+
+      • FULL MATCH ATMOSPHERE<br>
+
+      • 100” OUTDOOR TV<br>
+
+      • OPEN LATE EVERY GAME
+
+    </div>
+
+    <div class="wc-slogan">
+      NOBODY DOES IT BETTER!
+    </div>
+
+    <div class="wc-reminder">
+
+  <div class="wc-reminder-number">
+    ${countdownNumber}
+  </div>
+
+  <div class="wc-reminder-label">
+    ${countdownLabel}
+  </div>
+
+</div>
+
+  </div>
+
+</div>
+
+`;
+
+  card.style.transform = "translateX(0)";
+  card.style.opacity = "1";
+
+  slider.appendChild(card);
+	
+const slide1 =
+  card.querySelector(".wc-slide-1");
+
+const slide2 =
+  card.querySelector(".wc-slide-2");
+
+const slide3 =
+  card.querySelector(".wc-slide-3");
+
+setTimeout(() => {
+
+  slide1.style.display = "none";
+  slide2.style.display = "block";
+
+}, 10000);
+
+setTimeout(() => {
+
+  slide2.style.display = "none";
+  slide3.style.display = "block";
+
+}, 20000);
+
+}	
+	
+/**************** WC TIMER ****************/
+
+setInterval(() => {
+
+  if(!latestEnglandWorldCup) return;
+
+  worldCupTakeover = true;
+
+  renderWorldCupTakeover(
+    latestEnglandWorldCup
+  );
+
+  setTimeout(() => {
+
+    worldCupTakeover = false;
+
+    render(currentMatches);
+
+  }, 30000);
+
+}, 240000);
+
+
+	
 /**************** SLIDER ****************/
 let lastSidebarIndex = -1;
 
@@ -282,8 +1177,10 @@ setInterval(() => {
   const cards = document.querySelectorAll(".card");
 
   cards.forEach((card, index) => {
-    const m = currentMatches[index];
-    if (!m) return;
+    if(worldCupTakeover) return;
+
+const m = currentMatches[index];
+if (!m) return;
 
     const displayLabel = calculateLabel(m);
     const timeDiv = card.querySelector(".time");
