@@ -189,6 +189,48 @@ const ANIMATION_DURATION = 600;
 let items = [];
 let currentIndex = 0;
 let rotationStarted = false;
+	
+async function calculateStartingIndex(){
+
+  const elapsed =
+    now() - MASTER_EPOCH;
+
+  let totalPlaylistDuration = 0;
+
+  const durations = [];
+
+  for(const item of items){
+
+    const duration =
+      await getItemDuration(item);
+
+    durations.push(duration);
+
+    totalPlaylistDuration += duration;
+
+  }
+
+  const playlistPosition =
+    elapsed % totalPlaylistDuration;
+
+  let accumulated = 0;
+
+  for(let i = 0; i < durations.length; i++){
+
+    accumulated += durations[i];
+
+    if(playlistPosition < accumulated){
+
+      currentIndex = i;
+      return;
+
+    }
+
+  }
+
+  currentIndex = 0;
+
+}
 
 /**************** LOAD DATA ****************/
 
@@ -313,7 +355,7 @@ async function playRotation(){
         imageIndex:imageIndex,
         headline:item.headline,
         subline:item.subline,
-        timestamp:Date.now()
+        timestamp:now()
       })
     );
 
@@ -360,7 +402,9 @@ async function init(){
 
   await loadData();
 
-  playRotation();
+await calculateStartingIndex();
+
+playRotation();
 
   setInterval(loadData,120000);
 
