@@ -164,13 +164,62 @@ object-fit:cover;
 
   pointer-events:none;
 
+  opacity:0;
+
 }
 
-#nightBumper iframe{
+#nightBumper.show{
 
-  width:100%;
-  height:100%;
-  border:none;
+  animation:
+    nightBumperIn 0.7s
+    cubic-bezier(0.2,0.8,0.2,1)
+    forwards;
+
+}
+
+#nightBumper.hide{
+
+  animation:
+    nightBumperOut 0.6s
+    ease forwards;
+
+}
+
+@keyframes nightBumperIn{
+
+  0%{
+    opacity:0;
+    transform:scale(0.8)
+      translateY(60px);
+  }
+
+  60%{
+    opacity:1;
+    transform:scale(1.05)
+      translateY(-10px);
+  }
+
+  100%{
+    opacity:1;
+    transform:scale(1)
+      translateY(0);
+  }
+
+}
+
+@keyframes nightBumperOut{
+
+  0%{
+    opacity:1;
+    transform:scale(1)
+      translateY(0);
+  }
+
+  100%{
+    opacity:0;
+    transform:scale(1.03)
+      translateY(-20px);
+  }
 
 }
 	
@@ -319,15 +368,67 @@ ANIMATIONS
     playsinline>
   </video>
 
-  <div id="nightBumper">
+<div id="nightBumper">
 
-    <iframe
-      id="bumperFrame"
-      src=""
-      loading="eager">
-    </iframe>
+<svg
+  id="nightBumperSVG"
+  width="100%"
+  height="100%"
+  viewBox="0 0 1920 1080">
 
-  </div>
+<defs>
+
+<linearGradient id="nightGrad">
+
+  <animate
+    attributeName="x1"
+    values="0%;100%;0%"
+    dur="20s"
+    repeatCount="indefinite"/>
+
+  <animate
+    attributeName="x2"
+    values="100%;0%;100%"
+    dur="20s"
+    repeatCount="indefinite"/>
+
+  <stop
+    id="nightGradStart"
+    offset="0%"
+    stop-color="#ff2a8a"/>
+
+  <stop
+    id="nightGradEnd"
+    offset="100%"
+    stop-color="#ff7a18"/>
+
+</linearGradient>
+
+</defs>
+
+<rect
+  width="100%"
+  height="100%"
+  fill="url(#nightGrad)"/>
+
+<text
+  id="nightBumperText"
+  x="50%"
+  y="50%"
+  text-anchor="middle"
+  dominant-baseline="middle"
+  font-size="170"
+  font-family="Robuck"
+  fill="white"
+  letter-spacing="4">
+
+  CARBON NIGHTS
+
+</text>
+
+</svg>
+
+</div>
 
 </div>
 	
@@ -494,8 +595,7 @@ function buildPlaylistTimeline(){
 
   /* TRIGGER BUMPER */
 
-  bumperFrame.contentWindow
-    ?.showLogoStinger?.();
+  showNightBumper();
 
   /* SWAP VIDEO UNDER BUMPER */
 
@@ -528,12 +628,32 @@ const nightVideo = document.getElementById("nightVideo");
 const nightBumper =
 document.getElementById("nightBumper");
 
-const bumperFrame =
-document.getElementById("bumperFrame");
 const nightLayer = document.getElementById("nightMode");
 let currentNightVideo = "";
 let nightActive = false;
 let playlistSyncInterval = null;
+	
+
+function showNightBumper(){
+
+  const bumper =
+    document.getElementById("nightBumper");
+
+  bumper.classList.remove("show");
+  bumper.classList.remove("hide");
+
+  void bumper.offsetWidth;
+
+  bumper.classList.add("show");
+
+  setTimeout(()=>{
+
+    bumper.classList.remove("show");
+    bumper.classList.add("hide");
+
+  },2500);
+
+}
 
 /* ============================
 NIGHT MODE SCHEDULE
@@ -639,6 +759,14 @@ CHECK EVERY 30 SECONDS
 ============================ */
 
 async function init(){
+	
+document.getElementById(
+  "nightBumperText"
+).textContent =
+
+  venue === "mill"
+    ? "THE MILL NIGHTS"
+    : "CARBON NIGHTS";
 
   await syncServerTime();
 
@@ -646,9 +774,6 @@ async function init(){
   setInterval(syncServerTime,300000);
 
   await loadPlaylistManifest();
-
-bumperFrame.src =
-  "https://totalmixcreative.github.io/graphics/bumper.html?venue=" + venue;
 
   /* refresh manifest every 10 mins */
   setInterval(loadPlaylistManifest,600000);
