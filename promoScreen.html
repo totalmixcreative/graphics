@@ -95,25 +95,56 @@ let lastTimestamp = null;
 function playAnimation(newImage){
 
   const wrapper = document.getElementById("promoWrapper");
-  const img = document.getElementById("promoImage");
+  const container =
+document.getElementById("promoContainer");
 
-  const preload = new Image();
+container.innerHTML = "";
 
-  preload.onload = () => {
+const ext =
+newImage.split('.').pop().toLowerCase();
 
-    img.src = preload.src;
+if(ext === "mp4"){
 
-    wrapper.className="";
-    wrapper.classList.add("slide-in");
+  const video =
+    document.createElement("video");
 
-    setTimeout(()=>{
-      wrapper.classList.remove("slide-in");
-      wrapper.classList.add("slide-out");
-    }, HOLD_DURATION);
+  video.src = BASE + newImage;
 
-  };
+  video.autoplay = true;
+  video.muted = true;
+  video.playsInline = true;
+  video.loop = false;
 
-  preload.src = BASE + newImage;
+  video.style.width = "100%";
+  video.style.height = "100%";
+  video.style.objectFit = "cover";
+
+  container.appendChild(video);
+
+}else{
+
+  const img =
+    document.createElement("img");
+
+  img.src = BASE + newImage;
+
+  img.style.width = "100%";
+  img.style.height = "100%";
+  img.style.objectFit = "cover";
+
+  container.appendChild(img);
+
+}
+
+wrapper.className="";
+wrapper.classList.add("slide-in");
+
+setTimeout(()=>{
+
+  wrapper.classList.remove("slide-in");
+  wrapper.classList.add("slide-out");
+
+}, HOLD_DURATION);
 
 }
 
