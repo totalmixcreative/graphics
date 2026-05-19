@@ -21,14 +21,25 @@ body {
   position: fixed;
   inset: 0;
   opacity: 0;
+  pointer-events:none;
 }
 
 .show {
-  animation: stingerIn 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+
+  opacity:1;
+
+  animation:
+    stingerIn 0.7s cubic-bezier(0.2,0.8,0.2,1) forwards;
+
 }
 
 .hide {
-  animation: stingerOut 0.6s ease forwards;
+
+  opacity:0;
+
+  animation:
+    stingerOut 0.6s ease forwards;
+
 }
 
 @keyframes stingerIn {
@@ -123,8 +134,6 @@ body {
 </div>
 
 <script>
-let visible = false;
-let showTimestamp = 0;
 
 let lastTimeLeft = 0;
 
@@ -173,7 +182,7 @@ function showLogoStinger() {
 window.showLogoStinger =
   showLogoStinger;
 
-function triggerAnimation() {
+function triggerAnimation(){
 
   const wrapper =
     document.getElementById("wrapper");
@@ -183,11 +192,9 @@ function triggerAnimation() {
 
   void wrapper.offsetWidth;
 
+  wrapper.style.opacity = "1";
+
   wrapper.classList.add("show");
-
-  visible = true;
-
-  showTimestamp = Date.now();
 
   setTimeout(()=>{
 
@@ -195,9 +202,13 @@ function triggerAnimation() {
 
     wrapper.classList.add("hide");
 
-    visible = false;
+  },2500);
 
-  },3000);
+  setTimeout(()=>{
+
+    wrapper.style.opacity = "0";
+
+  },3200);
 
 }
 
