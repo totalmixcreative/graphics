@@ -533,6 +533,7 @@ document.getElementById("bumperFrame");
 const nightLayer = document.getElementById("nightMode");
 let currentNightVideo = "";
 let nightActive = false;
+let playlistSyncInterval = null;
 
 /* ============================
 NIGHT MODE SCHEDULE
@@ -596,6 +597,9 @@ function updateMode(){
     if(!nightActive){
 
       nightActive = true;
+      
+	 playlistSyncInterval =
+  setInterval(syncPlaylistVideo,1000);
 
       nightLayer.style.transform = "translateX(0)";
 
@@ -619,6 +623,8 @@ function updateMode(){
   }else if(nightActive){
 
     nightActive = false;
+	  
+	  clearInterval(playlistSyncInterval);
 
     nightLayer.style.transform = "translateX(100%)";
 
