@@ -614,7 +614,7 @@ function buildPlaylistTimeline(){
       { once:true }
     );
 
-  },700);
+  },450);
 
 }
 
@@ -651,7 +651,7 @@ function showNightBumper(){
     bumper.classList.remove("show");
     bumper.classList.add("hide");
 
-  },2500);
+  },1600);
 
 }
 
@@ -753,6 +753,29 @@ function updateMode(){
   }
 
 }
+	
+let nightHue = 0;
+
+setInterval(()=>{
+
+  nightHue =
+    (nightHue + 1) % 360;
+
+  const color1 =
+    `hsl(${nightHue},90%,55%)`;
+
+  const color2 =
+    `hsl(${(nightHue+40)%360},90%,55%)`;
+
+  document
+    .getElementById("nightGradStart")
+    .setAttribute("stop-color",color1);
+
+  document
+    .getElementById("nightGradEnd")
+    .setAttribute("stop-color",color2);
+
+},100);
 
 /* ============================
 CHECK EVERY 30 SECONDS
