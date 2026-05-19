@@ -84,117 +84,188 @@ body{
 const BASE =
 "https://totalmixcreative.github.io/graphics/promos/";
 
-const HOLD_DURATION=6000;
-const ANIMATION_DURATION=600;
+const IMAGE_DURATION = 6000;
+const ANIMATION_DURATION = 600;
 
-let currentImage=null;
-let serverOffset = 0;
+let currentMedia = null;
 let lastTimestamp = null;
+let currentTimeout = null;
 
+/* =========================
+   PLAY MEDIA
+========================= */
 
-function playAnimation(newImage){
+function playAnimation(newMedia){
 
-  const wrapper = document.getElementById("promoWrapper");
+  const wrapper =
+    document.getElementById("promoWrapper");
+
   const container =
-document.getElementById("promoContainer");
+    document.getElementById("promoContainer");
 
-container.innerHTML = "";
+  /* CLEANUP */
 
-const ext =
-newImage.split('.').pop().toLowerCase();
+  if(currentTimeout){
+    clearTimeout(currentTimeout);
+  }
 
-if(ext === "mp4"){
+  const oldVideo =
+    container.querySelector("video");
 
-  const video =
-    document.createElement("video");
+  if(oldVideo){
+    oldVideo.pause();
+    oldVideo.src = "";
+    oldVideo.load();
+  }
 
-  video.src = BASE + newImage;
+  container.innerHTML = "";
 
-  video.autoplay = true;
-  video.muted = true;
-  video.playsInline = true;
-  video.loop = false;
+  /* DETECT FILE TYPE */
 
-  video.style.width = "100%";
-  video.style.height = "100%";
-  video.style.objectFit = "cover";
+  const ext =
+    newMedia.split(".").pop().toLowerCase();
 
-  container.appendChild(video);
+  let duration = IMAGE_DURATION;
 
-}else{
+  /* =========================
+     VIDEO
+  ========================= */
 
-  const img =
-    document.createElement("img");
+  if(ext === "mp4" || ext === "webm"){
 
-  img.src = BASE + newImage;
+    const video =
+      document.createElement("video");
 
-  img.style.width = "100%";
-  img.style.height = "100%";
-  img.style.objectFit = "cover";
+    video.src = BASE + newMedia;
 
-  container.appendChild(img);
+    video.autoplay = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.loop = false;
+    video.preload = "auto";
+
+    video.style.width = "100%";
+    video.style.height = "100%";
+    video.style.objectFit = "cover";
+
+    container.appendChild(video);
+
+    video.onloadedmetadata = () => {
+
+      duration =
+        (video.duration * 1000)
+        - ANIMATION_DURATION;
+
+      currentTimeout = setTimeout(()=>{
+
+        wrapper.classList.remove("slide-in");
+        wrapper.classList.add("slide-out");
+
+      }, duration);
+
+    };
+
+  }
+
+  /* =========================
+     IMAGE
+  ========================= */
+
+  else{
+
+    const img =
+      document.createElement("img");
+
+    img.src = BASE + newMedia;
+
+    img.style.width = "100%";
+    img.style.height = "100%";
+    img.style.objectFit = "cover";
+
+    container.appendChild(img);
+
+    currentTimeout = setTimeout(()=>{
+
+      wrapper.classList.remove("slide-in");
+      wrapper.classList.add("slide-out");
+
+    }, IMAGE_DURATION);
+
+  }
+
+  /* =========================
+     ANIMATION IN
+  ========================= */
+
+  wrapper.className = "";
+
+  void wrapper.offsetWidth;
+
+  wrapper.classList.add("slide-in");
 
 }
 
-wrapper.className="";
-wrapper.classList.add("slide-in");
-
-setTimeout(()=>{
-
-  wrapper.classList.remove("slide-in");
-  wrapper.classList.add("slide-out");
-
-}, HOLD_DURATION);
-
-}
+/* =========================
+   UPDATE FROM STORAGE
+========================= */
 
 function updateFromStorage(){
-	
+
   const promo =
-    JSON.parse(localStorage.getItem("currentPromo"));
+    JSON.parse(
+      localStorage.getItem("currentPromo")
+    );
 
   if(!promo || !promo.image) return;
 
-  /* APPLY SERVER OFFSET FIRST */
+  const nextMedia =
+    Array.isArray(promo.image)
+    ? promo.image[promo.imageIndex]
+    : promo.image;
 
-  serverOffset = promo.serverOffset || 0;
-
-  const nextImage =
-  Array.isArray(promo.image)
-  ? promo.image[promo.imageIndex]
-  : promo.image;
-
-  if(!nextImage) return;
+  if(!nextMedia) return;
 
   if(
-  nextImage === currentImage &&
-  promo.timestamp === lastTimestamp
-){
-  return;
-}
-
-lastTimestamp = promo.timestamp;
-
-  currentImage = nextImage;
-
-  playAnimation(nextImage);
-
-}
-
-/* INSTANT SYNC */
-window.addEventListener("storage",(e)=>{
-  if(e.key==="currentPromo"){
-    updateFromStorage();
+    nextMedia === currentMedia &&
+    promo.timestamp === lastTimestamp
+  ){
+    return;
   }
+
+  lastTimestamp = promo.timestamp;
+
+  currentMedia = nextMedia;
+
+  playAnimation(nextMedia);
+
+}
+
+/* =========================
+   STORAGE SYNC
+========================= */
+
+window.addEventListener("storage",(e)=>{
+
+  if(e.key === "currentPromo"){
+
+    updateFromStorage();
+
+  }
+
 });
 
-/* startup */
+/* =========================
+   STARTUP
+========================= */
+
 updateFromStorage();
 
-/* KEEP IN SYNC WITH LT */
+/* =========================
+   FALLBACK POLLING
+========================= */
+
 setInterval(updateFromStorage,500);
-	
-	
+
 </script>
 
 </body>

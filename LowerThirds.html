@@ -175,22 +175,18 @@ function now(){
 const ENDPOINT_URL =
 "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";
 
-const HOLD_DURATION = 6000;
+const BASE =
+"https://totalmixcreative.github.io/graphics/promos/";
+
+const IMAGE_DURATION = 6000;
 const ANIMATION_DURATION = 600;
-const TOTAL_DURATION = HOLD_DURATION + ANIMATION_DURATION;
-const MASTER_EPOCH =
-new Date("2026-01-01T00:00:00Z").getTime();
-    
-function getElapsedTime(){
-  return now().getTime() - MASTER_EPOCH;
-}
 
 /**************** STATE ****************/
 
 let items = [];
-let lastTimelineIndex = -1;
-    
-    
+let currentIndex = 0;
+let rotationStarted = false;
+
 /**************** LOAD DATA ****************/
 
 async function loadData(){
@@ -205,113 +201,163 @@ async function loadData(){
 
     items = data.lowerThird || [];
 
-    if(items.length && !rotationStarted){
+  }catch(err){
 
-      rotationStarted = true;
+    console.error(err);
 
-index =
-Math.floor(getElapsedTime() / TOTAL_DURATION)
-% items.length;
+  }
+
+}
+
+/**************** GET MEDIA DURATION ****************/
+
+async function getItemDuration(item){
+
+  return new Promise((resolve)=>{
+
+    const file =
+      Array.isArray(item.image)
+      ? item.image[0]
+      : item.image;
+
+    if(!file){
+
+      resolve(IMAGE_DURATION);
+      return;
 
     }
 
-  }catch(err){
-    console.error(err);
-  }
+    const ext =
+      file.split(".").pop().toLowerCase();
+
+    /* IMAGE */
+
+    if(ext !== "mp4" && ext !== "webm"){
+
+      resolve(IMAGE_DURATION);
+      return;
+
+    }
+
+    /* VIDEO */
+
+    const video =
+      document.createElement("video");
+
+    video.preload = "metadata";
+
+    video.onloadedmetadata = ()=>{
+
+      resolve(video.duration * 1000);
+
+    };
+
+    video.onerror = ()=>{
+
+      resolve(IMAGE_DURATION);
+
+    };
+
+    video.src = BASE + file;
+
+  });
 
 }
 
-/**************** ROTATION ****************/
+/**************** PLAYLIST ENGINE ****************/
 
-function rotate(){
+async function playRotation(){
 
-  if(!items.length) return;
+  if(rotationStarted) return;
 
-  const timelineIndex =
-    Math.floor(getElapsedTime()/TOTAL_DURATION);
+  rotationStarted = true;
 
-  const newIndex =
-    timelineIndex % items.length;
+  while(true){
 
-  if(newIndex === lastTimelineIndex)
-    return;
+    if(!items.length){
 
-  lastTimelineIndex = newIndex;
+      await new Promise(r=>setTimeout(r,1000));
+      continue;
 
-  const item = items[newIndex];
+    }
 
-  const wrapper =
-    document.getElementById("text-wrapper");
+    const item = items[currentIndex];
 
-  const headline =
-    document.getElementById("headline");
+    const wrapper =
+      document.getElementById("text-wrapper");
 
-  const subline =
-    document.getElementById("subline");
+    const headline =
+      document.getElementById("headline");
 
-  headline.textContent =
-    item.headline || "";
+    const subline =
+      document.getElementById("subline");
 
-  subline.textContent =
-    item.subline || "";
+    headline.textContent =
+      item.headline || "";
 
-  const imageIndex =
-    Array.isArray(item.image)
-    ? timelineIndex % item.image.length
-    : 0;
+    subline.textContent =
+      item.subline || "";
 
-  localStorage.setItem(
-    "currentPromo",
-    JSON.stringify({
-      image: item.image,
-      imageIndex: imageIndex,
-      headline: item.headline,
-      subline: item.subline,
-      timestamp: getElapsedTime()
-    })
-  );
+    const imageIndex =
+      Array.isArray(item.image)
+      ? Math.floor(Math.random() * item.image.length)
+      : 0;
 
-  wrapper.classList.remove("slide-in");
-  wrapper.classList.remove("slide-out");
+    localStorage.setItem(
+      "currentPromo",
+      JSON.stringify({
+        image:item.image,
+        imageIndex:imageIndex,
+        headline:item.headline,
+        subline:item.subline,
+        timestamp:Date.now()
+      })
+    );
 
-  void wrapper.offsetWidth;
-
-  wrapper.classList.add("slide-in");
-
-}
-
-/**************** POLLING ****************/
-
-setInterval(()=>{
-
-  if(!items.length) return;
-
-  rotate();
-
-  const wrapper =
-    document.getElementById("text-wrapper");
-
-  const elapsedInCycle =
-    getElapsedTime() % TOTAL_DURATION;
-
-  if(
-    elapsedInCycle >= HOLD_DURATION &&
-    !wrapper.classList.contains("slide-out")
-  ){
     wrapper.classList.remove("slide-in");
-    wrapper.classList.add("slide-out");
+    wrapper.classList.remove("slide-out");
+
+    void wrapper.offsetWidth;
+
+    wrapper.classList.add("slide-in");
+
+    const duration =
+      await getItemDuration(item);
+
+    setTimeout(()=>{
+
+      wrapper.classList.remove("slide-in");
+      wrapper.classList.add("slide-out");
+
+    }, duration - ANIMATION_DURATION);
+
+    await new Promise(r=>
+      setTimeout(r,duration)
+    );
+
+    currentIndex++;
+
+    if(currentIndex >= items.length){
+
+      currentIndex = 0;
+
+    }
+
   }
 
-},250);    
-    
+}
+
+/**************** INIT ****************/
+
 async function init(){
 
   await syncServerTime();
 
-  /* resync every 5 mins */
   setInterval(syncServerTime,300000);
 
   await loadData();
+
+  playRotation();
 
   setInterval(loadData,120000);
 
