@@ -174,24 +174,31 @@ window.showLogoStinger =
   showLogoStinger;
 
 function triggerAnimation() {
-  const wrapper = document.getElementById("wrapper");
 
+  const wrapper =
+    document.getElementById("wrapper");
+
+  wrapper.classList.remove("show");
   wrapper.classList.remove("hide");
+
   void wrapper.offsetWidth;
+
   wrapper.classList.add("show");
 
   visible = true;
+
   showTimestamp = Date.now();
-}
 
-function hideStinger() {
-  const wrapper = document.getElementById("wrapper");
+  setTimeout(()=>{
 
-  wrapper.classList.remove("show");
-  void wrapper.offsetWidth;
-  wrapper.classList.add("hide");
+    wrapper.classList.remove("show");
 
-  visible = false;
+    wrapper.classList.add("hide");
+
+    visible = false;
+
+  },3000);
+
 }
 
 async function init() {
@@ -226,10 +233,7 @@ showLogoStinger();
 
 lastTimeLeft = timeLeft;
 
-    if (visible && (Date.now() - showTimestamp > 3500)) {
-      hideStinger();
-    }
-
+   
   }, 800);
 }
 
