@@ -366,14 +366,14 @@ font-weight: 700;
 /**************** WC SLIDE 3 ****************/
 
 .wc-slide-3 .infowc{
-  padding-top:10px;
+  padding-top:-30px;
 }
 
 .wc-watch{
   font-family:'DINWC',sans-serif;
   text-align:center;
   line-height:.82;
-  margin-top:-10px;
+  margin-top:-20px;
 }
 
 .watch-blue{
@@ -392,7 +392,7 @@ font-weight: 700;
 }
 
 .wc-features{
-  margin-top:45px;
+  margin-top:28px;
 
   font-family:'DINWC',sans-serif;
 
@@ -403,7 +403,7 @@ font-weight: 700;
 }
 
 .wc-slogan{
-  margin-top:40px;
+  margin-top:22px;
 
   font-family:'DINWC',sans-serif;
 
@@ -412,7 +412,7 @@ font-weight: 700;
 }
 
 .wc-reminder{
-  margin-top:40px;
+  margin-top:20px;
 
   display:flex;
   justify-content:center;
@@ -425,7 +425,7 @@ font-weight: 700;
 .wc-reminder-number{
   font-family:'DINWC',sans-serif;
   font-size:58px;
-  line-height:1;
+  line-height:1.1;
   color:#e10600;
 }
 
@@ -435,7 +435,7 @@ font-weight: 700;
   line-height:1;
   color:#1020ff;
 
-  margin-bottom:8px;
+  margin-bottom:3px;
 }
 
 /**************** NEW CONFETTI ****************/
@@ -1112,25 +1112,42 @@ setTimeout(() => {
 	
 /**************** WC TIMER ****************/
 
+const WC_INTERVAL = 240000;
+const WC_DURATION = 30000;
+
 setInterval(() => {
 
   if(!latestEnglandWorldCup) return;
 
-  worldCupTakeover = true;
+  const cyclePosition =
+    getElapsedTime() % WC_INTERVAL;
 
-  renderWorldCupTakeover(
-    latestEnglandWorldCup
-  );
+  const shouldBeActive =
+    cyclePosition < WC_DURATION;
 
-  setTimeout(() => {
+  /* START TAKEOVER */
+
+  if(shouldBeActive && !worldCupTakeover){
+
+    worldCupTakeover = true;
+
+    renderWorldCupTakeover(
+      latestEnglandWorldCup
+    );
+
+  }
+
+  /* END TAKEOVER */
+
+  if(!shouldBeActive && worldCupTakeover){
 
     worldCupTakeover = false;
 
     render(currentMatches);
 
-  }, 30000);
+  }
 
-}, 240000);
+}, 1000);
 
 
 	
