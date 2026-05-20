@@ -2,6 +2,14 @@
 <html>
 <head>
 	
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link rel="preconnect"
+href="https://fonts.gstatic.com"
+crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap"
+rel="stylesheet">
 	
 <meta charset="UTF-8">
 
@@ -65,6 +73,54 @@ body{
     opacity:0;
   }
 }
+	
+#promoOverlay{
+
+  position:absolute;
+
+  left:80px;
+  bottom:70px;
+
+  z-index:20;
+
+  color:white;
+
+  text-shadow:
+    0 4px 20px rgba(0,0,0,0.7);
+
+  display:none;
+
+}
+
+#promoOverlayHeadline{
+
+  font-family:
+    'Bebas Neue',
+    sans-serif;
+
+  font-size:110px;
+
+  line-height:0.9;
+
+  letter-spacing:2px;
+
+}
+
+#promoOverlaySubline{
+
+  margin-top:1.5px;
+
+  font-family:
+    'Bebas Neue',
+    sans-serif;
+
+  font-size:46px;
+
+  letter-spacing:3px;
+
+  opacity:0.9;
+
+}
 
 </style>
 </head>
@@ -74,7 +130,17 @@ body{
 <div id="screen">
 
   <div id="promoWrapper">
+
    <div id="promoContainer"></div>
+
+   <div id="promoOverlay">
+
+      <div id="promoOverlayHeadline"></div>
+
+      <div id="promoOverlaySubline"></div>
+
+   </div>
+
 </div>
 
 </div>
@@ -84,13 +150,23 @@ body{
 const BASE =
 "https://totalmixcreative.github.io/graphics/promos/";
 
-const IMAGE_DURATION = 6000;
+const IMAGE_DURATION = 10000;
 const ANIMATION_DURATION = 600;
 
 let currentMedia = null;
 let lastTimestamp = null;
 let currentTimeout = null;
 
+const TOTAL_DURATION = 10600;
+const HOLD_DURATION = 10000;
+
+const MASTER_EPOCH =
+new Date("2026-01-01T00:00:00Z").getTime();
+
+function getElapsedTime(){
+  return Date.now() - MASTER_EPOCH;
+}	
+	
 /* =========================
    PLAY MEDIA
 ========================= */
@@ -156,13 +232,6 @@ function playAnimation(newMedia){
         (video.duration * 1000)
         - ANIMATION_DURATION;
 
-      currentTimeout = setTimeout(()=>{
-
-        wrapper.classList.remove("slide-in");
-        wrapper.classList.add("slide-out");
-
-      }, duration);
-
     };
 
   }
@@ -183,13 +252,6 @@ function playAnimation(newMedia){
     img.style.objectFit = "cover";
 
     container.appendChild(img);
-
-    currentTimeout = setTimeout(()=>{
-
-      wrapper.classList.remove("slide-in");
-      wrapper.classList.add("slide-out");
-
-    }, IMAGE_DURATION);
 
   }
 
@@ -237,8 +299,86 @@ function updateFromStorage(){
   currentMedia = nextMedia;
 
   playAnimation(nextMedia);
+	
+	const overlay =
+  document.getElementById("promoOverlay");
+
+const overlayHeadline =
+  document.getElementById(
+    "promoOverlayHeadline"
+  );
+
+const overlaySubline =
+  document.getElementById(
+    "promoOverlaySubline"
+  );
+
+/* F1 DETECTION */
+
+if(
+
+  promo.headline &&
+  promo.headline.includes("Grand Prix")
+
+){
+
+  overlay.style.display = "block";
+
+  overlayHeadline.textContent =
+    promo.headline;
+	
+const headlineLength =
+  promo.headline.length;
+
+if(headlineLength > 40){
+
+  overlayHeadline.style.fontSize =
+    "72px";
+
+}else if(headlineLength > 28){
+
+  overlayHeadline.style.fontSize =
+    "88px";
+
+}else{
+
+  overlayHeadline.style.fontSize =
+    "110px";
 
 }
+
+  overlaySubline.textContent =
+    promo.subline;
+
+}else{
+
+  overlay.style.display = "none";
+
+}
+
+}
+
+	
+setInterval(()=>{
+
+  const wrapper =
+    document.getElementById("promoWrapper");
+
+  const elapsedInCycle =
+    getElapsedTime() % TOTAL_DURATION;
+
+  if(
+    elapsedInCycle >= HOLD_DURATION &&
+    !wrapper.classList.contains("slide-out")
+  ){
+
+    wrapper.classList.remove("slide-in");
+
+    wrapper.classList.add("slide-out");
+
+  }
+
+},250);
 
 /* =========================
    STORAGE SYNC

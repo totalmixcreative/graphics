@@ -140,9 +140,6 @@ LOGO FLIP
 </div>
 
 <script>
-	
-const MASTER_EPOCH =
-new Date("2026-01-01T00:00:00Z").getTime();
 
 let serverTimeOffset = 0;
 
@@ -178,60 +175,22 @@ function now(){
 const ENDPOINT_URL =
 "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";
 
-const BASE =
-"https://totalmixcreative.github.io/graphics/promos/";
-
-const IMAGE_DURATION = 6000;
+const HOLD_DURATION = 10000;
 const ANIMATION_DURATION = 600;
+const TOTAL_DURATION = HOLD_DURATION + ANIMATION_DURATION;
+const MASTER_EPOCH =
+new Date("2026-01-01T00:00:00Z").getTime();
+    
+function getElapsedTime(){
+  return now().getTime() - MASTER_EPOCH;
+}
 
 /**************** STATE ****************/
 
 let items = [];
-let currentIndex = 0;
-let rotationStarted = false;
-	
-async function calculateStartingIndex(){
-
-  const elapsed =
-    now() - MASTER_EPOCH;
-
-  let totalPlaylistDuration = 0;
-
-  const durations = [];
-
-  for(const item of items){
-
-    const duration =
-      await getItemDuration(item);
-
-    durations.push(duration);
-
-    totalPlaylistDuration += duration;
-
-  }
-
-  const playlistPosition =
-    elapsed % totalPlaylistDuration;
-
-  let accumulated = 0;
-
-  for(let i = 0; i < durations.length; i++){
-
-    accumulated += durations[i];
-
-    if(playlistPosition < accumulated){
-
-      currentIndex = i;
-      return;
-
-    }
-
-  }
-
-  currentIndex = 0;
-
-}
-
+let lastTimelineIndex = -1;
+    
+    
 /**************** LOAD DATA ****************/
 
 async function loadData(){
@@ -246,165 +205,130 @@ async function loadData(){
 
     items = data.lowerThird || [];
 
+    if(items.length && !rotationStarted){
+
+      rotationStarted = true;
+
+index =
+Math.floor(getElapsedTime() / TOTAL_DURATION)
+% items.length;
+
+    }
+
   }catch(err){
-
     console.error(err);
-
   }
 
 }
 
-/**************** GET MEDIA DURATION ****************/
+/**************** ROTATION ****************/
 
-async function getItemDuration(item){
+function rotate(){
 
-  return new Promise((resolve)=>{
+  if(!items.length) return;
 
-    const file =
-      Array.isArray(item.image)
-      ? item.image[0]
-      : item.image;
+  const timelineIndex =
+    Math.floor(getElapsedTime()/TOTAL_DURATION);
 
-    if(!file){
+  const newIndex =
+    timelineIndex % items.length;
 
-      resolve(IMAGE_DURATION);
-      return;
+  if(newIndex === lastTimelineIndex)
+    return;
 
-    }
+  lastTimelineIndex = newIndex;
 
-    const ext =
-      file.split(".").pop().toLowerCase();
+  const item = items[newIndex];
 
-    /* IMAGE */
+  const wrapper =
+    document.getElementById("text-wrapper");
 
-    if(ext !== "mp4" && ext !== "webm"){
+  const headline =
+    document.getElementById("headline");
 
-      resolve(IMAGE_DURATION);
-      return;
+  const subline =
+    document.getElementById("subline");
 
-    }
+  if(
 
-    /* VIDEO */
+  item.headline &&
+  item.headline.includes("Grand Prix")
 
-    const video =
-      document.createElement("video");
+){
 
-    video.preload = "metadata";
+  headline.textContent =
+    "Live Formula 1";
 
-    video.onloadedmetadata = ()=>{
+  subline.textContent =
+    "Watch every lap live here";
 
-      resolve(video.duration * 1000);
+}else{
 
-    };
+  headline.textContent =
+    item.headline || "";
 
-    video.onerror = ()=>{
-
-      resolve(IMAGE_DURATION);
-
-    };
-
-    video.src = BASE + file;
-
-  });
+  subline.textContent =
+    item.subline || "";
 
 }
 
-/**************** PLAYLIST ENGINE ****************/
+  const imageIndex =
+    Array.isArray(item.image)
+    ? timelineIndex % item.image.length
+    : 0;
 
-async function playRotation(){
+  localStorage.setItem(
+    "currentPromo",
+    JSON.stringify({
+      image: item.image,
+      imageIndex: imageIndex,
+      headline: item.headline,
+      subline: item.subline,
+      timestamp: getElapsedTime()
+    })
+  );
 
-  if(rotationStarted) return;
+  wrapper.classList.remove("slide-in");
+  wrapper.classList.remove("slide-out");
 
-  rotationStarted = true;
+  void wrapper.offsetWidth;
 
-  while(true){
+  wrapper.classList.add("slide-in");
 
-    if(!items.length){
+}
 
-      await new Promise(r=>setTimeout(r,1000));
-      continue;
+/**************** POLLING ****************/
 
-    }
+setInterval(()=>{
 
-    const item = items[currentIndex];
+  if(!items.length) return;
 
-    const wrapper =
-      document.getElementById("text-wrapper");
+  rotate();
 
-    const headline =
-      document.getElementById("headline");
+  const wrapper =
+    document.getElementById("text-wrapper");
 
-    const subline =
-      document.getElementById("subline");
+  const elapsedInCycle =
+    getElapsedTime() % TOTAL_DURATION;
 
-    headline.textContent =
-      item.headline || "";
-
-    subline.textContent =
-      item.subline || "";
-
-    const imageIndex =
-      Array.isArray(item.image)
-      ? Math.floor(Math.random() * item.image.length)
-      : 0;
-
-    localStorage.setItem(
-      "currentPromo",
-      JSON.stringify({
-        image:item.image,
-        imageIndex:imageIndex,
-        headline:item.headline,
-        subline:item.subline,
-        timestamp:now()
-      })
-    );
-
+  if(
+    elapsedInCycle >= HOLD_DURATION &&
+    !wrapper.classList.contains("slide-out")
+  ){
     wrapper.classList.remove("slide-in");
-    wrapper.classList.remove("slide-out");
-
-    void wrapper.offsetWidth;
-
-    wrapper.classList.add("slide-in");
-
-    const duration =
-      await getItemDuration(item);
-
-    setTimeout(()=>{
-
-      wrapper.classList.remove("slide-in");
-      wrapper.classList.add("slide-out");
-
-    }, duration - ANIMATION_DURATION);
-
-    await new Promise(r=>
-      setTimeout(r,duration)
-    );
-
-    currentIndex++;
-
-    if(currentIndex >= items.length){
-
-      currentIndex = 0;
-
-    }
-
+    wrapper.classList.add("slide-out");
   }
 
-}
-
-/**************** INIT ****************/
-
+},250);    
+    
 async function init(){
 
   await syncServerTime();
 
+  /* resync every 5 mins */
   setInterval(syncServerTime,300000);
 
   await loadData();
-
-await calculateStartingIndex();
-
-playRotation();
 
   setInterval(loadData,120000);
 
