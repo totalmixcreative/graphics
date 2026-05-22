@@ -56,12 +56,14 @@ SIGNAGE CANVAS
 ============================ */
 
 #canvas{
-position:relative;
+position:absolute;
+top:0;
+left:50%;
+transform:translateX(-50%);
 width:1920px;
 height:1080px;
-margin:auto;
 }
-
+	
 /* ============================
 HEADER
 ============================ */
@@ -70,8 +72,8 @@ HEADER
 position:absolute;
 top:18px;
 left:30px;
-width:100%;
-height:100%;
+width:300px;
+height:160px;
 z-index:50;
 }
 
@@ -96,10 +98,9 @@ PROMO AREA
 
 #promo{
 position:absolute;
-width:100%;
-top:0px;
+top:0;
 left:360px;
-right:0px;
+right:0;
 bottom:220px;
 z-index:10;
 }
@@ -131,10 +132,9 @@ LOWER THIRD
 
 #lowerthird{
 position:absolute;
-width:100%;
-left:0px;
+left:0;
 right:60px;
-bottom:0px;
+bottom:0;
 height:220px;
 z-index:100;
 }
@@ -155,10 +155,7 @@ CARBON NIGHT MODE
 
 #nightMode{
 position:fixed;
-top:0;
-left:0;
-width:100vw;
-height:100vh;
+inset:0;
 background:black;
 transform:translateX(100%);
 transition:transform 1.2s ease;
