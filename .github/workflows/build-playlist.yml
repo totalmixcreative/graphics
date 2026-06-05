@@ -9,17 +9,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
+steps:
+  - uses: actions/checkout@v4
 
-      - name: Install ffmpeg
+  - name: Install ffmpeg
+    run: |
+      sudo apt-get update
+      sudo apt-get install -y --fix-missing ffmpeg
+
+  - name: Generate playlist manifest
   run: |
-    sudo apt-get update
-    sudo apt-get install -y --fix-missing ffmpeg
-
-      - name: Generate playlist manifest
-        run: |
-          echo '{"videos":[' > night-playlist.json
+      echo '{"videos":[' > night-playlist.json
 
           first=true
 
