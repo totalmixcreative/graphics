@@ -13,7 +13,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install ffmpeg
-        run: sudo apt-get install ffmpeg -y
+  run: |
+    sudo apt-get update
+    sudo apt-get install -y --fix-missing ffmpeg
 
       - name: Generate playlist manifest
         run: |
