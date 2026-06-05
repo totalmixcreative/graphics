@@ -9,17 +9,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-steps:
-  - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-  - name: Install ffmpeg
-    run: |
-      sudo apt-get update
-      sudo apt-get install -y --fix-missing ffmpeg
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --fix-missing ffmpeg
 
-  - name: Generate playlist manifest
-  run: |
-      echo '{"videos":[' > night-playlist.json
+      - name: Generate playlist manifest
+        run: |
+          echo '{"videos":[' > night-playlist.json
 
           first=true
 
@@ -47,11 +47,12 @@ steps:
 
       - name: Commit updated manifest
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
 
           git add night-playlist.json
 
-          git commit -m "Auto update playlist manifest" || echo "No changes"
-
-          git push
+          git diff --cached --quiet || (
+            git commit -m "Update playlist manifest"
+            git push
+          )
