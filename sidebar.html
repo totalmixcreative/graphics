@@ -710,17 +710,7 @@ async function fetchData() {
 
       imageVersion = data.updated;
 
-      currentMatches =
-  (data.matches || []).filter(m => {
-
-    const isWorldCup =
-      /world cup/i.test(
-        m.competition || ""
-      );
-
-    return !isWorldCup;
-
-  });
+      currentMatches = data.matches || [];
 
       latestEnglandWorldCup =
         data.englandWorldCup || null;
