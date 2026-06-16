@@ -580,10 +580,10 @@ font-weight: 700;
       translate(10px,120vh)
       rotate(720deg);
   }
+	}
 .wc-special-countdown{
-  font-size:58px;
+  font-size:42px;
   line-height:1;
-}
 }
 
 .competition[data-competition*="Six Nations"] img { height: 70px; }
@@ -839,11 +839,19 @@ const awayFlag =
 const countdownParts =
   match.countdown.split(" ");
 
-const countdownNumber =
+let countdownNumber =
   countdownParts[0];
 
-const countdownLabel =
+let countdownLabel =
   countdownParts.slice(1).join(" ");
+
+if(
+  countdownNumber === "TOMORROW" ||
+  countdownNumber === "TONIGHT"
+){
+  countdownLabel = countdownNumber;
+  countdownNumber = "";
+}
 	
 const isSpecialCountdown =
   countdownNumber === "TOMORROW" ||
