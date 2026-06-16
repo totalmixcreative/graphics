@@ -580,7 +580,10 @@ font-weight: 700;
       translate(10px,120vh)
       rotate(720deg);
   }
-
+.wc-special-countdown{
+  font-size:58px;
+  line-height:1;
+}
 }
 
 .competition[data-competition*="Six Nations"] img { height: 70px; }
@@ -841,6 +844,10 @@ const countdownNumber =
 
 const countdownLabel =
   countdownParts.slice(1).join(" ");
+	
+const isSpecialCountdown =
+  countdownNumber === "TOMORROW" ||
+  countdownNumber === "TONIGHT";
 
   const slider =
     document.getElementById("slider");
@@ -911,7 +918,7 @@ const countdownLabel =
 
     <div class="wc-countdown wc-countdown-animate">
 
-      <div class="wc-days-number">
+      <div class="wc-days-number ${isSpecialCountdown ? 'wc-special-countdown' : ''}">
         ${countdownNumber}
       </div>
 
