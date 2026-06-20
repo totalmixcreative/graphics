@@ -8,12 +8,19 @@
 href="https://fonts.gstatic.com"
 crossorigin>
 
+<link rel="preload" href="robuck-regular.otf" as="font" type="font/otf" crossorigin>	
+	
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap"
 rel="stylesheet">
 	
 <meta charset="UTF-8">
 
 <style>
+	
+@font-face {
+  font-family: 'Robuck';
+  src: url('robuck-regular.otf') format('opentype');
+}
 
 body{
   margin:0;
@@ -41,6 +48,109 @@ body{
   height:100%;
   object-fit:cover;
 }
+	
+#promoContainer{
+  position:absolute;
+  inset:0;
+  z-index:1;
+}
+
+#nightBumper{
+  z-index:99999;
+}	
+	
+/* ============================
+NIGHT BUMPER
+============================ */
+	
+#nightBumper{
+
+  position:absolute;
+  inset:0;
+
+  z-index:99999;
+
+  pointer-events:none;
+
+  opacity:0;
+
+}
+
+#nightBumperText{
+
+  font-family:
+    'Robuck',
+    sans-serif;
+
+  font-size:220px;
+
+  letter-spacing:8px;
+
+}
+
+#nightBumper.show{
+
+  animation:
+    nightBumperIn 0.7s
+    cubic-bezier(0.2,0.8,0.2,1)
+    forwards;
+
+}
+
+#nightBumper.hide{
+
+  animation:
+    nightBumperOut 0.6s ease forwards;
+
+}
+	
+#nightBumperSVG{
+  width:100%;
+  height:100%;
+}
+
+@keyframes nightBumperIn{
+
+  0%{
+    opacity:0;
+    transform:
+      scale(0.8)
+      translateY(60px);
+  }
+
+  60%{
+    opacity:1;
+    transform:
+      scale(1.05)
+      translateY(-10px);
+  }
+
+  100%{
+    opacity:1;
+    transform:
+      scale(1)
+      translateY(0);
+  }
+
+}
+
+@keyframes nightBumperOut{
+
+  0%{
+    opacity:1;
+    transform:
+      scale(1)
+      translateY(0);
+  }
+
+  100%{
+    opacity:0;
+    transform:
+      scale(1.03)
+      translateY(-20px);
+  }
+
+}
 
 /* ===== SAME ANIMATION AS LOWER THIRDS ===== */
 
@@ -52,6 +162,7 @@ body{
   animation:slideOut .6s ease forwards;
 }
 
+	
 @keyframes slideIn{
   from{
     transform:translateX(-100%);
@@ -128,8 +239,70 @@ body{
 <body>
 
 <div id="screen">
+	  
+	  <div id="nightBumper">
 
-  <div id="promoWrapper">
+<svg
+  id="nightBumperSVG"
+  width="100%"
+  height="100%"
+  viewBox="0 0 1920 1080">
+
+<defs>
+
+<linearGradient id="nightGrad">
+
+  <animate
+    attributeName="x1"
+    values="0%;100%;0%"
+    dur="20s"
+    repeatCount="indefinite"/>
+
+  <animate
+    attributeName="x2"
+    values="100%;0%;100%"
+    dur="20s"
+    repeatCount="indefinite"/>
+
+  <stop
+    id="nightGradStart"
+    offset="0%"
+    stop-color="#ff2a8a"/>
+
+  <stop
+    id="nightGradEnd"
+    offset="100%"
+    stop-color="#ff7a18"/>
+
+</linearGradient>
+
+</defs>
+
+<rect
+  width="100%"
+  height="100%"
+  fill="url(#nightGrad)"/>
+
+<text
+  id="nightBumperText"
+  x="50%"
+  y="50%"
+  text-anchor="middle"
+  dominant-baseline="middle"
+  font-size="170"
+  font-family="Robuck"
+  fill="white"
+  letter-spacing="4">
+
+  CARBON NIGHTS
+
+</text>
+
+</svg>
+
+</div>
+	
+<div id="promoWrapper">
 
    <div id="promoContainer"></div>
 
@@ -152,11 +325,7 @@ const BASE =
 
 const IMAGE_DURATION = 10000;
 const ANIMATION_DURATION = 600;
-
-let currentMedia = null;
-let lastTimestamp = null;
-let currentTimeout = null;
-
+	
 const TOTAL_DURATION = 10600;
 const HOLD_DURATION = 10000;
 
@@ -165,7 +334,117 @@ new Date("2026-01-01T00:00:00Z").getTime();
 
 function getElapsedTime(){
   return Date.now() - MASTER_EPOCH;
-}	
+}
+
+let currentMedia = null;
+let nightModeActive = false;
+let bumperActive = false;
+let lastBumperTime = 0;
+let nightHue = 0;
+let lastTimestamp = null;
+let currentTimeout = null;
+
+
+	
+window.addEventListener("message",(e)=>{
+
+  /* =========================
+     NIGHT MODE ON
+  ========================= */
+
+  if(e.data.type === "nightmode-on"){
+
+    nightModeActive = true;
+
+    let venueText;
+
+if(e.data.specialEvent){
+
+  venueText = "CARBON";
+
+}else{
+
+  venueText =
+    e.data.venue === "mill"
+      ? "MILL NIGHTS"
+      : "CARBON NIGHTS";
+
+}
+
+    document
+      .getElementById("nightBumperText")
+      .textContent =
+        venueText;
+
+    if(!e.data.silent){
+
+      if(!bumperActive){
+
+  showNightBumper();
+
+}
+
+    }
+
+  }
+
+  /* =========================
+     NIGHT MODE OFF
+  ========================= */
+
+  if(e.data.type === "nightmode-off"){
+
+    nightModeActive = false;
+
+    const venueText =
+      e.data.venue === "mill"
+        ? "THE MILL"
+        : "CARBON";
+
+    document
+      .getElementById("nightBumperText")
+      .textContent =
+        venueText;
+
+    showNightBumper();
+
+  }
+
+});
+
+
+/* =========================
+   SHOW NIGHT BUMPER
+========================= */
+	
+function showNightBumper(){
+
+  bumperActive = true;
+
+  const bumper =
+    document.getElementById("nightBumper");
+
+  bumper.classList.remove("show");
+  bumper.classList.remove("hide");
+
+  void bumper.offsetWidth;
+
+  bumper.classList.add("show");
+
+  setTimeout(()=>{
+
+    bumper.classList.remove("show");
+    bumper.classList.add("hide");
+
+  },3200);
+
+  setTimeout(()=>{
+
+    bumperActive = false;
+
+  },4200);
+
+}
 	
 /* =========================
    PLAY MEDIA
@@ -242,10 +521,12 @@ function playAnimation(newMedia){
 
   else{
 
-    const img =
-      document.createElement("img");
+  const img =
+    document.createElement("img");
 
-    img.src = BASE + newMedia;
+  img.onload = () => {
+
+    container.innerHTML = "";
 
     img.style.width = "100%";
     img.style.height = "100%";
@@ -253,7 +534,11 @@ function playAnimation(newMedia){
 
     container.appendChild(img);
 
-  }
+  };
+
+  img.src = BASE + newMedia;
+
+}
 
   /* =========================
      ANIMATION IN
@@ -263,7 +548,10 @@ function playAnimation(newMedia){
 
   void wrapper.offsetWidth;
 
-  wrapper.classList.add("slide-in");
+  const screen =
+  document.getElementById("screen");
+
+wrapper.classList.add("slide-in");
 
 }
 
@@ -280,7 +568,8 @@ function updateFromStorage(){
 
   if(!promo || !promo.image) return;
 
-  const nextMedia =
+	
+const nextMedia =
     Array.isArray(promo.image)
     ? promo.image[promo.imageIndex]
     : promo.image;
@@ -361,24 +650,66 @@ if(headlineLength > 40){
 	
 setInterval(()=>{
 
-  const wrapper =
-    document.getElementById("promoWrapper");
 
-  const elapsedInCycle =
-    getElapsedTime() % TOTAL_DURATION;
+  const wrapper =
+  document.getElementById("promoWrapper");
+
+const elapsedInCycle =
+  getElapsedTime() % TOTAL_DURATION;
+
+if(
+  elapsedInCycle >= HOLD_DURATION &&
+  elapsedInCycle < TOTAL_DURATION - 200 &&
+  !wrapper.classList.contains("slide-out")
+){
 
   if(
-    elapsedInCycle >= HOLD_DURATION &&
-    !wrapper.classList.contains("slide-out")
+    nightModeActive &&
+    !bumperActive
   ){
 
-    wrapper.classList.remove("slide-in");
-
-    wrapper.classList.add("slide-out");
+    showNightBumper();
 
   }
 
+  wrapper.classList.remove("slide-in");
+
+  wrapper.classList.add("slide-out");
+
+}
+
 },250);
+	
+setInterval(()=>{
+
+  nightHue =
+    (nightHue + 1) % 360;
+
+  const color1 =
+    `hsl(${nightHue},90%,55%)`;
+
+  const color2 =
+    `hsl(${(nightHue+40)%360},90%,55%)`;
+
+  if(bumperActive){
+
+    document
+      .getElementById("nightGradStart")
+      .setAttribute(
+        "stop-color",
+        color1
+      );
+
+    document
+      .getElementById("nightGradEnd")
+      .setAttribute(
+        "stop-color",
+        color2
+      );
+
+  }
+
+},100);
 
 /* =========================
    STORAGE SYNC

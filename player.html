@@ -148,94 +148,6 @@ width:100%;
 height:100%;
 border:none;
 }
-
-/* ============================
-CARBON NIGHT MODE
-============================ */
-
-#nightMode{
-position:fixed;
-inset:0;
-background:black;
-transform:translateX(100%);
-transition:transform 1.2s ease;
-z-index:9999;
-}
-
-#nightVideo{
-position:absolute;
-width:100%;
-height:100%;
-object-fit:cover;
-}
-	
-#nightBumper{
-
-  position:absolute;
-  inset:0;
-
-  z-index:20;
-
-  pointer-events:none;
-
-  opacity:0;
-
-}
-
-#nightBumper.show{
-
-  animation:
-    nightBumperIn 0.7s
-    cubic-bezier(0.2,0.8,0.2,1)
-    forwards;
-
-}
-
-#nightBumper.hide{
-
-  animation:
-    nightBumperOut 0.6s
-    ease forwards;
-
-}
-
-@keyframes nightBumperIn{
-
-  0%{
-    opacity:0;
-    transform:scale(0.8)
-      translateY(60px);
-  }
-
-  60%{
-    opacity:1;
-    transform:scale(1.05)
-      translateY(-10px);
-  }
-
-  100%{
-    opacity:1;
-    transform:scale(1)
-      translateY(0);
-  }
-
-}
-
-@keyframes nightBumperOut{
-
-  0%{
-    opacity:1;
-    transform:scale(1)
-      translateY(0);
-  }
-
-  100%{
-    opacity:0;
-    transform:scale(1.03)
-      translateY(-20px);
-  }
-
-}
 	
 /* ===============================
 SIDEBAR GRADIENT BACKGROUND
@@ -338,6 +250,50 @@ ANIMATIONS
   }
 
 }
+	
+/* ============================
+PROMO NIGHT MODE
+============================ */
+
+#promo{
+position:absolute;
+top:0;
+left:360px;
+right:0;
+
+z-index:10;
+overflow:visible;
+transform-origin:top right;
+	
+width:1564px;
+height:880px;
+
+transition:
+  transform 1.2s cubic-bezier(0.2,0.8,0.2,1);
+
+}
+
+#promo iframe{
+
+  width:1564px;
+  height:880px;
+
+}	
+	
+#promo.nightmode{
+
+  top:0;
+  right:0;
+
+  transform-origin:top right;
+  transform:scale(1.24);
+	
+  overflow:hidden;
+
+  z-index:9999;
+
+}
+
 
 </style>
 </head>
@@ -371,80 +327,7 @@ ANIMATIONS
 
 </div>
 
-<!-- Night mode layer -->
 
-<div id="nightMode">
-
-  <video
-    id="nightVideo"
-    autoplay
-    muted
-    playsinline>
-  </video>
-
-<div id="nightBumper">
-
-<svg
-  id="nightBumperSVG"
-  width="100%"
-  height="100%"
-  viewBox="0 0 1920 1080">
-
-<defs>
-
-<linearGradient id="nightGrad">
-
-  <animate
-    attributeName="x1"
-    values="0%;100%;0%"
-    dur="20s"
-    repeatCount="indefinite"/>
-
-  <animate
-    attributeName="x2"
-    values="100%;0%;100%"
-    dur="20s"
-    repeatCount="indefinite"/>
-
-  <stop
-    id="nightGradStart"
-    offset="0%"
-    stop-color="#ff2a8a"/>
-
-  <stop
-    id="nightGradEnd"
-    offset="100%"
-    stop-color="#ff7a18"/>
-
-</linearGradient>
-
-</defs>
-
-<rect
-  width="100%"
-  height="100%"
-  fill="url(#nightGrad)"/>
-
-<text
-  id="nightBumperText"
-  x="50%"
-  y="50%"
-  text-anchor="middle"
-  dominant-baseline="middle"
-  font-size="170"
-  font-family="Robuck"
-  fill="white"
-  letter-spacing="4">
-
-  CARBON NIGHTS
-
-</text>
-
-</svg>
-
-</div>
-
-</div>
 	
 <script>
 
@@ -458,6 +341,155 @@ function getNthMonday(year, month, n){
 
 }
 
+const promoFrame =
+  document.querySelector("#promo iframe");
+	
+const ltFrame =
+  document.querySelector(
+    "#lowerthird iframe"
+  );
+	
+function enterNightMode(){
+
+  document
+    .getElementById("promo")
+    .classList
+    .add("nightmode");
+
+  setTimeout(()=>{
+
+    promoFrame.contentWindow.postMessage(
+      {
+        type:"nightmode-on",
+        venue: venue
+      },
+      "*"
+    );
+
+    ltFrame.contentWindow.postMessage(
+      {
+        type:"nightmode-on",
+        venue: venue
+      },
+      "*"
+    );
+
+  },1200);
+
+}
+
+
+function exitNightMode(){
+
+  promoFrame.contentWindow.postMessage(
+    {
+      type:"nightmode-off",
+      venue: venue
+    },
+    "*"
+  );
+	
+ltFrame.contentWindow.postMessage(
+  {
+    type:"nightmode-off",
+    venue: venue
+  },
+  "*"
+);
+
+  setTimeout(()=>{
+
+    document
+      .getElementById("promo")
+      .classList
+      .remove("nightmode");
+
+  },2200);
+
+}
+/* ============================
+NIGHT MODE SCHEDULE
+============================ */
+	
+function isSpecialEventNight(){
+
+  if(venue !== "carbon"){
+    return false;
+  }
+
+  const nowTime = new Date();
+
+  const date =
+    nowTime.toISOString().split("T")[0];
+
+  const hour =
+    nowTime.getHours();
+
+  const minute =
+    nowTime.getMinutes();
+
+  const specialEventDates = [
+
+    "2026-06-20",
+    "2026-07-25",
+    "2026-08-29",
+    "2026-09-26",
+    "2026-10-24",
+    "2026-11-14"
+
+  ];
+
+  const afterStart =
+    hour > 14 ||
+    (hour === 14 && minute >= 55);
+
+  const beforeEnd =
+    hour < 20 ||
+    (hour === 20 && minute <= 5);
+
+  return (
+    specialEventDates.includes(date) &&
+    afterStart &&
+    beforeEnd
+  );
+
+}	
+	
+function isNightMode(){
+
+  const nowTime = new Date();
+
+  const day = nowTime.getDay();
+  const hour = nowTime.getHours();
+
+  /* CARBON = EVERY NIGHT */
+  if(venue === "carbon"){
+
+    return (
+      (hour >= 22) ||
+	  (hour < 4)
+    );
+
+  }
+
+  /* MILL = FRI/SAT ONLY */
+  if(venue === "mill"){
+
+    return (
+
+      (day === 5 && hour >= 22) ||
+      (day === 6 && hour < 4) ||
+
+      (day === 6 && hour >= 22) ||
+      (day === 0 && hour < 4)
+
+    );
+
+  }
+
+  return false;
+
+}
 	
 /* ============================
 SERVER TIME
@@ -469,6 +501,15 @@ new Date("2026-01-01T00:00:00Z").getTime();
 function getElapsedTime(){
   return now().getTime() - MASTER_EPOCH;
 }    
+	
+function getCycleRemaining(){
+
+  const elapsedInCycle =
+    getElapsedTime() % 10600;
+
+  return 10600 - elapsedInCycle;
+
+}
 	
 function syncGradient(element,duration){
 
@@ -511,6 +552,161 @@ async function syncServerTime(){
 function now(){
   return new Date(Date.now() + serverTimeOffset);
 }
+	
+let nightActive = false;
+let enteringNightMode = false;
+let exitingNightMode = false;
+	
+let nightExpandTriggered = false;
+let nightBumperTriggered = false;
+
+let dayShrinkTriggered = false;
+let dayBumperTriggered = false;
+
+function updateMode(){
+
+  const remaining =
+    getCycleRemaining();
+
+  /* =========================
+     ENTER NIGHT MODE
+  ========================= */
+
+if(
+    (isNightMode() || isSpecialEventNight()) &&
+    !nightActive
+){
+
+    if(!nightExpandTriggered){
+		
+	  enteringNightMode = true;
+      nightExpandTriggered = true;
+
+      document
+        .getElementById("promo")
+        .classList
+        .add("nightmode");
+
+    }
+
+    /* 2 seconds remaining */
+
+    if(
+  enteringNightMode &&
+  remaining <= 2000 &&
+  !nightBumperTriggered
+){
+
+  nightBumperTriggered = true;
+
+  promoFrame.contentWindow.postMessage(
+{
+  type:"nightmode-on",
+  venue: venue,
+  silent:true,
+  specialEvent: isSpecialEventNight()
+},
+"*"
+);
+		
+ltFrame.contentWindow.postMessage(
+  {
+    type:"nightmode-on",
+    venue: venue,
+    specialEvent: isSpecialEventNight()
+  },
+  "*"
+);
+
+}
+
+    /* new slide boundary */
+
+    if(
+      enteringNightMode &&
+      remaining <= 100
+    ){
+
+      nightActive = true;
+	  nightExpandTriggered = false;
+      nightBumperTriggered = false;	
+      enteringNightMode = false;
+
+    }
+
+  }
+
+  /* =========================
+     EXIT NIGHT MODE
+  ========================= */
+
+  if(
+    !isNightMode() &&
+    !isSpecialEventNight() &&
+    nightActive
+){
+
+    /* 5 seconds remaining */
+
+    if(!dayShrinkTriggered){
+		
+      dayShrinkTriggered = true;
+		
+		document
+  .getElementById("promo")
+  .classList
+  .remove("nightmode");
+      exitingNightMode = true;
+
+    }
+
+    /* 2 seconds remaining */
+
+    if(
+      exitingNightMode &&
+      remaining <= 2000 &&
+!dayBumperTriggered
+    ){
+dayBumperTriggered = true;
+      promoFrame.contentWindow.postMessage(
+        {
+          type:"nightmode-off",
+          venue: venue
+        },
+        "*"
+      );
+		ltFrame.contentWindow.postMessage(
+  {
+    type:"nightmode-off",
+    venue: venue
+  },
+  "*"
+);
+
+    }
+
+    /* new slide boundary */
+
+    if(
+      exitingNightMode &&
+      remaining <= 100
+    ){
+
+      document
+        .getElementById("promo")
+        .classList
+        .remove("nightmode");
+
+      nightActive = false;
+	  dayShrinkTriggered = false;
+dayBumperTriggered = false;	
+      exitingNightMode = false;
+
+    }
+
+  }
+
+}
 
 /* ============================
 VENUE PARAMETER
@@ -525,295 +721,84 @@ venue.charAt(0).toUpperCase() + venue.slice(1) + " Signage Player";
 document.getElementById("headerFrame").src =
 "logo.html?site=" + venue;
     
-let playlistManifest = [];
-
-let playlistTimeline = [];
-let totalPlaylistDuration = 0;
-
-async function loadPlaylistManifest(){
-
-  try{
-
-    const res = await fetch(
-      "night-playlist.json?t=" + Date.now()
-    );
-
-    const data = await res.json();
-
-    playlistManifest = data.videos || [];
-
-    buildPlaylistTimeline();
-
-  }catch(e){
-
-    console.log("Playlist manifest failed");
-
-  }
-
-}
-
-function buildPlaylistTimeline(){
-
-  playlistTimeline = [];
-  totalPlaylistDuration = 0;
-
-  playlistManifest.forEach((video, i)=>{
-
-    playlistTimeline.push({
-      index: i,
-      start: totalPlaylistDuration,
-      end: totalPlaylistDuration + video.duration
-    });
-
-    totalPlaylistDuration += video.duration;
-
-  });
-
-}
-    
-    function syncPlaylistVideo(){
-
-  if(!playlistTimeline.length) return;
-
-  const elapsed =
-    Math.floor(getElapsedTime() / 1000);
-
-  const playlistTime =
-    elapsed % totalPlaylistDuration;
-
-  let activeVideo = null;
-
-  for(const video of playlistTimeline){
-
-    if(
-      playlistTime >= video.start &&
-      playlistTime < video.end
-    ){
-      activeVideo = video;
-      break;
-    }
-
-  }
-
-  if(!activeVideo) return;
-
-  const expectedSrc =
-    playlistManifest[activeVideo.index].src;
-
-  const localTime =
-    playlistTime - activeVideo.start;
-
-  if(currentNightVideo !== expectedSrc){
-
-  currentNightVideo = expectedSrc;
-
-  /* TRIGGER BUMPER */
-
-  showNightBumper();
-
-  /* SWAP VIDEO UNDER BUMPER */
-
-  setTimeout(()=>{
-
-    nightVideo.src = expectedSrc;
-
-    nightVideo.addEventListener(
-      "loadedmetadata",
-      ()=>{
-
-        nightVideo.currentTime = localTime;
-        nightVideo.play();
-
-      },
-      { once:true }
-    );
-
-  },250);
-
-}
-
-	}
-
-/* ============================
-ELEMENT REFERENCES
-============================ */
-
-const nightVideo = document.getElementById("nightVideo");
-const nightBumper =
-document.getElementById("nightBumper");
-
-const nightLayer = document.getElementById("nightMode");
-let currentNightVideo = "";
-let nightActive = false;
-let playlistSyncInterval = null;
 	
-
-function showNightBumper(){
-
-  const bumper =
-    document.getElementById("nightBumper");
-
-  bumper.classList.remove("show");
-  bumper.classList.remove("hide");
-
-  void bumper.offsetWidth;
-
-  bumper.classList.add("show");
-
-  setTimeout(()=>{
-
-    bumper.classList.remove("show");
-    bumper.classList.add("hide");
-
-  },1400);
-
-}
-
-/* ============================
-NIGHT MODE SCHEDULE
-============================ */
-
-function isNightMode(){
-
-  const nowTime = now();
-
-  const day = nowTime.getDay();
-  const hour = nowTime.getHours();
-
-  /* CARBON = EVERY NIGHT */
-  if(venue === "carbon"){
-
-    return (
-      (hour >= 22) ||
-      (hour < 4)
-    );
-
-  }
-
-  /* MILL = FRI/SAT ONLY */
-  if(venue === "mill"){
-
-    return (
-
-      (day === 5 && hour >= 22) ||
-      (day === 6 && hour < 4) ||
-
-      (day === 6 && hour >= 22) ||
-      (day === 0 && hour < 4)
-
-    );
-
-  }
-
-  return false;
-
-}
-
-/* ============================
-MODE CONTROL
-============================ */
-
-function isNightStart(){
-
-let nowTime = now();
-
-let hour = nowTime.getHours();
-let minute = nowTime.getMinutes();
-
-return hour === 22 && minute === 0;
-
-}
-	
-function updateMode(){
-
-  if(isNightMode()){
-
-    if(!nightActive){
-
-      nightActive = true;
-      
-	 playlistSyncInterval =
-  setInterval(syncPlaylistVideo,1000);
-
-      nightLayer.style.transform = "translateX(0)";
-
-      /* full intro exactly at 22:00 */
-      if(isNightStart()){
-
-        setTimeout(()=>{
-
-          syncPlaylistVideo();
-
-        },5000);
-
-      }else{
-
-        syncPlaylistVideo();
-
-      }
-
-    }
-
-  }else if(nightActive){
-
-    nightActive = false;
-	  
-	  clearInterval(playlistSyncInterval);
-
-    nightLayer.style.transform = "translateX(100%)";
-
-    nightVideo.pause();
-
-  }
-
-}
-	
-let nightHue = 0;
-
-setInterval(()=>{
-
-  nightHue =
-    (nightHue + 1) % 360;
-
-  const color1 =
-    `hsl(${nightHue},90%,55%)`;
-
-  const color2 =
-    `hsl(${(nightHue+40)%360},90%,55%)`;
-
-  document
-    .getElementById("nightGradStart")
-    .setAttribute("stop-color",color1);
-
-  document
-    .getElementById("nightGradEnd")
-    .setAttribute("stop-color",color2);
-
-},100);
-
 /* ============================
 CHECK EVERY 30 SECONDS
 ============================ */
 
 async function init(){
 	
-document.getElementById(
-  "nightBumperText"
-).textContent =
+  updateMode();
 
-  venue === "mill"
-    ? "THE MILL NIGHTS"
-    : "CARBON NIGHTS";
+setInterval(updateMode,250);
 
   await syncServerTime();
+	
+  const remaining =
+  getCycleRemaining();
+	
+  if(
+  isNightMode() ||
+  isSpecialEventNight()
+){
+
+  /* already fully nighttime */
+
+  if(remaining > 5000){
+
+    document
+      .getElementById("promo")
+      .classList
+      .add("nightmode");
+
+    nightActive = true;
+
+    promoFrame.contentWindow.postMessage(
+      {
+        type:"nightmode-on",
+        venue: venue,
+        silent:true,
+		specialEvent: isSpecialEventNight()
+      },
+      "*"
+    );
+
+    ltFrame.contentWindow.postMessage(
+{
+  type:"nightmode-on",
+  venue: venue,
+  silent:true,
+  specialEvent: isSpecialEventNight()
+},
+"*"
+);
+
+  }
+
+}else{
+
+  promoFrame.contentWindow.postMessage(
+    {
+      type:"nightmode-off",
+      venue: venue,
+      silent:true
+    },
+    "*"
+  );
+
+  ltFrame.contentWindow.postMessage(
+    {
+      type:"nightmode-off",
+      venue: venue,
+      silent:true
+    },
+    "*"
+  );
+
+}
 
   /* resync every 5 mins */
   setInterval(syncServerTime,300000);
-
-  await loadPlaylistManifest();
-
-  /* refresh manifest every 10 mins */
-  setInterval(loadPlaylistManifest,600000);
 
   syncGradient(
   document.getElementById("SBbg"),
@@ -825,14 +810,6 @@ syncGradient(
   20
 );
 
-    /* NIGHT PLAYLIST SYNC */
-    if(isNightMode()){
-      syncPlaylistVideo();
-    }
-
-  setInterval(updateMode,30000);
-
-  updateMode();
 
 }
 
