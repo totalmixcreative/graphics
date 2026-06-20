@@ -189,8 +189,34 @@ function getElapsedTime(){
 
 let items = [];
 let lastTimelineIndex = -1;
-    
-    
+let rotationStarted = false;
+
+/**************** NIGHT MODE STATE ****************/
+
+let nightModeActive = false;
+
+window.addEventListener("message",(e)=>{
+	
+	console.log("MESSAGE RECEIVED", e.data);
+
+  if(e.data.type === "nightmode-on"){
+
+    nightModeActive = true;
+
+    loadData();
+
+  }
+
+  if(e.data.type === "nightmode-off"){
+
+    nightModeActive = false;
+
+    loadData();
+
+  }
+
+});
+	
 /**************** LOAD DATA ****************/
 
 async function loadData(){
@@ -204,14 +230,64 @@ async function loadData(){
     const data = await res.json();
 
     items = data.lowerThird || [];
+	  
+/* =========================
+   NIGHT MODE FILTER
+========================= */
+
+items = data.lowerThird || [];
+	  
+console.log(
+  "NM ACTIVE:",
+  nightModeActive
+);
+
+if(nightModeActive){
+
+  items = items.filter(item => {
+
+    const joined =
+      Array.isArray(item.image)
+      ? item.image.join(" ").toLowerCase()
+      : item.image.toLowerCase();
+
+    const blocked = [
+
+      "food",
+      "darts",
+      "pool",
+      "steak",
+      "lunch",
+      "fizz",
+	  "sunday"
+
+    ];
+
+    const allowed = [
+
+      "freepool"
+
+    ];
+
+    const isBlocked =
+      blocked.some(tag =>
+        joined.includes(tag)
+      );
+
+    const isAllowed =
+      allowed.some(tag =>
+        joined.includes(tag)
+      );
+
+    return !(isBlocked && !isAllowed);
+
+  });
+
+}
 
     if(items.length && !rotationStarted){
 
       rotationStarted = true;
-
-index =
-Math.floor(getElapsedTime() / TOTAL_DURATION)
-% items.length;
 
     }
 
