@@ -789,7 +789,11 @@ function render(matches) {
 
     card.innerHTML = `
   <div class="team-img"
-       style="background-image:url('https://drive.google.com/thumbnail?id=${m.homeImg}&sz=w1000&v=${imageVersion}')"></div>
+     style="background-image:url('${
+       m.homeImg.startsWith("http")
+         ? m.homeImg
+         : `https://drive.google.com/thumbnail?id=${m.homeImg}&sz=w1000&v=${imageVersion}`
+     }')"></div>
 
   <div class="info">
 
