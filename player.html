@@ -70,8 +70,8 @@ HEADER
 
 #header{
 position:absolute;
-top:18px;
-left:30px;
+top:20px;
+left:55px;
 width:300px;
 height:160px;
 z-index:50;
@@ -441,7 +441,7 @@ function isSpecialEventNight(){
 
   const afterStart =
     hour > 14 ||
-    (hour === 14 && minute >= 55);
+    (hour === 14 && minute >= 5);
 
   const beforeEnd =
     hour < 20 ||
@@ -719,7 +719,7 @@ document.title =
 venue.charAt(0).toUpperCase() + venue.slice(1) + " Signage Player";
 
 document.getElementById("headerFrame").src =
-"logo.html?site=" + venue;
+"time_date_weather.html?site=" + venue;
     
 	
 /* ============================
