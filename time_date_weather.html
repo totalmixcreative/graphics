@@ -88,7 +88,7 @@ body{
     <span id="date">Sat 26 Sep</span>
     <span>&nbsp;•&nbsp;</span>
     <span id="weatherIcon">☀</span>
-    <span id="temperature">--°C</span>
+    <span id="temperature">--°c</span>
   </div>
 
 </div>
@@ -114,11 +114,15 @@ function updateClock(){
   document.getElementById("time").textContent =
     `${hours}:${minutes}`;
 
-  const dateText = now.toLocaleDateString("en-GB",{
-    weekday:"short",
-    day:"numeric",
-    month:"short"
-  });
+  const weekdays = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  const months = [
+    "Jan","Feb","Mar","Apr","May","Jun",
+    "Jul","Aug","Sep","Oct","Nov","Dec"
+  ];
+
+  const dateText =
+    `${weekdays[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]}`;
 
   document.getElementById("date").textContent = dateText;
 }
@@ -207,7 +211,7 @@ async function updateWeather(){
     console.log("Weather unavailable:",error);
 
     document.getElementById("temperature").textContent =
-      "--°C";
+      "--°c";
 
   }
 
