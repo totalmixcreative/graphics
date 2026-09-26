@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+/*******************
+ COPYRIGHT NOTICE
+© 2026 Total Mix / Chris Tait.
+All rights reserved.
+This signage system, including all layouts, animations, media scheduling and associated assets, is proprietary and may not be copied, redistributed, modified or reused without permission.
+Contact: chris@totalmix.co.uk
+********************/
+
+
+<meta charset="UTF-8">
+    <title>Signage Player</title>
+	
+<link rel="preload" href="robuck-regular.otf" as="font" type="font/otf" crossorigin>
+
+<style>
+	
+@font-face {
+  font-family: 'Robuck';
+  src: url('robuck-regular.otf') format('opentype');
+}
+
+/* ============================
+BASE
+============================ */
+
+html,body{
+margin:0;
+padding:0;
+width:100%;
+height:100%;
+overflow:hidden;
+background:black;
+}
+
+/* ===============================
+SIDEBAR LOOPING BACKGROUND VIDEO
+=============================== */
+
+#SBbgVideo{
+position:absolute;
+top:0;
+left:0px;
+width:360px;
+height:100%;
+object-fit:cover;
+z-index:1;
+pointer-events:none;
+}
+	
+/* ============================
+SIGNAGE CANVAS
+============================ */
+
+#canvas{
+position:absolute;
+top:0;
+left:50%;
+transform:translateX(-50%);
+width:1920px;
+height:1080px;
+}
+	
+/* ============================
+HEADER
+============================ */
+
+#header{
+position:absolute;
+top:20px;
+left:55px;
+width:300px;
+height:160px;
+z-index:50;
+}
+
+/* ============================
+SIDEBAR
+============================ */
+
+#sidebar{
+position:absolute;
+top:190px;
+left:61px;
+width:359px;
+height:900px;
+z-index:40;
+	transform:scale(0.83);
+transform-origin: top left;
+}
+
+/* ============================
+PROMO AREA
+============================ */
+
+#promo{
+position:absolute;
+top:0;
+left:360px;
+right:0;
+bottom:220px;
+z-index:10;
+}
+
+/* ===============================
+   LT LOOPING BACKGROUND VIDEO
+=============================== */
+
+#LTbgVideo{
+  position:absolute;
+
+  left:0;
+  right:60px;     /* match lowerthird */
+
+  bottom:0;
+  height:220px;
+
+  width:auto;
+
+  object-fit:cover;
+
+  z-index:99;
+  pointer-events:none;
+}
+	
+/* ============================
+LOWER THIRD
+============================ */
+
+#lowerthird{
+position:absolute;
+left:0;
+right:60px;
+bottom:0;
+height:220px;
+z-index:100;
+}
+
+/* ============================
+IFRAMES
+============================ */
+
+iframe{
+width:100%;
+height:100%;
+border:none;
+}
+	
+/* ===============================
+SIDEBAR GRADIENT BACKGROUND
+=============================== */
+
+#SBbg{
+
+  position:absolute;
+
+  top:0;
+  left:0;
+
+  width:360px;
+  height:100%;
+
+  z-index:1;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #efefef,
+      #dcdcdc,
+      #ffffff
+    );
+
+  background-size:100% 400%;
+
+  animation:
+    sidebarGradient 25s ease infinite;
+
+}
+
+/* ===============================
+LOWER THIRD GRADIENT
+=============================== */
+
+#LTbg{
+
+  position:absolute;
+
+  bottom:0;
+  left:0;
+
+  width:100%;
+  height:220px;
+
+  z-index:99;
+
+  overflow:hidden;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ff0040,
+      #ff7b00,
+      #ff0040,
+      #ff00b3
+    );
+
+  background-size:400% 400%;
+
+  animation:
+    lowerThirdGradient 20s ease infinite;
+
+}
+
+/* ===============================
+ANIMATIONS
+=============================== */
+
+@keyframes sidebarGradient{
+
+  0%{
+    background-position:50% 0%;
+  }
+
+  50%{
+    background-position:50% 100%;
+  }
+
+  100%{
+    background-position:50% 0%;
+  }
+
+}
+
+@keyframes lowerThirdGradient{
+
+  0%{
+    background-position:0% 50%;
+  }
+
+  50%{
+    background-position:100% 50%;
+  }
+
+  100%{
+    background-position:0% 50%;
+  }
+
+}
+	
+/* ============================
+PROMO NIGHT MODE
+============================ */
+
+#promo{
+position:absolute;
+top:0;
+left:360px;
+right:0;
+
+z-index:10;
+overflow:visible;
+transform-origin:top right;
+	
+width:1564px;
+height:880px;
+
+transition:
+  transform 1.2s cubic-bezier(0.2,0.8,0.2,1);
+
+}
+
+#promo iframe{
+
+  width:1564px;
+  height:880px;
+
+}	
+	
+#promo.nightmode{
+
+  top:0;
+  right:0;
+
+  transform-origin:top right;
+  transform:scale(1.24);
+	
+  overflow:hidden;
+
+  z-index:9999;
+
+}
+
+
+</style>
+</head>
+
+<body>
+
+<div id="canvas">
+
+<div id="header">
+<iframe id="headerFrame"></iframe>
+</div>
+
+<div id="sidebar">
+<iframe src="sidebar.html"></iframe>
+</div>
+
+<div id="promo">
+<iframe src="promoScreen.html"></iframe>
+</div>
+
+<div id="lowerthird">
+<iframe src="LowerThirds.html"></iframe>
+</div>
+	
+<!-- LT LOOPING BACKGROUND -->
+<div id="LTbg"></div>
+
+<!-- Sidebar background -->
+
+<div id="SBbg"></div>
+
+</div>
+
+
+	
+<script>
+
+let currentLTTheme = "";
+
+function getNthMonday(year, month, n){
+
+  const firstDay = new Date(year, month, 1);
+  const firstMondayOffset = (8 - firstDay.getDay()) % 7;
+  return new Date(year, month, 1 + firstMondayOffset + (n-1)*7);
+
+}
+
+const promoFrame =
+  document.querySelector("#promo iframe");
+	
+const ltFrame =
+  document.querySelector(
+    "#lowerthird iframe"
+  );
+	
+function enterNightMode(){
+
+  document
+    .getElementById("promo")
+    .classList
+    .add("nightmode");
+
+  setTimeout(()=>{
+
+    promoFrame.contentWindow.postMessage(
+      {
+        type:"nightmode-on",
+        venue: venue
+      },
+      "*"
+    );
+
+    ltFrame.contentWindow.postMessage(
+      {
+        type:"nightmode-on",
+        venue: venue
+      },
+      "*"
+    );
+
+  },1200);
+
+}
+
+
+function exitNightMode(){
+
+  promoFrame.contentWindow.postMessage(
+    {
+      type:"nightmode-off",
+      venue: venue
+    },
+    "*"
+  );
+	
+ltFrame.contentWindow.postMessage(
+  {
+    type:"nightmode-off",
+    venue: venue
+  },
+  "*"
+);
+
+  setTimeout(()=>{
+
+    document
+      .getElementById("promo")
+      .classList
+      .remove("nightmode");
+
+  },2200);
+
+}
+/* ============================
+NIGHT MODE SCHEDULE
+============================ */
+	
+function isSpecialEventNight(){
+
+  if(venue !== "carbon"){
+    return false;
+  }
+
+  const nowTime = new Date();
+
+  const date =
+    nowTime.toISOString().split("T")[0];
+
+  const hour =
+    nowTime.getHours();
+
+  const minute =
+    nowTime.getMinutes();
+
+  const specialEventDates = [
+
+    "2026-06-20",
+    "2026-07-25",
+    "2026-08-29",
+    "2026-09-26",
+    "2026-10-24",
+    "2026-11-14"
+
+  ];
+
+  const afterStart =
+    hour > 14 ||
+    (hour === 14 && minute >= 5);
+
+  const beforeEnd =
+    hour < 20 ||
+    (hour === 20 && minute <= 5);
+
+  return (
+    specialEventDates.includes(date) &&
+    afterStart &&
+    beforeEnd
+  );
+
+}	
+	
+function isNightMode(){
+
+  const nowTime = new Date();
+
+  const day = nowTime.getDay();
+  const hour = nowTime.getHours();
+
+  /* CARBON = EVERY NIGHT */
+  if(venue === "carbon"){
+
+    return (
+      (hour >= 22) ||
+	  (hour < 4)
+    );
+
+  }
+
+  /* MILL = FRI/SAT ONLY */
+  if(venue === "mill"){
+
+    return (
+
+      (day === 5 && hour >= 22) ||
+      (day === 6 && hour < 4) ||
+
+      (day === 6 && hour >= 22) ||
+      (day === 0 && hour < 4)
+
+    );
+
+  }
+
+  return false;
+
+}
+	
+/* ============================
+SERVER TIME
+============================ */
+
+const MASTER_EPOCH =
+new Date("2026-01-01T00:00:00Z").getTime();
+
+function getElapsedTime(){
+  return now().getTime() - MASTER_EPOCH;
+}    
+	
+function getCycleRemaining(){
+
+  const elapsedInCycle =
+    getElapsedTime() % 10600;
+
+  return 10600 - elapsedInCycle;
+
+}
+	
+function syncGradient(element,duration){
+
+  const elapsed =
+    getElapsedTime() / 1000;
+
+  const offset =
+    -(elapsed % duration);
+
+  element.style.animationDelay =
+    `${offset}s`;
+
+}
+    
+let serverTimeOffset = 0;
+
+async function syncServerTime(){
+
+  try{
+
+    const res = await fetch(
+      "https://timeapi.world/timezone/Europe/London"
+    );
+
+    const data = await res.json();
+
+    const serverNow = new Date(data.datetime);
+    const localNow = new Date();
+
+    serverTimeOffset = serverNow - localNow;
+
+  }catch(e){
+
+    console.log("Server time sync failed");
+
+  }
+
+}
+
+function now(){
+  return new Date(Date.now() + serverTimeOffset);
+}
+	
+let nightActive = false;
+let enteringNightMode = false;
+let exitingNightMode = false;
+	
+let nightExpandTriggered = false;
+let nightBumperTriggered = false;
+
+let dayShrinkTriggered = false;
+let dayBumperTriggered = false;
+
+function updateMode(){
+
+  const remaining =
+    getCycleRemaining();
+
+  /* =========================
+     ENTER NIGHT MODE
+  ========================= */
+
+if(
+    (isNightMode() || isSpecialEventNight()) &&
+    !nightActive
+){
+
+    if(!nightExpandTriggered){
+		
+	  enteringNightMode = true;
+      nightExpandTriggered = true;
+
+      document
+        .getElementById("promo")
+        .classList
+        .add("nightmode");
+
+    }
+
+    /* 2 seconds remaining */
+
+    if(
+  enteringNightMode &&
+  remaining <= 2000 &&
+  !nightBumperTriggered
+){
+
+  nightBumperTriggered = true;
+
+  promoFrame.contentWindow.postMessage(
+{
+  type:"nightmode-on",
+  venue: venue,
+  silent:true,
+  specialEvent: isSpecialEventNight()
+},
+"*"
+);
+		
+ltFrame.contentWindow.postMessage(
+  {
+    type:"nightmode-on",
+    venue: venue,
+    specialEvent: isSpecialEventNight()
+  },
+  "*"
+);
+
+}
+
+    /* new slide boundary */
+
+    if(
+      enteringNightMode &&
+      remaining <= 100
+    ){
+
+      nightActive = true;
+	  nightExpandTriggered = false;
+      nightBumperTriggered = false;	
+      enteringNightMode = false;
+
+    }
+
+  }
+
+  /* =========================
+     EXIT NIGHT MODE
+  ========================= */
+
+  if(
+    !isNightMode() &&
+    !isSpecialEventNight() &&
+    nightActive
+){
+
+    /* 5 seconds remaining */
+
+    if(!dayShrinkTriggered){
+		
+      dayShrinkTriggered = true;
+		
+		document
+  .getElementById("promo")
+  .classList
+  .remove("nightmode");
+      exitingNightMode = true;
+
+    }
+
+    /* 2 seconds remaining */
+
+    if(
+      exitingNightMode &&
+      remaining <= 2000 &&
+!dayBumperTriggered
+    ){
+dayBumperTriggered = true;
+      promoFrame.contentWindow.postMessage(
+        {
+          type:"nightmode-off",
+          venue: venue
+        },
+        "*"
+      );
+		ltFrame.contentWindow.postMessage(
+  {
+    type:"nightmode-off",
+    venue: venue
+  },
+  "*"
+);
+
+    }
+
+    /* new slide boundary */
+
+    if(
+      exitingNightMode &&
+      remaining <= 100
+    ){
+
+      document
+        .getElementById("promo")
+        .classList
+        .remove("nightmode");
+
+      nightActive = false;
+	  dayShrinkTriggered = false;
+dayBumperTriggered = false;	
+      exitingNightMode = false;
+
+    }
+
+  }
+
+}
+
+/* ============================
+VENUE PARAMETER
+============================ */
+
+const params = new URLSearchParams(window.location.search);
+const venue = params.get("venue") || "carbon";
+
+document.title = 
+venue.charAt(0).toUpperCase() + venue.slice(1) + " Signage Player";
+
+document.getElementById("headerFrame").src =
+"time_date_weather.html?site=" + venue;
+    
+	
+/* ============================
+CHECK EVERY 30 SECONDS
+============================ */
+
+async function init(){
+	
+  updateMode();
+
+setInterval(updateMode,250);
+
+  await syncServerTime();
+	
+  const remaining =
+  getCycleRemaining();
+	
+  if(
+  isNightMode() ||
+  isSpecialEventNight()
+){
+
+  /* already fully nighttime */
+
+  if(remaining > 5000){
+
+    document
+      .getElementById("promo")
+      .classList
+      .add("nightmode");
+
+    nightActive = true;
+
+    promoFrame.contentWindow.postMessage(
+      {
+        type:"nightmode-on",
+        venue: venue,
+        silent:true,
+		specialEvent: isSpecialEventNight()
+      },
+      "*"
+    );
+
+    ltFrame.contentWindow.postMessage(
+{
+  type:"nightmode-on",
+  venue: venue,
+  silent:true,
+  specialEvent: isSpecialEventNight()
+},
+"*"
+);
+
+  }
+
+}else{
+
+  promoFrame.contentWindow.postMessage(
+    {
+      type:"nightmode-off",
+      venue: venue,
+      silent:true
+    },
+    "*"
+  );
+
+  ltFrame.contentWindow.postMessage(
+    {
+      type:"nightmode-off",
+      venue: venue,
+      silent:true
+    },
+    "*"
+  );
+
+}
+
+  /* resync every 5 mins */
+  setInterval(syncServerTime,300000);
+
+  syncGradient(
+  document.getElementById("SBbg"),
+  25
+);
+
+syncGradient(
+  document.getElementById("LTbg"),
+  20
+);
+
+
+}
+
+init();
+
+</script>
+
+</body>
+</html>
