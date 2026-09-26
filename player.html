@@ -472,20 +472,15 @@ function isNightMode(){
 
   }
 
-  /* MILL = FRI/SAT ONLY */
-  if(venue === "mill"){
+ /* MILL = EVERY NIGHT */
+if(venue === "mill"){
 
-    return (
+  return (
+    (hour >= 22) ||
+    (hour < 4)
+  );
 
-      (day === 5 && hour >= 22) ||
-      (day === 6 && hour < 4) ||
-
-      (day === 6 && hour >= 22) ||
-      (day === 0 && hour < 4)
-
-    );
-
-  }
+}
 
   return false;
 
