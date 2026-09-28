@@ -320,6 +320,31 @@ NIGHT BUMPER
 
 <script>
 
+/* =========================
+   OFFLINE CACHE
+========================= */
+
+if ("serviceWorker" in navigator) {
+
+  window.addEventListener("load", () => {
+
+    navigator.serviceWorker
+      .register("sw.js")
+      .then(() => {
+        console.log("PS Service Worker registered");
+      })
+      .catch((error) => {
+        console.log(
+          "PS Service Worker registration failed:",
+          error
+        );
+      });
+
+  });
+
+}
+
+
 const BASE =
 "https://totalmixcreative.github.io/graphics/promos/";
 
