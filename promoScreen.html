@@ -363,6 +363,32 @@ function getElapsedTime(){
 
 let currentMedia = null;
 let nightModeActive = false;
+let specialEventType = null;
+	
+let specialEventActive = false;
+let specialEventIndex = 0;
+
+const SPECIAL_EVENT_MEDIA = {
+  pit: [
+	  "PitVis.mp4"
+  ],
+	
+  ska: [
+    "Ska-1.mp4"
+  ],
+
+  "90s": [
+    "90s-1.mp4",
+    "90s-2.mp4",
+    "90s-3.mp4"
+  ],
+
+  trance: [
+    "Trance-1.mp4"
+  ]
+
+};
+	
 let bumperActive = false;
 let lastBumperTime = 0;
 let nightHue = 0;
@@ -380,6 +406,14 @@ window.addEventListener("message",(e)=>{
   if(e.data.type === "nightmode-on"){
 
     nightModeActive = true;
+
+    specialEventType = e.data.specialEventType || null;
+    specialEventActive = !!specialEventType;
+    specialEventIndex = 0;
+	  
+	if(specialEventActive){
+    playSpecialEvent();
+}
 
     let venueText;
 
@@ -417,6 +451,10 @@ if(e.data.specialEvent){
   if(e.data.type === "nightmode-off"){
 
     nightModeActive = false;
+	  
+	specialEventActive = false;
+    specialEventType = null;
+    specialEventIndex = 0;
 
     const venueText =
       e.data.venue === "mill"
@@ -472,7 +510,7 @@ function showNightBumper(){
    PLAY MEDIA
 ========================= */
 
-function playAnimation(newMedia){
+function playAnimation(newMedia, loop = false, onEnded = null){
 
   const wrapper =
     document.getElementById("promoWrapper");
@@ -518,7 +556,8 @@ function playAnimation(newMedia){
     video.autoplay = true;
     video.muted = true;
     video.playsInline = true;
-    video.loop = false;
+    video.loop = loop;
+	video.onended = onEnded;
     video.preload = "auto";
 
     video.style.width = "100%";
@@ -578,11 +617,60 @@ wrapper.classList.add("slide-in");
 }
 
 /* =========================
+   SPECIAL EVENT PLAYER
+========================= */
+
+function playSpecialEvent(){
+
+  const mediaList =
+    SPECIAL_EVENT_MEDIA[specialEventType];
+
+  if(!mediaList || !mediaList.length){
+    return;
+  }
+
+  const media =
+    mediaList[specialEventIndex];
+
+  if(mediaList.length === 1){
+
+    playAnimation(
+      media,
+      true
+    );
+
+  }else{
+
+    playAnimation(
+      media,
+      false,
+      () => {
+
+        showNightBumper();
+
+        setTimeout(()=>{
+
+          specialEventIndex =
+            (specialEventIndex + 1)
+            % mediaList.length;
+
+          playSpecialEvent();
+
+        },3000);
+
+      }
+    );
+
+  }
+
+}
+	
+/* =========================
    UPDATE FROM STORAGE
 ========================= */
 
 function updateFromStorage(){
-
+if(specialEventActive) return;
   const promo =
     JSON.parse(
       localStorage.getItem("currentPromo")
@@ -682,17 +770,17 @@ const elapsedInCycle =
 if(
   elapsedInCycle >= HOLD_DURATION &&
   elapsedInCycle < TOTAL_DURATION - 200 &&
-  !wrapper.classList.contains("slide-out")
+  !wrapper.classList.contains("slide-out") &&
+  !specialEventActive
 ){
 
   if(
-    nightModeActive &&
-    !bumperActive
-  ){
-
-    showNightBumper();
-
-  }
+  nightModeActive &&
+  !specialEventActive &&
+  !bumperActive
+){
+  showNightBumper();
+}
 
   wrapper.classList.remove("slide-in");
 

@@ -361,7 +361,9 @@ function enterNightMode(){
     promoFrame.contentWindow.postMessage(
       {
         type:"nightmode-on",
-        venue: venue
+		venue: venue,
+        specialEvent: isSpecialEventNight(),
+        specialEventType: getSpecialEventType()
       },
       "*"
     );
@@ -410,6 +412,13 @@ ltFrame.contentWindow.postMessage(
 /* ============================
 NIGHT MODE SCHEDULE
 ============================ */
+
+const specialEventTypes = {
+  "2026-10-02": "pit",
+  "2026-10-24": "ska",
+  "2026-11-14": "90s",
+  "2026-12-12": "trance"
+};	
 	
 function isSpecialEventNight(){
 
@@ -429,16 +438,11 @@ function isSpecialEventNight(){
     nowTime.getMinutes();
 
   const specialEventDates = [
-
-    "2026-06-20",
-    "2026-07-25",
-    "2026-08-29",
-    "2026-09-26",
-    "2026-10-24",
-    "2026-11-14"
-
-  ];
-
+  "2026-10-24",
+  "2026-11-14",
+  "2026-12-12"
+];
+	
   const afterStart =
     hour > 14 ||
     (hour === 14 && minute >= 5);
@@ -452,8 +456,20 @@ function isSpecialEventNight(){
     afterStart &&
     beforeEnd
   );
+	
+}
+
+function getSpecialEventType(){
+
+  const nowTime = new Date();
+
+  const date =
+    nowTime.toISOString().split("T")[0];
+
+  return specialEventTypes[date] || null;
 
 }	
+
 	
 function isNightMode(){
 
@@ -599,7 +615,8 @@ if(
   type:"nightmode-on",
   venue: venue,
   silent:true,
-  specialEvent: isSpecialEventNight()
+  specialEvent: isSpecialEventNight(),
+  specialEventType: getSpecialEventType()
 },
 "*"
 );
@@ -748,16 +765,14 @@ setInterval(updateMode,250);
 
     nightActive = true;
 
-    promoFrame.contentWindow.postMessage(
-      {
-        type:"nightmode-on",
-        venue: venue,
-        silent:true,
-		specialEvent: isSpecialEventNight()
-      },
-      "*"
-    );
-
+    promoFrame.contentWindow.postMessage({
+    type: "nightmode-on",
+    venue: venue,
+    silent: true,
+    specialEvent: isSpecialEventNight(),
+    specialEventType: getSpecialEventType()
+}, "*");
+	  
     ltFrame.contentWindow.postMessage(
 {
   type:"nightmode-on",
