@@ -431,6 +431,11 @@ function isSpecialEventNight(){
   const date =
     nowTime.toISOString().split("T")[0];
 
+  const yesterday =
+    new Date(nowTime.getTime() - 86400000)
+      .toISOString()
+      .split("T")[0];
+
   const hour =
     nowTime.getHours();
 
@@ -438,11 +443,30 @@ function isSpecialEventNight(){
     nowTime.getMinutes();
 
   const specialEventDates = [
-  "2026-10-24",
-  "2026-11-14",
-  "2026-12-12"
-];
-	
+    "2026-10-02",
+    "2026-10-24",
+    "2026-11-14",
+    "2026-12-12"
+  ];
+
+  /* PIT — Friday 10pm → Saturday 4am */
+
+  if(
+    specialEventTypes[date] === "pit" &&
+    hour >= 21
+  ){
+    return true;
+  }
+
+  if(
+    specialEventTypes[yesterday] === "pit" &&
+    hour < 4
+  ){
+    return true;
+  }
+
+  /* NORMAL DAYTIME SPECIAL EVENTS */
+
   const afterStart =
     hour > 14 ||
     (hour === 14 && minute >= 5);
@@ -453,12 +477,13 @@ function isSpecialEventNight(){
 
   return (
     specialEventDates.includes(date) &&
+    specialEventTypes[date] !== "pit" &&
     afterStart &&
     beforeEnd
   );
-	
-}
 
+}
+	
 function getSpecialEventType(){
 
   const nowTime = new Date();
@@ -466,10 +491,31 @@ function getSpecialEventType(){
   const date =
     nowTime.toISOString().split("T")[0];
 
+  const yesterday =
+    new Date(nowTime.getTime() - 86400000)
+      .toISOString()
+      .split("T")[0];
+
+  const hour =
+    nowTime.getHours();
+
+  if(
+    specialEventTypes[date] === "pit" &&
+    hour >= 22
+  ){
+    return "pit";
+  }
+
+  if(
+    specialEventTypes[yesterday] === "pit" &&
+    hour < 4
+  ){
+    return "pit";
+  }
+
   return specialEventTypes[date] || null;
 
-}	
-
+}
 	
 function isNightMode(){
 
