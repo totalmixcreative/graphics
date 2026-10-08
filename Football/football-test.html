@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Football Fixture Tester</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=League+Gothic&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#07101f;color:#fff;font-family:Oswald,Arial,sans-serif}
+body{padding:24px}
+header{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;margin-bottom:18px}
+h1{font-family:'League Gothic',sans-serif;font-size:58px;font-weight:400;letter-spacing:.5px;margin:0;text-transform:uppercase}
+#status{font-size:16px;color:#aeb9c9;text-align:right}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+select,button{font:inherit;font-size:16px;color:#fff;background:#121d30;border:1px solid #34445d;border-radius:7px;padding:10px 14px}
+button{cursor:pointer}button:hover{background:#1b2a42}
+#summary{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.stat{background:#0d1829;border:1px solid #26364e;border-radius:8px;padding:10px 14px;min-width:130px}.stat b{display:block;font-size:26px}.stat span{font-size:13px;color:#9eabc0;text-transform:uppercase}
+#fixtureList{display:grid;grid-template-columns:repeat(auto-fill,minmax(390px,1fr));gap:12px}
+.fixture{background:#0d1829;border:1px solid #26364e;border-radius:10px;padding:15px;cursor:pointer}.fixture:hover{border-color:#7184a2}
+.fixture-top{display:flex;justify-content:space-between;gap:10px;color:#9eabc0;font-size:13px;text-transform:uppercase;margin-bottom:8px}.competition{color:#fff}.date{white-space:nowrap}
+.teams{font-family:'League Gothic',sans-serif;font-size:31px;text-transform:uppercase;line-height:1.05}.teams .v{color:#7e8da5;padding:0 7px;font-size:24px}
+.badge-row{display:grid;grid-template-columns:1fr 72px 1fr;align-items:center;gap:10px;margin-top:12px}.badge{text-align:center;min-height:72px;display:flex;align-items:center;justify-content:center}.badge img{width:72px;height:72px;object-fit:contain}.badge.missing{font-size:12px;color:#ffb15c;border:1px dashed #8c5b24;border-radius:6px;padding:8px}.badge-row .team-label{text-align:center;font-size:13px;color:#aeb9c9;overflow-wrap:anywhere}
+.fixture.good{border-left:4px solid #42d392}.fixture.missing{border-left:4px solid #ff9f43}
+#empty{padding:40px;text-align:center;color:#9eabc0;background:#0d1829;border:1px solid #26364e;border-radius:10px}
+#preview{margin-top:22px;background:#020713;border:1px solid #26364e;border-radius:12px;overflow:hidden;position:relative;aspect-ratio:16/9;max-width:1100px}
+#preview img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.95}
+.preview-content{position:absolute;left:6%;top:13%;width:82%;font-family:'League Gothic',sans-serif;text-transform:uppercase}.preview-comp{font-size:clamp(30px,5vw,72px)}.line{height:3px;background:#fff;width:70%;margin:12px 0 28px}.preview-teams{display:flex;align-items:center;gap:28px}.preview-team{width:180px;height:180px;display:flex;align-items:center;justify-content:center}.preview-team img{max-width:100%;max-height:100%;object-fit:contain}.preview-v{font-size:40px;color:#aeb9c9}.preview-names{font-size:clamp(24px,3.5vw,54px);margin-top:25px}.preview-time{font-size:clamp(18px,2.5vw,36px);color:#d8e0eb;margin-top:4px}
+#previewMeta{padding:10px 0 0;color:#9eabc0;font-size:13px;word-break:break-all}
+@media(max-width:650px){body{padding:12px}header{display:block}#status{text-align:left;margin-top:8px}.teams{font-size:26px}#fixtureList{grid-template-columns:1fr}.badge-row{grid-template-columns:1fr 60px 1fr}.badge img{width:60px;height:60px}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Football Fixture Tester</h1><div style="color:#8f9db2;margin-top:4px">Live test page — reads the same Google Apps Script feed as Promo Screen</div></div>
+  <div id="status">Loading fixtures…</div>
+</header>
+
+<div class="toolbar">
+  <select id="competitionFilter"><option value="all">All competitions</option></select>
+  <select id="mappingFilter">
+    <option value="all">All badge status</option>
+    <option value="mapped">Mapped to own SVG</option>
+    <option value="missing">Missing from mapping</option>
+  </select>
+  <button id="refresh">Refresh fixtures</button>
+  <button id="cycle">Start 3-second preview</button>
+  <button id="stop">Stop preview</button>
+</div>
+
+<div id="summary"></div>
+<div id="fixtureList"></div>
+<div id="preview" hidden>
+  <img class="bg" src="https://totalmixcreative.github.io/graphics/promos/soccerbg.png" alt="">
+  <div class="preview-content">
+    <div class="preview-comp" id="pComp"></div><div class="line"></div>
+    <div class="preview-teams"><div class="preview-team" id="pHomeBadge"></div><div class="preview-v">V</div><div class="preview-team" id="pAwayBadge"></div></div>
+    <div class="preview-names" id="pNames"></div><div class="preview-time" id="pTime"></div>
+  </div>
+</div>
+<div id="previewMeta"></div>
+
+<script>
+const FIXTURE_ENDPOINT="https://script.google.com/macros/s/AKfycbw2oJWXgOssax4eU_FHYk4QJx-NG5rMt-0qXWeUgCPyiqvyy898ysye65oCEPhFyv_wQw/exec";
+const ASSET_BASE="https://totalmixcreative.github.io/graphics/Football/Normalised/";
+
+// Same mapping currently used by Promo Screen.
+const FOOTBALL_TEAMS={
+"Arsenal":['PL','Arsenal.svg'],"Aston Villa":['PL','AstonVilla.svg'],"Bournemouth":['PL','Bournemouth.svg'],"Brentford":['PL','Brentford.svg'],"Brighton":['PL','Brighton.svg'],"Chelsea":['PL','Chelsea.svg'],"Crystal Palace":['PL','CrystalPalace.svg'],"Coventry":['PL','Coventry.svg'],"Everton":['PL','Everton.svg'],"Fulham":['PL','Fulham.svg'],"Hull":['PL','Hull.svg'],"Ipswich":['PL','Ipswich.svg'],"Leeds":['PL','Leeds.svg'],"Liverpool":['PL','Liverpool.svg'],"Manchester City":['PL','ManchesterCity.svg'],"Manchester Utd":['PL','ManchesterUnited.svg'],"Newcastle":['PL','Newcastle.svg'],"Nott'm Forest":['PL','NottinghamForest.svg'],"Sunderland":['PL','Sunderland.svg'],"Spurs":['PL','Tottenham.svg'],
+"Birmingham":['EFL','Birmingham.svg'],"Blackburn":['EFL','Blackburn.svg'],"Bolton":['EFL','Bolton.svg'],"Bristol City":['EFL','BristolCity.svg'],"Burnley":['EFL','Burnley.svg'],"Cardiff City":['EFL','CardiffCity.svg'],"Charlton Athletic":['EFL','Charlton.svg'],"Derby":['EFL','Derby.svg'],"Leicester":['EFL','Leicester.svg'],"Lincoln City":['EFL','LincolnCity.svg'],"Middlesbrough":['EFL','Middlesbrough.svg'],"Millwall":['EFL','Millwall.svg'],"Norwich":['EFL','Norwich.svg'],"Oxford":['EFL','Oxford.svg'],"Portsmouth":['EFL','Portsmouth.svg'],"Preston":['EFL','Preston.svg'],"QPR":['EFL','QPR.svg'],"Sheffield Utd":['EFL','SheffieldUnited.svg'],"Sheff Weds":['EFL','SheffieldWednesday.svg'],"Southampton":['EFL','Southampton.svg'],"Stoke City":['EFL','StokeCity.svg'],"Swansea City":['EFL','SwanseaCity.svg'],"Watford":['EFL','Watford.svg'],"West Brom":['EFL','WestBrom.svg'],"West Ham":['EFL','WestHam.svg'],"Wolves":['EFL','Wolves.svg'],"Wrexham":['EFL','Wrexham.svg'],
+"AEK Athens":['UEFA','AEKAthens.svg'],"Atlético Madrid":['UEFA','AtleticoMadrid.svg'],"Barcelona":['UEFA','Barcelona.svg'],"Bayer Leverkusen":['UEFA','BayerLeverkusen.svg'],"Bayern Munich":['UEFA','BayernMunich.svg'],"Benfica":['UEFA','Benfica.svg'],"Bodo Glimt":['UEFA','BodoGlimt.svg'],"Celtic FC":['UEFA','CelticFC.svg'],"Como":['UEFA','Como.svg'],"Feyenoord":['UEFA','Feyenoord.svg'],"Inter Milan":['UEFA','InterMilan.svg'],"Juventus":['UEFA','Juventus.svg'],"LASK":['UEFA','LASK.svg'],"Lazio":['UEFA','Lazio.svg'],"Lyon":['UEFA','Lyon.svg'],"Marseille":['UEFA','Marseille.svg'],"Monaco":['UEFA','Monaco.svg'],"Napoli":['UEFA','Napoli.svg'],"NEC":['UEFA','NEC.svg'],"Olympiacos":['UEFA','Olympiacos.svg'],"PSG":['UEFA','PSG.svg'],"PSV":['UEFA','PSV.svg'],"RB Leipzig":['UEFA','RBLeipzig.svg'],"Real Madrid":['UEFA','RealMadrid.svg'],"Roma":['UEFA','Roma.svg'],"Schalke":['UEFA','Schalke.svg'],"Sevilla":['UEFA','Sevilla.svg'],"Shakhtar Donetsk":['UEFA','ShakhtarDonetsk.svg'],"Sparta Prague":['UEFA','SpartaPrague.svg'],"USG":['UEFA','USG.svg'],"Valencia":['UEFA','Valencia.svg'],"Viking FK":['UEFA','VikingFK.svg'],"Werder Bremen":['UEFA','WerderBremen.svg'],"Fenerbahce":['UEFA','Fenerbahce.svg'],"Lille":['UEFA','Lille.svg'],"Kauno Zalgiris":['UEFA','KaunoZalgiris.svg'],"Galatasaray":['UEFA','Galatasaray.svg'],"Sturm Graz":['UEFA','SturmGraz.svg'],"Torreense":['UEFA','Torreense.svg']
+};
+
+// Known feed-name aliases. This is deliberately separate from the asset mapping.
+const TEAM_ALIASES={
+"Coventry City":"Coventry",
+"Hull City":"Hull",
+"Manchester United":"Manchester Utd",
+"Manchester Utd":"Manchester Utd",
+"Nottingham Forest":"Nott'm Forest",
+"Nott'm Forest":"Nott'm Forest",
+"Sheffield United":"Sheffield Utd",
+"Sheffield Wednesday":"Sheff Weds",
+"West Bromwich Albion":"West Brom",
+"AFC Bournemouth":"Bournemouth"
+};
+
+function mappedTeamName(name){return TEAM_ALIASES[name]||name}
+function getAsset(team){const key=mappedTeamName(team);const a=FOOTBALL_TEAMS[key];return a?ASSET_BASE+a[0]+'/'+a[1]:null}
+function statusFor(team){return getAsset(team)?'mapped':'missing'}
+function esc(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+
+let fixtures=[];let cycleTimer=null;let cycleIndex=0;
+const $=id=>document.getElementById(id);
+
+function normaliseFixture(f){
+  return {...f,homeAsset:getAsset(f.home),awayAsset:getAsset(f.away),homeStatus:statusFor(f.home),awayStatus:statusFor(f.away)}
+}
+function competitions(){return [...new Set(fixtures.map(f=>f.competition).filter(Boolean))].sort((a,b)=>a.localeCompare(b))}
+function populateCompetition(){const sel=$('competitionFilter');const old=sel.value;sel.innerHTML='<option value="all">All competitions</option>'+competitions().map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');if([...sel.options].some(o=>o.value===old))sel.value=old}
+function filtered(){const c=$('competitionFilter').value,m=$('mappingFilter').value;return fixtures.filter(f=>(c==='all'||f.competition===c)&&(m==='all'||f.homeStatus===m||f.awayStatus===m))}
+function renderSummary(){const teams=[...new Set(fixtures.flatMap(f=>[f.home,f.away]))];const mapped=teams.filter(t=>statusFor(t)==='mapped').length;const missing=teams.length-mapped;const comps=competitions().length;$('summary').innerHTML=`<div class="stat"><b>${fixtures.length}</b><span>Fixtures</span></div><div class="stat"><b>${teams.length}</b><span>Unique teams</span></div><div class="stat"><b>${mapped}</b><span>Mapped teams</span></div><div class="stat"><b>${missing}</b><span>Missing teams</span></div><div class="stat"><b>${comps}</b><span>Competitions</span></div>`}
+function renderList(){const list=filtered();$('fixtureList').innerHTML=list.length?list.map((f,i)=>`<article class="fixture ${f.homeStatus==='mapped'&&f.awayStatus==='mapped'?'good':'missing'}" data-index="${fixtures.indexOf(f)}"><div class="fixture-top"><span class="competition">${esc(f.competition||'Unknown competition')}</span><span class="date">${esc(f.label||f.date||'')}</span></div><div class="teams">${esc(f.home)} <span class="v">V</span> ${esc(f.away)}</div><div class="badge-row"><div class="badge ${f.homeAsset?'':'missing'}">${f.homeAsset?`<img src="${f.homeAsset}" alt="">`:'MISSING'}</div><div style="text-align:center;color:#77879f">VS</div><div class="badge ${f.awayAsset?'':'missing'}">${f.awayAsset?`<img src="${f.awayAsset}" alt="">`:'MISSING'}</div><div class="team-label">${f.home} — ${f.homeStatus==='mapped'?'OWN SVG':'NO MAPPING'}</div><div></div><div class="team-label">${f.away} — ${f.awayStatus==='mapped'?'OWN SVG':'NO MAPPING'}</div></div></article>`).join(''):'<div id="empty">No fixtures match the current filters.</div>'}
+function render(){populateCompetition();renderSummary();renderList()}
+function showPreview(f){$('preview').hidden=false;$('pComp').textContent=f.competition||'';$('pNames').textContent=`${f.home} V ${f.away}`;$('pTime').textContent=f.label||f.date||'';$('pHomeBadge').innerHTML=f.homeAsset?`<img src="${f.homeAsset}" alt="">`:'<span style="color:#ffb15c">MISSING</span>';$('pAwayBadge').innerHTML=f.awayAsset?`<img src="${f.awayAsset}" alt="">`:'<span style="color:#ffb15c">MISSING</span>';$('previewMeta').textContent=`Home: ${f.homeAsset||'NO OWN ASSET'}  |  Away: ${f.awayAsset||'NO OWN ASSET'}`}
+async function load(){
+  $('status').textContent='Fetching Google Apps Script…';
+  try{
+    const response=await fetch(FIXTURE_ENDPOINT+'?t='+Date.now(),{cache:'no-store'});
+    if(!response.ok)throw new Error('HTTP '+response.status);
+    const data=await response.json();
+    fixtures=(data.psFootballFixtures||[]).map(normaliseFixture);
+    render();
+    $('status').textContent=`Loaded ${fixtures.length} fixtures • ${new Date().toLocaleTimeString()}`;
+  }catch(e){$('status').textContent='Fixture fetch failed: '+e.message;$('fixtureList').innerHTML='<div id="empty">Could not read the Google Apps Script response. Open this page through a browser that permits the endpoint request, then press Refresh fixtures.</div>';console.error(e)}
+}
+function startCycle(){stopCycle();const list=filtered();if(!list.length)return;$('preview').hidden=false;cycleIndex=0;showPreview(list[cycleIndex]);cycleTimer=setInterval(()=>{const current=filtered();if(!current.length)return;cycleIndex=(cycleIndex+1)%current.length;showPreview(current[cycleIndex])},3000)}
+function stopCycle(){if(cycleTimer){clearInterval(cycleTimer);cycleTimer=null}}
+$('refresh').addEventListener('click',load);$('competitionFilter').addEventListener('change',renderList);$('mappingFilter').addEventListener('change',renderList);$('cycle').addEventListener('click',startCycle);$('stop').addEventListener('click',stopCycle);$('fixtureList').addEventListener('click',e=>{const card=e.target.closest('.fixture');if(!card)return;const f=fixtures[Number(card.dataset.index)];if(f)showPreview(f)});
+load();
+</script>
+</body>
+</html>
