@@ -174,13 +174,16 @@ function now(){
 
 const ENDPOINT_URL =
 "https://script.google.com/macros/s/AKfycbyz-izL1cT1FGGIXDStm32Fxw_bGfmV_bxrS29J2tlGaUdJytmlZbVDWmlevQJmGI5D/exec";
+	
+const PS_FIXTURE_ENDPOINT =
+"https://script.google.com/macros/s/AKfycbw2oJWXgOssax4eU_FHYk4QJx-NG5rMt-0qXWeUgCPyiqvyy898ysye65oCEPhFyv_wQw/exec";
 
 const HOLD_DURATION = 10000;
 const ANIMATION_DURATION = 600;
 const TOTAL_DURATION = HOLD_DURATION + ANIMATION_DURATION;
 const MASTER_EPOCH =
 new Date("2026-01-01T00:00:00Z").getTime();
-    
+
 function getElapsedTime(){
   return now().getTime() - MASTER_EPOCH;
 }
@@ -190,6 +193,12 @@ function getElapsedTime(){
 let items = [];
 let lastTimelineIndex = -1;
 let rotationStarted = false;
+	
+let psFootballFixtures = [];
+
+let footballRotationIndex = 0;
+
+let rotationSchedule = [];
 
 /**************** NIGHT MODE STATE ****************/
 
@@ -216,6 +225,41 @@ window.addEventListener("message",(e)=>{
   }
 
 });
+	
+async function loadPSFootballFixtures(){
+
+  try{
+
+    const res =
+      await fetch(
+        PS_FIXTURE_ENDPOINT +
+        "?t=" +
+        Date.now()
+      );
+
+    const data =
+      await res.json();
+
+    psFootballFixtures =
+      data.psFootballFixtures || [];
+
+    console.log(
+      "LT PS football fixtures:",
+      psFootballFixtures
+    );
+	  
+	  buildRotationSchedule();
+
+  }catch(err){
+
+    console.error(
+      "LT PS football fixture fetch failed:",
+      err
+    );
+
+  }
+
+}
 	
 /**************** LOAD DATA ****************/
 
@@ -284,6 +328,8 @@ if(nightModeActive){
   });
 
 }
+	  
+	 buildRotationSchedule();
 
     if(items.length && !rotationStarted){
 
@@ -296,25 +342,123 @@ if(nightModeActive){
   }
 
 }
+	
+function buildRotationSchedule(){
+
+  rotationSchedule = [];
+
+  /*
+    NIGHT MODE:
+    Keep the existing night-mode
+    rotation exactly as it is.
+  */
+
+  if(nightModeActive){
+
+    /*
+      NIGHT MODE:
+      Keep a fixed 4 normal promos → 2 football fixtures
+      schedule.
+
+      The promo content itself advances through the filtered
+      Night Mode promo list each time the six-slot cycle repeats.
+    */
+
+    for(let i = 0; i < 4; i++){
+
+      rotationSchedule.push({
+        type: "promo",
+        promoSlot: i
+      });
+
+    }
+
+    if(psFootballFixtures.length){
+
+      for(let j = 0; j < 2; j++){
+
+        rotationSchedule.push({
+          type: "football",
+          footballSlot: j
+        });
+
+      }
+
+    }
+
+    return;
+
+  }
+
+  /*
+    DAYTIME:
+    4 normal promos
+    then 2 football fixtures
+  */
+
+  let fixtureIndex = 0;
+
+  for(
+    let i = 0;
+    i < items.length;
+    i += 4
+  ){
+
+    const promoBlock =
+      items.slice(i, i + 4);
+
+    promoBlock.forEach(item => {
+
+      rotationSchedule.push({
+        type: "promo",
+        item: item
+      });
+
+    });
+
+    if(psFootballFixtures.length){
+
+  for(let j = 0; j < 2; j++){
+
+    rotationSchedule.push({
+
+      type: "football",
+
+      footballSlot: j
+
+    });
+
+  }
+
+}
+
+  }
+
+}
 
 /**************** ROTATION ****************/
 
 function rotate(){
 
-  if(!items.length) return;
+  if(!rotationSchedule.length) return;
 
   const timelineIndex =
-    Math.floor(getElapsedTime()/TOTAL_DURATION);
+    Math.floor(
+      getElapsedTime() /
+      TOTAL_DURATION
+    );
 
   const newIndex =
-    timelineIndex % items.length;
+    timelineIndex %
+    rotationSchedule.length;
 
   if(newIndex === lastTimelineIndex)
     return;
 
   lastTimelineIndex = newIndex;
 
-  const item = items[newIndex];
+  const scheduleItem =
+    rotationSchedule[newIndex];
 
   const wrapper =
     document.getElementById("text-wrapper");
@@ -325,51 +469,158 @@ function rotate(){
   const subline =
     document.getElementById("subline");
 
-  if(
 
-  item.headline &&
-  item.headline.includes("Grand Prix")
+  /* =========================
+     FOOTBALL
+  ========================= */
 
-){
-
-  headline.textContent =
-    "Live Formula 1";
-
-  subline.textContent =
-    "Watch every lap live here";
-
-}else{
-
-  headline.textContent =
-    item.headline || "";
-
-  subline.textContent =
-    item.subline || "";
-
+  if(scheduleItem.type === "football"){
+	  
+  if(!psFootballFixtures.length){
+  return;
 }
 
-  const imageIndex =
-    Array.isArray(item.image)
-    ? timelineIndex % item.image.length
-    : 0;
+  const fixture =
+    psFootballFixtures[
+      footballRotationIndex %
+      psFootballFixtures.length
+    ];
+
+  footballRotationIndex++;
+
+  headline.textContent =
+    "Live Football";
+
+  subline.textContent =
+    "Watch live football here";
 
   localStorage.setItem(
-    "currentPromo",
-    JSON.stringify({
-      image: item.image,
-      imageIndex: imageIndex,
-      headline: item.headline,
-      subline: item.subline,
-      timestamp: getElapsedTime()
-    })
+      "currentPromo",
+      JSON.stringify({
+
+        type:
+          "football",
+
+        fixture:
+          fixture,
+
+        timestamp:
+          getElapsedTime()
+
+      })
+    );
+
+  }
+
+
+  /* =========================
+     NORMAL PROMO
+  ========================= */
+
+  else{
+
+    let item;
+
+    if(
+      nightModeActive &&
+      scheduleItem.promoSlot !== undefined
+    ){
+
+      const cycleNumber =
+        Math.floor(timelineIndex / rotationSchedule.length);
+
+      const promoIndex =
+        (
+          cycleNumber * 4 +
+          scheduleItem.promoSlot
+        ) % items.length;
+
+      item = items[promoIndex];
+
+    }else{
+
+      item = scheduleItem.item;
+
+    }
+
+
+    /* =========================
+       F1
+    ========================= */
+
+    if(
+      item.headline &&
+      item.headline.includes("Grand Prix")
+    ){
+
+      headline.textContent =
+        "Live Formula 1";
+
+      subline.textContent =
+        "Watch every lap live here";
+
+    }
+
+    else{
+
+      headline.textContent =
+        item.headline || "";
+
+      subline.textContent =
+        item.subline || "";
+
+    }
+
+
+    const imageIndex =
+      Array.isArray(item.image)
+      ? timelineIndex %
+        item.image.length
+      : 0;
+
+
+    localStorage.setItem(
+      "currentPromo",
+      JSON.stringify({
+
+        image:
+          item.image,
+
+        imageIndex:
+          imageIndex,
+
+        headline:
+          item.headline,
+
+        subline:
+          item.subline,
+
+        timestamp:
+          getElapsedTime()
+
+      })
+    );
+
+  }
+
+
+  /* =========================
+     ANIMATE LT
+  ========================= */
+
+  wrapper.classList.remove(
+    "slide-in"
   );
 
-  wrapper.classList.remove("slide-in");
-  wrapper.classList.remove("slide-out");
+  wrapper.classList.remove(
+    "slide-out"
+  );
 
   void wrapper.offsetWidth;
 
-  wrapper.classList.add("slide-in");
+  wrapper.classList.add(
+    "slide-in"
+  );
 
 }
 
@@ -405,8 +656,10 @@ async function init(){
   setInterval(syncServerTime,300000);
 
   await loadData();
+await loadPSFootballFixtures();
 
-  setInterval(loadData,120000);
+setInterval(loadData,120000);
+setInterval(loadPSFootballFixtures,120000);
 
 }
 

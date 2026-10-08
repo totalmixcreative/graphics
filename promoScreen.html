@@ -12,11 +12,22 @@ crossorigin>
 	
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap"
 rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=League+Gothic&display=swap" rel="stylesheet">
 	
 <meta charset="UTF-8">
 
 <style>
-	
+#footballLayer{
+  position:absolute;
+  inset:0;
+  z-index:100;
+  opacity:0;
+  transition:opacity .6s ease;
+  color:#fff;
+  font-family:'League Gothic',Impact,sans-serif;
+  text-transform:uppercase;
+}
+
 @font-face {
   font-family: 'Robuck';
   src: url('robuck-regular.otf') format('opentype');
@@ -41,6 +52,7 @@ body{
   width:100%;
   height:100%;
   position:absolute;
+  z-index:1;
 }
 
 #promoImage{
@@ -152,35 +164,32 @@ NIGHT BUMPER
 
 }
 
-/* ===== SAME ANIMATION AS LOWER THIRDS ===== */
+/* ===== NORMAL PROMO FADE ===== */
 
 .slide-in{
-  animation:slideIn .6s ease forwards;
+  opacity:0;
+  animation:promoFadeIn .6s ease forwards;
 }
 
 .slide-out{
-  animation:slideOut .6s ease forwards;
+  opacity:1;
+  animation:promoFadeOut .6s ease forwards;
 }
 
-	
-@keyframes slideIn{
+@keyframes promoFadeIn{
   from{
-    transform:translateX(-100%);
     opacity:0;
   }
   to{
-    transform:translateX(0);
     opacity:1;
   }
 }
 
-@keyframes slideOut{
+@keyframes promoFadeOut{
   from{
-    transform:translateX(0);
     opacity:1;
   }
   to{
-    transform:translateX(-100%);
     opacity:0;
   }
 }
@@ -231,6 +240,334 @@ NIGHT BUMPER
 
   opacity:0.9;
 
+}
+
+
+/* ============================
+   FOOTBALL LAYER — FF STYLING
+   Change #2: CSS only
+============================ */
+
+#footballLayer{
+  position:absolute;
+  inset:0;
+  z-index:100;
+  pointer-events:none;
+  font-family:'League Gothic',Impact,sans-serif;
+  text-transform:uppercase;
+}
+
+#footballLayer .slide{
+  position:relative;
+  width:1920px;
+  height:1080px;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at var(--bg-x1,75%) var(--bg-y1,65%),
+                    var(--bg-glow,rgba(75,35,120,.20)),transparent 42%),
+    radial-gradient(circle at var(--bg-x2,35%) var(--bg-y2,20%),
+                    var(--bg-secondary,rgba(25,55,100,.28)),transparent 50%),
+    radial-gradient(circle at var(--bg-x3,50%) var(--bg-y3,80%),
+                    var(--bg-secondary,rgba(25,55,100,.12)),transparent 55%),
+    linear-gradient(135deg,var(--bg-start,#020205) 0%,var(--bg-mid,#070814) 55%,var(--bg-end,#010103) 100%);
+  background-size:140% 140%,160% 160%,180% 180%;
+  background-position:75% 65%,35% 20%,0% 50%;
+  animation:footballHueDrift 10s ease-in-out infinite alternate;
+  transform:scale(.814583);
+  transform-origin:top left;
+}
+
+/* FF outer transitions are carried across unchanged for now. */
+#footballLayer .slide.ps-slide-in{
+  animation:psSlideIn .6s ease forwards;
+}
+#footballLayer .slide.ps-slide-out{
+  animation:psSlideOut .6s ease forwards;
+}
+#footballLayer .slide.ps-fade-in{
+  animation:psFadeIn .6s ease forwards;
+}
+#footballLayer .slide.ps-fade-out{
+  animation:psFadeOut .6s ease forwards;
+}
+
+@keyframes psSlideIn{
+  from{transform:translateX(-100%);opacity:0;}
+  to{transform:translateX(0);opacity:1;}
+}
+@keyframes psSlideOut{
+  from{transform:translateX(0);opacity:1;}
+  to{transform:translateX(-100%);opacity:0;}
+}
+@keyframes psFadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+@keyframes psFadeOut{
+  from{opacity:1;}
+  to{opacity:0;}
+}
+
+@keyframes footballHueDrift{
+  0%{
+    --bg-x1:72%;--bg-y1:68%;
+    --bg-x2:30%;--bg-y2:18%;
+    --bg-x3:55%;--bg-y3:82%;
+    background-position:0% 0%,100% 0%,0% 100%,50% 50%;
+  }
+  50%{
+    --bg-x1:82%;--bg-y1:52%;
+    --bg-x2:42%;--bg-y2:30%;
+    --bg-x3:42%;--bg-y3:68%;
+    background-position:45% 55%,55% 45%,60% 35%,50% 50%;
+  }
+  100%{
+    --bg-x1:64%;--bg-y1:78%;
+    --bg-x2:24%;--bg-y2:12%;
+    --bg-x3:62%;--bg-y3:88%;
+    background-position:100% 100%,0% 100%,100% 0%,50% 50%;
+  }
+}
+
+#footballLayer .channel-logos{
+  opacity:0;
+  transform:translateX(35px) scale(.92);
+  position:absolute;
+  top:70px;
+  right:105px;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:18px;
+  height:80px;
+}
+#footballLayer .channel-logos img{
+  display:block;
+  width:auto;
+  height:70px;
+  max-width:220px;
+  object-fit:contain;
+}
+
+#footballLayer .header{
+  position:absolute;
+  left:105px;
+  top:85px;
+  z-index:20;
+}
+#footballLayer .header h1{
+  display:inline-block;
+  opacity:0;
+  transform:translateY(-18px);
+  margin:0;
+  font-size:78px;
+  line-height:.95;
+  font-weight:400;
+  letter-spacing:.5px;
+}
+#footballLayer .header .underline{
+  width:100%;
+  height:5px;
+  background:#fff;
+  margin-top:22px;
+  transform-origin:left;
+  transform:scaleX(0);
+}
+
+@keyframes footballLineIn{
+  from{transform:scaleX(0);}
+  to{transform:scaleX(1);}
+}
+@keyframes footballCardReveal{
+  0%{transform:scaleY(0);opacity:1;}
+  100%{transform:scaleY(1);opacity:1;}
+}
+@keyframes footballCrestReveal{
+  0%{opacity:0;transform:scale(.7);}
+  100%{opacity:1;transform:scale(1);}
+}
+@keyframes footballTextReveal{
+  0%{opacity:0;transform:translateY(25px);}
+  100%{opacity:1;transform:translateY(0);}
+}
+@keyframes footballKickoffReveal{
+  0%{opacity:0;transform:translateY(20px);}
+  100%{opacity:1;transform:translateY(0);}
+}
+
+#footballLayer .fixture{
+  position:absolute;
+  left:105px;
+  top:350px;
+  z-index:20;
+}
+#footballLayer .badges{
+  display:flex;
+  align-items:left;
+  gap:5px;
+  height:370px;
+  top:120px;
+}
+#footballLayer .team-badge{
+  width:370px;
+  height:370px;
+  display:flex;
+  align-items:left;
+  justify-content:left;
+  transform-origin:center;
+  transform:scaleY(0);
+  opacity:0;
+}
+#footballLayer .team-badge.flagRoundel{
+  border:6px solid white;
+  border-radius:50%;
+  overflow:hidden;
+}
+#footballLayer .team-badge.flagRoundel img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+#footballLayer .team-badge img{
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+  opacity:0;
+  transform:scale(.7);
+}
+#footballLayer .fixture-name{
+  margin-top:60px;
+  font-size:87px;
+  line-height:.95;
+  max-width:1050px;
+  opacity:0;
+  transform:translateY(25px);
+}
+#footballLayer .fixture-time{
+  margin-top:10px;
+  font-size:62px;
+  line-height:1;
+  opacity:0;
+  transform:translateY(20px);
+}
+
+#footballLayer .header .underline.play{
+  animation:footballLineIn .8s ease .45s forwards;
+}
+#footballLayer .team-badge.play{
+  animation:footballCardReveal .35s cubic-bezier(.2,.8,.2,1) forwards;
+}
+#footballLayer #homeBadge.play{animation-delay:.65s;}
+#footballLayer #awayBadge.play{animation-delay:.95s;}
+#footballLayer .team-badge.play img{
+  animation:footballCrestReveal .3s cubic-bezier(.2,.8,.2,1) forwards;
+}
+#footballLayer #homeBadge.play img{animation-delay:.45s;}
+#footballLayer #awayBadge.play img{animation-delay:.65s;}
+#footballLayer .fixture-name.play{
+  animation:footballTextReveal .4s cubic-bezier(.2,.8,.2,1) .9s forwards;
+}
+#footballLayer .fixture-time.play{
+  animation:footballKickoffReveal .35s cubic-bezier(.2,.8,.2,1) 1.05s forwards;
+}
+
+@keyframes footballHeaderIn{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes footballHeaderOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-18px)}}
+@keyframes footballChannelIn{from{opacity:0;transform:translateX(35px) scale(.92)}to{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes footballChannelOut{from{opacity:1;transform:translateX(0) scale(1)}to{opacity:0;transform:translateX(35px) scale(.92)}}
+@keyframes footballCompetitionIn{from{opacity:0;transform:translateY(35px) scale(.88)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes footballCompetitionOut{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(35px) scale(.88)}}
+@keyframes footballLineOut{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@keyframes footballCardOut{from{transform:scaleY(1);opacity:1}to{transform:scaleY(0);opacity:0}}
+@keyframes footballCrestOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.7)}}
+@keyframes footballTextOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(25px)}}
+@keyframes footballKickoffOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(20px)}}
+
+#footballLayer .header h1.play{animation:footballHeaderIn .45s cubic-bezier(.2,.8,.2,1) .15s forwards}
+#footballLayer .header h1.exit{animation:footballHeaderOut .35s ease forwards}
+#footballLayer .channel-logos.play{animation:footballChannelIn .45s cubic-bezier(.2,.8,.2,1) .05s forwards}
+#footballLayer .channel-logos.exit{animation:footballChannelOut .35s ease forwards}
+#footballLayer .competition.play{animation:footballCompetitionIn .5s cubic-bezier(.2,.8,.2,1) .25s forwards}
+#footballLayer .competition.exit{animation:footballCompetitionOut .35s ease forwards}
+#footballLayer .header .underline.exit{animation:footballLineOut .45s ease forwards}
+#footballLayer .team-badge.exit{animation:footballCardOut .35s cubic-bezier(.2,.8,.2,1) forwards}
+#footballLayer #homeBadge.exit{animation-delay:0s}
+#footballLayer #awayBadge.exit{animation-delay:.08s}
+#footballLayer .team-badge.exit img{animation:footballCrestOut .3s cubic-bezier(.2,.8,.2,1) forwards}
+#footballLayer #homeBadge.exit img{animation-delay:0s}
+#footballLayer #awayBadge.exit img{animation-delay:.08s}
+#footballLayer .fixture-name.exit{animation:footballTextOut .35s ease forwards}
+#footballLayer .fixture-time.exit{animation:footballKickoffOut .3s ease forwards}
+
+#footballLayer .pulse-field{
+  position:absolute;
+  inset:0;
+  z-index:5;
+  pointer-events:none;
+  overflow:hidden;
+}
+#footballLayer .pulse-origin{
+  position:absolute;
+  left:1630px;
+  top:870px;
+  width:1px;
+  height:1px;
+}
+#footballLayer .ring{
+  position:absolute;
+  left:10%;
+  top:10%;
+  width:1000px;
+  height:1000px;
+  border:30px solid transparent;
+  border-radius:50%;
+  background:linear-gradient(90deg,var(--ring-start,#fff),var(--ring-end,#fff)) border-box;
+  -webkit-mask:
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask:
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0);
+  mask-composite:exclude;
+  transform:translate(-50%,-50%) scale(.05);
+  opacity:0;
+  animation:footballPulse 6s linear infinite;
+}
+#footballLayer .ring:nth-child(1){animation-delay:0s}
+#footballLayer .ring:nth-child(2){animation-delay:1.2s}
+#footballLayer .ring:nth-child(3){animation-delay:2.4s}
+#footballLayer .ring:nth-child(4){animation-delay:3.6s}
+#footballLayer .ring:nth-child(5){animation-delay:4.8s}
+
+@keyframes footballPulse{
+  0%{transform:translate(-50%,-50%) scale(.05);opacity:0;}
+  8%{opacity:.95;}
+  65%{opacity:.55;}
+  100%{transform:translate(-50%,-50%) scale(1.45);opacity:0;}
+}
+
+#footballLayer .competition{
+  opacity:0;
+  transform:translateY(35px) scale(.88);
+  position:absolute;
+  left:1450px;
+  top:790px;
+  width:360px;
+  height:160px;
+  z-index:10;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+#footballLayer .competition img{
+  display:block;
+  max-width:100%;
+  max-height:100%;
+  width:auto;
+  height:auto;
+  object-fit:contain;
 }
 
 </style>
@@ -302,6 +639,41 @@ NIGHT BUMPER
 
 </div>
 	
+<div id="footballLayer">
+  <div class="slide" id="footballSlide">
+    <div class="channel-logos" id="channelLogos"></div>
+
+    <div class="header">
+      <h1 id="competitionHeader">Loading...</h1>
+      <div class="underline"></div>
+    </div>
+
+    <div class="fixture">
+      <div class="badges">
+        <div class="team-badge" id="homeBadge"></div>
+        <div class="team-badge" id="awayBadge"></div>
+      </div>
+      <div class="fixture-name" id="fixtureName">Loading...</div>
+      <div class="fixture-time" id="fixtureTime"></div>
+    </div>
+
+    <div class="pulse-field">
+      <div class="pulse-origin">
+        <div class="ring"></div>
+        <div class="ring"></div>
+        <div class="ring"></div>
+        <div class="ring"></div>
+        <div class="ring"></div>
+      </div>
+    </div>
+
+    <div class="competition">
+      <img id="competitionLogo" alt="">
+    </div>
+
+  </div>
+</div>
+
 <div id="promoWrapper">
 
    <div id="promoContainer"></div>
@@ -665,21 +1037,402 @@ function playSpecialEvent(){
 
 }
 	
+const TEAM_ASSET_BASE =
+  "https://totalmixcreative.github.io/graphics/Football/Normalised/";
+
+const COMPETITION_BASE =
+  "https://totalmixcreative.github.io/graphics/Football/";
+
+const FOOTBALL_TEAMS = {
+  "Arsenal":['PL','Arsenal.svg'],
+  "Aston Villa":['PL','AstonVilla.svg'],
+  "Bournemouth":['PL','Bournemouth.svg'],
+  "Brentford":['PL','Brentford.svg'],
+  "Brighton":['PL','Brighton.svg'],
+  "Chelsea":['PL','Chelsea.svg'],
+  "Crystal Palace":['PL','CrystalPalace.svg'],
+  "Coventry":['PL','Coventry.svg'],
+  "Everton":['PL','Everton.svg'],
+  "Fulham":['PL','Fulham.svg'],
+  "Hull":['PL','Hull.svg'],
+  "Ipswich":['PL','Ipswich.svg'],
+  "Leeds":['PL','Leeds.svg'],
+  "Liverpool":['PL','Liverpool.svg'],
+  "Manchester City":['PL','ManchesterCity.svg'],
+  "Manchester Utd":['PL','ManchesterUnited.svg'],
+  "Newcastle":['PL','Newcastle.svg'],
+  "Nott'm Forest":['PL','NottinghamForest.svg'],
+  "Sunderland":['PL','Sunderland.svg'],
+  "Tottenham":['PL','Tottenham.svg'],
+
+  "Birmingham":['EFL','Birmingham.svg'],
+  "Blackburn":['EFL','Blackburn.svg'],
+  "Bolton":['EFL','Bolton.svg'],
+  "Bristol City":['EFL','BristolCity.svg'],
+  "Burnley":['EFL','Burnley.svg'],
+  "Cardiff City":['EFL','CardiffCity.svg'],
+  "Charlton Athletic":['EFL','Charlton.svg'],
+  "Derby":['EFL','Derby.svg'],
+  "Leicester":['EFL','Leicester.svg'],
+  "Lincoln City":['EFL','LincolnCity.svg'],
+  "Middlesbrough":['EFL','Middlesbrough.svg'],
+  "Millwall":['EFL','Millwall.svg'],
+  "Norwich":['EFL','Norwich.svg'],
+  "Oxford":['EFL','Oxford.svg'],
+  "Portsmouth":['EFL','Portsmouth.svg'],
+  "Preston":['EFL','Preston.svg'],
+  "QPR":['EFL','QPR.svg'],
+  "Sheffield Utd":['EFL','SheffieldUnited.svg'],
+  "Sheff Weds":['EFL','SheffieldWednesday.svg'],
+  "Southampton":['EFL','Southampton.svg'],
+  "Stoke City":['EFL','StokeCity.svg'],
+  "Swansea City":['EFL','SwanseaCity.svg'],
+  "Watford":['EFL','Watford.svg'],
+  "West Brom":['EFL','WestBrom.svg'],
+  "West Ham":['EFL','WestHam.svg'],
+  "Wolves":['EFL','Wolves.svg'],
+  "Wrexham":['EFL','Wrexham.svg'],
+
+  "AEK Athens":['UEFA','AEKAthens.svg'],
+  "Atlético Madrid":['UEFA','AtleticoMadrid.svg'],
+  "Barcelona":['UEFA','Barcelona.svg'],
+  "Bayer Leverkusen":['UEFA','BayerLeverkusen.svg'],
+  "Bayern Munich":['UEFA','BayernMunich.svg'],
+  "Benfica":['UEFA','Benfica.svg'],
+  "Bodo Glimt":['UEFA','BodoGlimt.svg'],
+  "Celtic FC":['UEFA','CelticFC.svg'],
+  "Como":['UEFA','Como.svg'],
+  "Feyenoord":['UEFA','Feyenoord.svg'],
+  "Inter Milan":['UEFA','InterMilan.svg'],
+  "Juventus":['UEFA','Juventus.svg'],
+  "LASK":['UEFA','LASK.svg'],
+  "Lazio":['UEFA','Lazio.svg'],
+  "Lyon":['UEFA','Lyon.svg'],
+  "Marseille":['UEFA','Marseille.svg'],
+  "Monaco":['UEFA','Monaco.svg'],
+  "Napoli":['UEFA','Napoli.svg'],
+  "NEC":['UEFA','NEC.svg'],
+  "Olympiacos":['UEFA','Olympiacos.svg'],
+  "PSG":['UEFA','PSG.svg'],
+  "PSV":['UEFA','PSV.svg'],
+  "RB Leipzig":['UEFA','RBLeipzig.svg'],
+  "Real Madrid":['UEFA','RealMadrid.svg'],
+  "Roma":['UEFA','Roma.svg'],
+  "Schalke":['UEFA','Schalke.svg'],
+  "Sevilla":['UEFA','Sevilla.svg'],
+  "Shakhtar Donetsk":['UEFA','ShakhtarDonetsk.svg'],
+  "Sparta Prague":['UEFA','SpartaPrague.svg'],
+  "USG":['UEFA','USG.svg'],
+  "Valencia":['UEFA','Valencia.svg'],
+  "Viking FK":['UEFA','VikingFK.svg'],
+  "Werder Bremen":['UEFA','WerderBremen.svg'],
+  "Kauno Zalgiris":['UEFA','KaunoZalgiris.svg'],
+  "Galatasaray":['UEFA','Galatasaray.svg'],
+  "Sturm Graz":['UEFA','SturmGraz.svg'],
+  "Torreense":['UEFA','Torreense.svg'],
+  "Fenerbahce":['UEFA','Fenerbahce.svg'],
+  "Lille":['UEFA','Lille.svg']
+};
+
+const TEAM_ALIASES = {
+  "Coventry City":"Coventry",
+  "Hull City":"Hull",
+  "Manchester United":"Manchester Utd",
+  "Manchester Utd":"Manchester Utd",
+  "Nottingham Forest":"Nott'm Forest",
+  "Nott'm Forest":"Nott'm Forest",
+  "Sheffield United":"Sheffield Utd",
+  "Sheffield Wednesday":"Sheff Weds",
+  "West Bromwich Albion":"West Brom",
+  "AFC Bournemouth":"Bournemouth",
+  "Tottenham":"Spurs"
+};
+
+const COMPETITION_LOGOS = {
+  "Premier League":"PremierLeague.svg",
+  "Championship":"Championship.svg",
+  "FA Cup":"FACup.svg",
+  "Carabao Cup":"CarabaoCup.svg",
+  "UEFA Champions League":"UEFAChampionsLeague.svg",
+  "UEFA Europa League":"UEFAEuropaLeague.svg",
+  "UEFA Conference League":"UEFAConferenceLeague.svg",
+  "UEFA Nations League":"UEFANationsLeague.svg"
+};
+
+const COMPETITION_RING_COLOURS = {
+  "Premier League":["#370343","#fd0166"],
+  "Championship":["#a00000","#cc0f13"],
+  "FA Cup":["#a00000","#cc0f13"],
+  "Carabao Cup":["#218757","#349a6a"],
+  "UEFA Champions League":["#0b0778","#b300df"],
+  "UEFA Europa League":["#ff4d00","#ff7000"],
+  "UEFA Conference League":["#000000","#01be13"],
+  "UEFA Nations League":["#000000","#01be13"]
+};
+
+
+const COMPETITION_BACKGROUNDS = {
+  "Premier League":       {start:"#030107",mid:"#100315",end:"#020103",secondary:"rgba(55,3,67,.24)",glow:"rgba(253,1,102,.10)"},
+  "Championship":         {start:"#080202",mid:"#190304",end:"#020101",secondary:"rgba(160,0,0,.20)",glow:"rgba(204,15,19,.10)"},
+  "FA Cup":               {start:"#080202",mid:"#190304",end:"#020101",secondary:"rgba(160,0,0,.20)",glow:"rgba(204,15,19,.10)"},
+  "Carabao Cup":          {start:"#020806",mid:"#06150f",end:"#010302",secondary:"rgba(33,135,87,.22)",glow:"rgba(52,154,106,.10)"},
+  "UEFA Champions League":{start:"#02030d",mid:"#05072b",end:"#010105",secondary:"rgba(11,7,120,.25)",glow:"rgba(179,0,223,.10)"},
+  "UEFA Europa League":   {start:"#090401",mid:"#1b0802",end:"#030101",secondary:"rgba(255,77,0,.20)",glow:"rgba(255,112,0,.10)"},
+  "UEFA Conference League":{start:"#010201",mid:"#031006",end:"#010101",secondary:"rgba(1,190,19,.20)",glow:"rgba(1,190,19,.10)"},
+  "UEFA Nations League":  {start:"#030303",mid:"#101010",end:"#010101",secondary:"rgba(120,120,120,.18)",glow:"rgba(220,220,220,.08)"}
+};
+
+function mappedTeamName(name){
+  return TEAM_ALIASES[name] || name;
+}
+
+function teamAsset(name){
+  const key = mappedTeamName(name);
+  const a = FOOTBALL_TEAMS[key];
+  return a ? TEAM_ASSET_BASE + a[0] + "/" + a[1] : null;
+}
+
+function competitionAsset(name){
+  if(!name) return null;
+  if(COMPETITION_LOGOS[name]) return COMPETITION_BASE + COMPETITION_LOGOS[name];
+
+  const n = name.toLowerCase();
+
+  if(n.includes("premier")) return COMPETITION_BASE + "PremierLeague.svg";
+  if(n.includes("championship")) return COMPETITION_BASE + "Championship.svg";
+  if(n.includes("fa cup")) return COMPETITION_BASE + "FACup.svg";
+  if(n.includes("carabao")) return COMPETITION_BASE + "CarabaoCup.svg";
+  if(n.includes("champions league")) return COMPETITION_BASE + "UEFAChampionsLeague.svg";
+  if(n.includes("europa league")) return COMPETITION_BASE + "UEFAEuropaLeague.svg";
+  if(n.includes("conference league")) return COMPETITION_BASE + "UEFAConferenceLeague.svg";
+  if(n.includes("nations league")) return COMPETITION_BASE + "UEFANationsLeague.svg";
+
+  return null;
+}
+
+function setImg(el,url){
+  el.innerHTML = url ? `<img src="${url}" alt="">` : "";
+}
+
+let fixtures = [];
+let index = 0;
+let timer = null;
+
+function resetAnimationClasses(){
+  const elements=[document.querySelector('#footballLayer .header h1'),document.querySelector('#footballLayer .header .underline'),document.getElementById('channelLogos'),document.getElementById('homeBadge'),document.getElementById('awayBadge'),document.getElementById('fixtureName'),document.getElementById('fixtureTime'),document.querySelector('#footballLayer .competition')];
+  elements.forEach(el=>{if(el)el.classList.remove('play','exit')});
+}
+
+function replayFootballAnimations(){
+  resetAnimationClasses();
+  void document.body.offsetWidth;
+  const elements=[document.querySelector('#footballLayer .header h1'),document.querySelector('#footballLayer .header .underline'),document.getElementById('channelLogos'),document.getElementById('homeBadge'),document.getElementById('awayBadge'),document.getElementById('fixtureName'),document.getElementById('fixtureTime'),document.querySelector('#footballLayer .competition')];
+  elements.forEach(el=>{if(el)el.classList.add('play')});
+}
+
+function animateFootballOut(){
+  const elements=[document.querySelector('#footballLayer .header h1'),document.querySelector('#footballLayer .header .underline'),document.getElementById('channelLogos'),document.getElementById('homeBadge'),document.getElementById('awayBadge'),document.getElementById('fixtureName'),document.getElementById('fixtureTime'),document.querySelector('#footballLayer .competition')];
+  elements.forEach(el=>{if(el){void el.offsetWidth;el.classList.add('exit')}});
+}
+
+function render(f){
+  const ringColours =
+    COMPETITION_RING_COLOURS[f.competition] ||
+    ["#ffffff","#ffffff"];
+
+  const pulseField = document.querySelector("#footballLayer .pulse-field");
+  pulseField.style.setProperty("--ring-start", ringColours[0]);
+  pulseField.style.setProperty("--ring-end", ringColours[1]);
+
+  const bg = COMPETITION_BACKGROUNDS[f.competition] || {
+    start:"#020205", mid:"#070814", end:"#010103",
+    secondary:"rgba(25,55,100,.24)", glow:"rgba(75,35,120,.16)"
+  };
+
+  const slide = document.querySelector("#footballLayer .slide");
+  slide.style.setProperty("--bg-start", bg.start);
+  slide.style.setProperty("--bg-mid", bg.mid);
+  slide.style.setProperty("--bg-end", bg.end);
+  slide.style.setProperty("--bg-secondary", bg.secondary);
+  slide.style.setProperty("--bg-glow", bg.glow);
+
+  setImg(document.getElementById("homeBadge"), teamAsset(f.home));
+  setImg(document.getElementById("awayBadge"), teamAsset(f.away));
+
+  document.getElementById("competitionHeader").textContent =
+    f.competition || "";
+
+  document.getElementById("fixtureName").textContent =
+    `${f.home} V ${f.away}`;
+
+  document.getElementById("fixtureTime").textContent =
+    f.label || f.date || "";
+
+  const channelLogos =
+    Array.isArray(f.channelLogos)
+      ? [...new Set(f.channelLogos)]
+      : [];
+
+  document.getElementById("channelLogos").innerHTML =
+    channelLogos
+      .map(url => `<img src="${url}" alt="">`)
+      .join("");
+
+  const compUrl = competitionAsset(f.competition);
+  const comp = document.getElementById("competitionLogo");
+
+  if(compUrl){
+    comp.src = compUrl;
+    comp.alt = f.competition || "";
+  }else{
+    comp.removeAttribute("src");
+    comp.alt = "";
+  }
+
+  replayFootballAnimations();
+
+}
+
+
+/* =========================
+   FOOTBALL INTEGRATION
+   Change #3: FF render engine
+========================= */
+
+let currentFootballTimestamp = null;
+let footballTransitionActive = false;
+
+function setFootballVisible(visible){
+
+  const footballLayer =
+    document.getElementById("footballLayer");
+
+  const promoWrapper =
+    document.getElementById("promoWrapper");
+
+  if(visible){
+
+    footballLayer.style.opacity = "1";
+    promoWrapper.style.visibility = "hidden";
+
+  }else{
+
+    footballLayer.style.opacity = "0";
+    promoWrapper.style.visibility = "visible";
+
+  }
+
+}
+
+function showFootballFixture(fixture){
+
+  if(!fixture) return;
+
+  setFootballVisible(true);
+
+  render(fixture);
+
+}
+
+function hideFootballLayer(){
+
+  setFootballVisible(false);
+
+}
+
+
 /* =========================
    UPDATE FROM STORAGE
 ========================= */
 
 function updateFromStorage(){
-if(specialEventActive) return;
+
+  if(specialEventActive) return;
+
   const promo =
     JSON.parse(
       localStorage.getItem("currentPromo")
     );
 
-  if(!promo || !promo.image) return;
+  if(!promo) return;
 
-	
-const nextMedia =
+  /* =========================
+     FOOTBALL
+  ========================= */
+
+  if(promo.type === "football" && promo.fixture){
+
+    if(promo.timestamp === currentFootballTimestamp){
+      return;
+    }
+
+    const wasFootballActive =
+      currentFootballTimestamp !== null;
+
+    currentFootballTimestamp = promo.timestamp;
+
+    currentMedia = null;
+    lastTimestamp = promo.timestamp;
+
+    /* =========================
+       FOOTBALL -> FOOTBALL
+       Fade completely to black,
+       then load the next fixture.
+    ========================= */
+
+    if(wasFootballActive){
+
+      animateFootballOut();
+
+      const footballLayer =
+        document.getElementById("footballLayer");
+
+      const promoWrapper =
+        document.getElementById("promoWrapper");
+
+      footballLayer.style.opacity = "0";
+      promoWrapper.style.visibility = "hidden";
+
+      setTimeout(()=>{
+
+        /* Ignore this transition if a newer
+           Lower Thirds update has arrived. */
+
+        const latestPromo =
+          JSON.parse(
+            localStorage.getItem("currentPromo")
+          );
+
+        if(
+          !latestPromo ||
+          latestPromo.type !== "football" ||
+          latestPromo.timestamp !== currentFootballTimestamp
+        ){
+          return;
+        }
+
+        render(promo.fixture);
+        footballLayer.style.opacity = "1";
+
+      },600);
+
+    }else{
+
+      showFootballFixture(promo.fixture);
+
+    }
+
+    return;
+
+  }
+
+  /* =========================
+     NORMAL PROMO
+  ========================= */
+
+  if(!promo.image) return;
+
+  const nextMedia =
     Array.isArray(promo.image)
     ? promo.image[promo.imageIndex]
     : promo.image;
@@ -697,63 +1450,113 @@ const nextMedia =
 
   currentMedia = nextMedia;
 
-  playAnimation(nextMedia);
-	
-	const overlay =
-  document.getElementById("promoOverlay");
+  const startNormalPromo = () => {
 
-const overlayHeadline =
-  document.getElementById(
-    "promoOverlayHeadline"
-  );
+    playAnimation(nextMedia);
 
-const overlaySubline =
-  document.getElementById(
-    "promoOverlaySubline"
-  );
+    const overlay =
+      document.getElementById("promoOverlay");
 
-/* F1 DETECTION */
+    const overlayHeadline =
+      document.getElementById(
+        "promoOverlayHeadline"
+      );
 
-if(
+    const overlaySubline =
+      document.getElementById(
+        "promoOverlaySubline"
+      );
 
-  promo.headline &&
-  promo.headline.includes("Grand Prix")
+    /* F1 DETECTION */
 
-){
+    if(
+      promo.headline &&
+      promo.headline.includes("Grand Prix")
+    ){
 
-  overlay.style.display = "block";
+      overlay.style.display = "block";
 
-  overlayHeadline.textContent =
-    promo.headline;
-	
-const headlineLength =
-  promo.headline.length;
+      overlayHeadline.textContent =
+        promo.headline;
 
-if(headlineLength > 40){
+      const headlineLength =
+        promo.headline.length;
 
-  overlayHeadline.style.fontSize =
-    "72px";
+      if(headlineLength > 40){
 
-}else if(headlineLength > 28){
+        overlayHeadline.style.fontSize =
+          "72px";
 
-  overlayHeadline.style.fontSize =
-    "88px";
+      }else if(headlineLength > 28){
 
-}else{
+        overlayHeadline.style.fontSize =
+          "88px";
 
-  overlayHeadline.style.fontSize =
-    "110px";
+      }else{
 
-}
+        overlayHeadline.style.fontSize =
+          "110px";
 
-  overlaySubline.textContent =
-    promo.subline;
+      }
 
-}else{
+      overlaySubline.textContent =
+        promo.subline;
 
-  overlay.style.display = "none";
+    }else{
 
-}
+      overlay.style.display = "none";
+
+    }
+
+  };
+
+  if(currentFootballTimestamp !== null){
+
+    const footballLayer =
+      document.getElementById("footballLayer");
+
+    const promoWrapper =
+      document.getElementById("promoWrapper");
+
+    /* First let the FF elements perform their 600ms exit. */
+    animateFootballOut();
+
+    /* Keep the football layer fully visible during that exit. */
+    footballLayer.style.opacity = "1";
+    promoWrapper.style.visibility = "hidden";
+
+    currentFootballTimestamp = null;
+    footballTransitionActive = true;
+
+    setTimeout(()=>{
+
+      /* Then fade the complete football layer to black. */
+      footballLayer.style.opacity = "0";
+
+      setTimeout(()=>{
+
+        /* Only reveal the normal promo after the FF layer has
+           completely faded away. */
+        promoWrapper.style.visibility = "visible";
+        startNormalPromo();
+
+        /* Keep the master 250ms transition timer from
+           immediately cancelling this fresh fade-in. */
+        setTimeout(()=>{
+          footballTransitionActive = false;
+        },700);
+
+      },600);
+
+    },600);
+
+    return;
+
+  }
+
+  currentFootballTimestamp = null;
+  hideFootballLayer();
+  startNormalPromo();
 
 }
 
@@ -771,7 +1574,8 @@ if(
   elapsedInCycle >= HOLD_DURATION &&
   elapsedInCycle < TOTAL_DURATION - 200 &&
   !wrapper.classList.contains("slide-out") &&
-  !specialEventActive
+  !specialEventActive &&
+  !footballTransitionActive
 ){
 
   if(
@@ -838,6 +1642,8 @@ window.addEventListener("storage",(e)=>{
 /* =========================
    STARTUP
 ========================= */
+
+hideFootballLayer();
 
 updateFromStorage();
 
