@@ -1063,7 +1063,7 @@ const FOOTBALL_TEAMS = {
   "Newcastle":['PL','Newcastle.svg'],
   "Nott'm Forest":['PL','NottinghamForest.svg'],
   "Sunderland":['PL','Sunderland.svg'],
-  "Tottenham":['PL','Tottenham.svg'],
+  "Spurs":['PL','Tottenham.svg'],
 
   "Birmingham":['EFL','Birmingham.svg'],
   "Blackburn":['EFL','Blackburn.svg'],
@@ -1144,7 +1144,7 @@ const TEAM_ALIASES = {
   "Sheffield United":"Sheffield Utd",
   "Sheffield Wednesday":"Sheff Weds",
   "West Bromwich Albion":"West Brom",
-  "AFC Bournemouth":"Bournemouth"
+  "AFC Bournemouth":"Bournemouth",
 };
 
 const COMPETITION_LOGOS = {
@@ -1537,22 +1537,6 @@ function updateFromStorage(){
         /* Only reveal the normal promo after the FF layer has
            completely faded away. */
         promoWrapper.style.visibility = "visible";
-
-        /*
-          Normal Night Mode needs its bumper here because the
-          PS master transition timer is blocked during the
-          football hand-off. Without this explicit trigger,
-          the Football 2 -> normal promo transition skips the
-          Night Bumper entirely.
-        */
-        if(
-          nightModeActive &&
-          !specialEventActive &&
-          !bumperActive
-        ){
-          showNightBumper();
-        }
-
         startNormalPromo();
 
         /* Keep the master 250ms transition timer from
