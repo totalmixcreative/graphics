@@ -65,46 +65,27 @@ button{cursor:pointer}button:hover{background:#1b2a42}
 
 <script>
 const FIXTURE_ENDPOINT="https://script.google.com/macros/s/AKfycbw2oJWXgOssax4eU_FHYk4QJx-NG5rMt-0qXWeUgCPyiqvyy898ysye65oCEPhFyv_wQw/exec";
-const ASSET_BASE="https://totalmixcreative.github.io/graphics/Football/Normalised/";
-
-// Same mapping currently used by Promo Screen.
-const FOOTBALL_TEAMS={
-"Arsenal":['PL','Arsenal.svg'],"Aston Villa":['PL','AstonVilla.svg'],"Bournemouth":['PL','Bournemouth.svg'],"Brentford":['PL','Brentford.svg'],"Brighton":['PL','Brighton.svg'],"Chelsea":['PL','Chelsea.svg'],"Crystal Palace":['PL','CrystalPalace.svg'],"Coventry":['PL','Coventry.svg'],"Everton":['PL','Everton.svg'],"Fulham":['PL','Fulham.svg'],"Hull":['PL','Hull.svg'],"Ipswich":['PL','Ipswich.svg'],"Leeds":['PL','Leeds.svg'],"Liverpool":['PL','Liverpool.svg'],"Manchester City":['PL','ManchesterCity.svg'],"Manchester Utd":['PL','ManchesterUnited.svg'],"Newcastle":['PL','Newcastle.svg'],"Nott'm Forest":['PL','NottinghamForest.svg'],"Sunderland":['PL','Sunderland.svg'],"Spurs":['PL','Tottenham.svg'],
-"Birmingham":['EFL','Birmingham.svg'],"Blackburn":['EFL','Blackburn.svg'],"Bolton":['EFL','Bolton.svg'],"Bristol City":['EFL','BristolCity.svg'],"Burnley":['EFL','Burnley.svg'],"Cardiff City":['EFL','CardiffCity.svg'],"Charlton Athletic":['EFL','Charlton.svg'],"Derby":['EFL','Derby.svg'],"Leicester":['EFL','Leicester.svg'],"Lincoln City":['EFL','LincolnCity.svg'],"Middlesbrough":['EFL','Middlesbrough.svg'],"Millwall":['EFL','Millwall.svg'],"Norwich":['EFL','Norwich.svg'],"Oxford":['EFL','Oxford.svg'],"Portsmouth":['EFL','Portsmouth.svg'],"Preston":['EFL','Preston.svg'],"QPR":['EFL','QPR.svg'],"Sheffield Utd":['EFL','SheffieldUnited.svg'],"Sheff Weds":['EFL','SheffieldWednesday.svg'],"Southampton":['EFL','Southampton.svg'],"Stoke City":['EFL','StokeCity.svg'],"Swansea City":['EFL','SwanseaCity.svg'],"Watford":['EFL','Watford.svg'],"West Brom":['EFL','WestBrom.svg'],"West Ham":['EFL','WestHam.svg'],"Wolves":['EFL','Wolves.svg'],"Wrexham":['EFL','Wrexham.svg'],
-"AEK Athens":['UEFA','AEKAthens.svg'],"Atlético Madrid":['UEFA','AtleticoMadrid.svg'],"Barcelona":['UEFA','Barcelona.svg'],"Bayer Leverkusen":['UEFA','BayerLeverkusen.svg'],"Bayern Munich":['UEFA','BayernMunich.svg'],"Benfica":['UEFA','Benfica.svg'],"Bodo Glimt":['UEFA','BodoGlimt.svg'],"Celtic FC":['UEFA','CelticFC.svg'],"Como":['UEFA','Como.svg'],"Feyenoord":['UEFA','Feyenoord.svg'],"Inter Milan":['UEFA','InterMilan.svg'],"Juventus":['UEFA','Juventus.svg'],"LASK":['UEFA','LASK.svg'],"Lazio":['UEFA','Lazio.svg'],"Lyon":['UEFA','Lyon.svg'],"Marseille":['UEFA','Marseille.svg'],"Monaco":['UEFA','Monaco.svg'],"Napoli":['UEFA','Napoli.svg'],"NEC":['UEFA','NEC.svg'],"Olympiacos":['UEFA','Olympiacos.svg'],"PSG":['UEFA','PSG.svg'],"PSV":['UEFA','PSV.svg'],"RB Leipzig":['UEFA','RBLeipzig.svg'],"Real Madrid":['UEFA','RealMadrid.svg'],"Roma":['UEFA','Roma.svg'],"Schalke":['UEFA','Schalke.svg'],"Sevilla":['UEFA','Sevilla.svg'],"Shakhtar Donetsk":['UEFA','ShakhtarDonetsk.svg'],"Sparta Prague":['UEFA','SpartaPrague.svg'],"USG":['UEFA','USG.svg'],"Valencia":['UEFA','Valencia.svg'],"Viking FK":['UEFA','Viking.svg'],"VIking FK":['UEFA','Viking.svg'],"Villarreal":['UEFA','Villarreal.svg'],"Werder Bremen":['UEFA','WerderBremen.svg'],"Fenerbahce":['UEFA','Fenerbahce.svg'],"Lille":['UEFA','Lille.svg'],"Kauno Zalgiris":['UEFA','KaunoZalgiris.svg'],"Galatasaray":['UEFA','Galatasaray.svg'],"Sturm Graz":['UEFA','SturmGraz.svg'],"Torreense":['UEFA','Torreense.svg']
-};
-
-// Known feed-name aliases. This is deliberately separate from the asset mapping.
-const TEAM_ALIASES={
-"Coventry City":"Coventry",
-"Hull City":"Hull",
-"Manchester United":"Manchester Utd",
-"Manchester Utd":"Manchester Utd",
-"Nottingham Forest":"Nott'm Forest",
-"Nott'm Forest":"Nott'm Forest",
-"Sheffield United":"Sheffield Utd",
-"Sheffield Wednesday":"Sheff Weds",
-"West Bromwich Albion":"West Brom",
-"AFC Bournemouth":"Bournemouth"
-};
-
-function mappedTeamName(name){return TEAM_ALIASES[name]||name}
-function getAsset(team){const key=mappedTeamName(team);const a=FOOTBALL_TEAMS[key];return a?ASSET_BASE+a[0]+'/'+a[1]:null}
-function statusFor(team){return getAsset(team)?'mapped':'missing'}
+// Badge URLs now come directly from Endpoint B.
 function esc(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 
 let fixtures=[];let cycleTimer=null;let cycleIndex=0;
 const $=id=>document.getElementById(id);
 
 function normaliseFixture(f){
-  console.log("VIKING RAW:", JSON.stringify(f.away), [...f.away].map(c=>c.charCodeAt(0)));
-
-return {...f,homeAsset:getAsset(f.home),awayAsset:getAsset(f.away),homeStatus:statusFor(f.home),awayStatus:statusFor(f.away)}
+  const homeAsset = f.homeBadge || null;
+  const awayAsset = f.awayBadge || null;
+  return {
+    ...f,
+    homeAsset,
+    awayAsset,
+    homeStatus: homeAsset ? 'mapped' : 'missing',
+    awayStatus: awayAsset ? 'mapped' : 'missing'
+  };
 }
 function competitions(){return [...new Set(fixtures.map(f=>f.competition).filter(Boolean))].sort((a,b)=>a.localeCompare(b))}
 function populateCompetition(){const sel=$('competitionFilter');const old=sel.value;sel.innerHTML='<option value="all">All competitions</option>'+competitions().map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');if([...sel.options].some(o=>o.value===old))sel.value=old}
 function filtered(){const c=$('competitionFilter').value,m=$('mappingFilter').value;return fixtures.filter(f=>(c==='all'||f.competition===c)&&(m==='all'||f.homeStatus===m||f.awayStatus===m))}
-function renderSummary(){const teams=[...new Set(fixtures.flatMap(f=>[f.home,f.away]))];const mapped=teams.filter(t=>statusFor(t)==='mapped').length;const missing=teams.length-mapped;const comps=competitions().length;$('summary').innerHTML=`<div class="stat"><b>${fixtures.length}</b><span>Fixtures</span></div><div class="stat"><b>${teams.length}</b><span>Unique teams</span></div><div class="stat"><b>${mapped}</b><span>Mapped teams</span></div><div class="stat"><b>${missing}</b><span>Missing teams</span></div><div class="stat"><b>${comps}</b><span>Competitions</span></div>`}
+function renderSummary(){const teamStatuses=new Map();fixtures.forEach(f=>{teamStatuses.set(f.home,f.homeStatus);teamStatuses.set(f.away,f.awayStatus)});const teams=[...teamStatuses.keys()];const mapped=[...teamStatuses.values()].filter(status=>status==='mapped').length;const missing=teams.length-mapped;const comps=competitions().length;$('summary').innerHTML=`<div class="stat"><b>${fixtures.length}</b><span>Fixtures</span></div><div class="stat"><b>${teams.length}</b><span>Unique teams</span></div><div class="stat"><b>${mapped}</b><span>Mapped teams</span></div><div class="stat"><b>${missing}</b><span>Missing teams</span></div><div class="stat"><b>${comps}</b><span>Competitions</span></div>`}
 function renderList(){const list=filtered();$('fixtureList').innerHTML=list.length?list.map((f,i)=>`<article class="fixture ${f.homeStatus==='mapped'&&f.awayStatus==='mapped'?'good':'missing'}" data-index="${fixtures.indexOf(f)}"><div class="fixture-top"><span class="competition">${esc(f.competition||'Unknown competition')}</span><span class="date">${esc(f.label||f.date||'')}</span></div><div class="teams">${esc(f.home)} <span class="v">V</span> ${esc(f.away)}</div><div class="badge-row"><div class="badge ${f.homeAsset?'':'missing'}">${f.homeAsset?`<img src="${f.homeAsset}" alt="">`:'MISSING'}</div><div style="text-align:center;color:#77879f">VS</div><div class="badge ${f.awayAsset?'':'missing'}">${f.awayAsset?`<img src="${f.awayAsset}" alt="">`:'MISSING'}</div><div class="team-label">${f.home} — ${f.homeStatus==='mapped'?'OWN SVG':'NO MAPPING'}</div><div></div><div class="team-label">${f.away} — ${f.awayStatus==='mapped'?'OWN SVG':'NO MAPPING'}</div></div></article>`).join(''):'<div id="empty">No fixtures match the current filters.</div>'}
 function render(){populateCompetition();renderSummary();renderList()}
 function showPreview(f){$('preview').hidden=false;$('pComp').textContent=f.competition||'';$('pNames').textContent=`${f.home} V ${f.away}`;$('pTime').textContent=f.label||f.date||'';$('pHomeBadge').innerHTML=f.homeAsset?`<img src="${f.homeAsset}" alt="">`:'<span style="color:#ffb15c">MISSING</span>';$('pAwayBadge').innerHTML=f.awayAsset?`<img src="${f.awayAsset}" alt="">`:'<span style="color:#ffb15c">MISSING</span>';$('previewMeta').textContent=`Home: ${f.homeAsset||'NO OWN ASSET'}  |  Away: ${f.awayAsset||'NO OWN ASSET'}`}
