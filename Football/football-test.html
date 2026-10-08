@@ -97,7 +97,9 @@ let fixtures=[];let cycleTimer=null;let cycleIndex=0;
 const $=id=>document.getElementById(id);
 
 function normaliseFixture(f){
-  return {...f,homeAsset:getAsset(f.home),awayAsset:getAsset(f.away),homeStatus:statusFor(f.home),awayStatus:statusFor(f.away)}
+  console.log("VIKING RAW:", JSON.stringify(f.away), [...f.away].map(c=>c.charCodeAt(0)));
+
+return {...f,homeAsset:getAsset(f.home),awayAsset:getAsset(f.away),homeStatus:statusFor(f.home),awayStatus:statusFor(f.away)}
 }
 function competitions(){return [...new Set(fixtures.map(f=>f.competition).filter(Boolean))].sort((a,b)=>a.localeCompare(b))}
 function populateCompetition(){const sel=$('competitionFilter');const old=sel.value;sel.innerHTML='<option value="all">All competitions</option>'+competitions().map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');if([...sel.options].some(o=>o.value===old))sel.value=old}
