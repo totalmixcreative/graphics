@@ -196,8 +196,6 @@ let rotationStarted = false;
 	
 let psFootballFixtures = [];
 
-let footballRotationIndex = 0;
-
 let rotationSchedule = [];
 
 /**************** NIGHT MODE STATE ****************/
@@ -480,13 +478,29 @@ function rotate(){
   return;
 }
 
-  const fixture =
-    psFootballFixtures[
-      footballRotationIndex %
-      psFootballFixtures.length
-    ];
+  /*
+     Choose the fixture from the shared EPOCH timeline,
+     not a browser-local counter. This keeps every player
+     on the same fixture for the same schedule slot.
+  */
+  const scheduleCycle =
+    Math.floor(timelineIndex / rotationSchedule.length);
 
-  footballRotationIndex++;
+  const footballSlotsPerCycle =
+    rotationSchedule.filter(item => item.type === "football").length;
+
+  const footballSlotsBeforeThisOne =
+    rotationSchedule
+      .slice(0, newIndex)
+      .filter(item => item.type === "football").length;
+
+  const fixtureIndex =
+    (
+      scheduleCycle * footballSlotsPerCycle +
+      footballSlotsBeforeThisOne
+    ) % psFootballFixtures.length;
+
+  const fixture = psFootballFixtures[fixtureIndex];
 
   headline.textContent =
     "Live Football";

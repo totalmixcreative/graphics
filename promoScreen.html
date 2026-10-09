@@ -1037,117 +1037,8 @@ function playSpecialEvent(){
 
 }
 	
-const TEAM_ASSET_BASE =
-  "https://totalmixcreative.github.io/graphics/Football/Normalised/";
-
 const COMPETITION_BASE =
   "https://totalmixcreative.github.io/graphics/Football/";
-
-const FOOTBALL_TEAMS = {
-  "Arsenal":['PL','Arsenal.svg'],
-  "Aston Villa":['PL','AstonVilla.svg'],
-  "Bournemouth":['PL','Bournemouth.svg'],
-  "Brentford":['PL','Brentford.svg'],
-  "Brighton":['PL','Brighton.svg'],
-  "Chelsea":['PL','Chelsea.svg'],
-  "Crystal Palace":['PL','CrystalPalace.svg'],
-  "Coventry":['PL','Coventry.svg'],
-  "Everton":['PL','Everton.svg'],
-  "Fulham":['PL','Fulham.svg'],
-  "Hull":['PL','Hull.svg'],
-  "Ipswich":['PL','Ipswich.svg'],
-  "Leeds":['PL','Leeds.svg'],
-  "Liverpool":['PL','Liverpool.svg'],
-  "Manchester City":['PL','ManchesterCity.svg'],
-  "Manchester Utd":['PL','ManchesterUnited.svg'],
-  "Newcastle":['PL','Newcastle.svg'],
-  "Nott'm Forest":['PL','NottinghamForest.svg'],
-  "Sunderland":['PL','Sunderland.svg'],
-  "Spurs":['PL','Tottenham.svg'],
-
-  "Birmingham":['EFL','Birmingham.svg'],
-  "Blackburn":['EFL','Blackburn.svg'],
-  "Bolton":['EFL','Bolton.svg'],
-  "Bristol City":['EFL','BristolCity.svg'],
-  "Burnley":['EFL','Burnley.svg'],
-  "Cardiff City":['EFL','CardiffCity.svg'],
-  "Charlton Athletic":['EFL','Charlton.svg'],
-  "Derby":['EFL','Derby.svg'],
-  "Leicester":['EFL','Leicester.svg'],
-  "Lincoln City":['EFL','LincolnCity.svg'],
-  "Middlesbrough":['EFL','Middlesbrough.svg'],
-  "Millwall":['EFL','Millwall.svg'],
-  "Norwich":['EFL','Norwich.svg'],
-  "Oxford":['EFL','Oxford.svg'],
-  "Portsmouth":['EFL','Portsmouth.svg'],
-  "Preston":['EFL','Preston.svg'],
-  "QPR":['EFL','QPR.svg'],
-  "Sheffield Utd":['EFL','SheffieldUnited.svg'],
-  "Sheff Weds":['EFL','SheffieldWednesday.svg'],
-  "Southampton":['EFL','Southampton.svg'],
-  "Stoke City":['EFL','StokeCity.svg'],
-  "Swansea City":['EFL','SwanseaCity.svg'],
-  "Watford":['EFL','Watford.svg'],
-  "West Brom":['EFL','WestBrom.svg'],
-  "West Ham":['EFL','WestHam.svg'],
-  "Wolves":['EFL','Wolves.svg'],
-  "Wrexham":['EFL','Wrexham.svg'],
-
-  "AEK Athens":['UEFA','AEKAthens.svg'],
-  "Atlético Madrid":['UEFA','AtleticoMadrid.svg'],
-  "Barcelona":['UEFA','Barcelona.svg'],
-  "Bayer Leverkusen":['UEFA','BayerLeverkusen.svg'],
-  "Bayern Munich":['UEFA','BayernMunich.svg'],
-  "Benfica":['UEFA','Benfica.svg'],
-  "Bodo Glimt":['UEFA','BodoGlimt.svg'],
-  "Celtic FC":['UEFA','CelticFC.svg'],
-  "Como":['UEFA','Como.svg'],
-  "Feyenoord":['UEFA','Feyenoord.svg'],
-  "Inter Milan":['UEFA','InterMilan.svg'],
-  "Juventus":['UEFA','Juventus.svg'],
-  "LASK":['UEFA','LASK.svg'],
-  "Lazio":['UEFA','Lazio.svg'],
-  "Lyon":['UEFA','Lyon.svg'],
-  "Marseille":['UEFA','Marseille.svg'],
-  "Monaco":['UEFA','Monaco.svg'],
-  "Napoli":['UEFA','Napoli.svg'],
-  "NEC":['UEFA','NEC.svg'],
-  "Olympiacos":['UEFA','Olympiacos.svg'],
-  "PSG":['UEFA','PSG.svg'],
-  "PSV":['UEFA','PSV.svg'],
-  "RB Leipzig":['UEFA','RBLeipzig.svg'],
-  "Real Madrid":['UEFA','RealMadrid.svg'],
-  "Roma":['UEFA','Roma.svg'],
-  "Schalke":['UEFA','Schalke.svg'],
-  "Sevilla":['UEFA','Sevilla.svg'],
-  "Shakhtar Donetsk":['UEFA','ShakhtarDonetsk.svg'],
-  "Sparta Prague":['UEFA','SpartaPrague.svg'],
-  "USG":['UEFA','USG.svg'],
-  "Valencia":['UEFA','Valencia.svg'],
-  "VIking FK":['UEFA','Viking.svg'],
-  "Viking FK":['UEFA','Viking.svg'],
-  "Werder Bremen":['UEFA','WerderBremen.svg'],
-  "Kauno Zalgiris":['UEFA','KaunoZalgiris.svg'],
-  "Galatasaray":['UEFA','Galatasaray.svg'],
-  "Sturm Graz":['UEFA','SturmGraz.svg'],
-  "Torreense":['UEFA','Torreense.svg'],
-  "Fenerbahce":['UEFA','Fenerbahce.svg'],
-  "Lille":['UEFA','Lille.svg'],
-  "Villarreal":['UEFA','Villarreal.svg']
-};
-
-const TEAM_ALIASES = {
-  "Coventry City":"Coventry",
-  "Hull City":"Hull",
-  "Manchester United":"Manchester Utd",
-  "Manchester Utd":"Manchester Utd",
-  "Nottingham Forest":"Nott'm Forest",
-  "Nott'm Forest":"Nott'm Forest",
-  "Sheffield United":"Sheffield Utd",
-  "Sheffield Wednesday":"Sheff Weds",
-  "West Bromwich Albion":"West Brom",
-  "AFC Bournemouth":"Bournemouth",
-};
 
 const COMPETITION_LOGOS = {
   "Premier League":"PremierLeague.svg",
@@ -1182,16 +1073,6 @@ const COMPETITION_BACKGROUNDS = {
   "UEFA Conference League":{start:"#010201",mid:"#031006",end:"#010101",secondary:"rgba(1,190,19,.20)",glow:"rgba(1,190,19,.10)"},
   "UEFA Nations League":  {start:"#030303",mid:"#101010",end:"#010101",secondary:"rgba(120,120,120,.18)",glow:"rgba(220,220,220,.08)"}
 };
-
-function mappedTeamName(name){
-  return TEAM_ALIASES[name] || name;
-}
-
-function teamAsset(name){
-  const key = mappedTeamName(name);
-  const a = FOOTBALL_TEAMS[key];
-  return a ? TEAM_ASSET_BASE + a[0] + "/" + a[1] : null;
-}
 
 function competitionAsset(name){
   if(!name) return null;
@@ -1257,8 +1138,8 @@ function render(f){
   slide.style.setProperty("--bg-secondary", bg.secondary);
   slide.style.setProperty("--bg-glow", bg.glow);
 
-  setImg(document.getElementById("homeBadge"), teamAsset(f.home));
-  setImg(document.getElementById("awayBadge"), teamAsset(f.away));
+  setImg(document.getElementById("homeBadge"), f.homeBadge || null);
+  setImg(document.getElementById("awayBadge"), f.awayBadge || null);
 
   document.getElementById("competitionHeader").textContent =
     f.competition || "";
