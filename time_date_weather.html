@@ -140,35 +140,40 @@ setInterval(updateClock,1000);
 const WEATHER_LAT = 52.1888;
 const WEATHER_LON = 0.9978;
 
-function weatherIcon(code){
+function weatherIcon(code, isNight){
 
-  if(code === 0) return "☀";
-
-  if(code === 1) return "🌤";
-  if(code === 2) return "⛅";
-  if(code === 3) return "☁";
+  // Clear / mostly clear: switch to moon imagery after dark.
+  if(code === 0) return isNight ? "🌙" : "☀";
+  if(code === 1) return isNight ? "🌙" : "🌤";
+  if(code === 2) return isNight ? "☁️" : "⛅";
+  if(code === 3) return "☁️";
 
   if(code === 45 || code === 48) return "🌫";
 
-  if(code === 51 || code === 53 || code === 55) return "🌦";
-
+  if(code === 51 || code === 53 || code === 55) return isNight ? "🌧" : "🌦";
   if(code === 56 || code === 57) return "🌧";
-
   if(code === 61 || code === 63 || code === 65) return "🌧";
-
   if(code === 66 || code === 67) return "🌧";
 
   if(code === 71 || code === 73 || code === 75 || code === 77) return "❄";
-
-  if(code === 80 || code === 81 || code === 82) return "🌦";
-
+  if(code === 80 || code === 81 || code === 82) return "🌧";
   if(code === 85 || code === 86) return "🌨";
+  if(code === 95 || code === 96 || code === 99) return "⛈";
 
-  if(code === 95) return "⛈";
+  return isNight ? "🌙" : "☀";
+}
 
-  if(code === 96 || code === 99) return "⛈";
+// Determine night using today's local sunrise and sunset from Open-Meteo.
+// If those values are unavailable, fall back to a conservative clock-based estimate.
+let sunriseTime = null;
+let sunsetTime = null;
 
-  return "☀";
+function isNightTime(date = new Date()){
+  if (sunriseTime && sunsetTime) {
+    return date < sunriseTime || date >= sunsetTime;
+  }
+  const hour = date.getHours();
+  return hour < 6 || hour >= 20;
 }
 
 
@@ -181,6 +186,7 @@ async function updateWeather(){
       `?latitude=${WEATHER_LAT}` +
       `&longitude=${WEATHER_LON}` +
       `&current=temperature_2m,weather_code` +
+      `&daily=sunrise,sunset` +
       `&temperature_unit=celsius` +
       `&timezone=Europe%2FLondon`;
 
@@ -194,6 +200,15 @@ async function updateWeather(){
 
     const data = await response.json();
 
+    // Open-Meteo returns sunrise/sunset in the requested Europe/London timezone.
+    const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" });
+    const dailyDates = data.daily?.time || [];
+    const dayIndex = dailyDates.indexOf(today);
+    if (dayIndex >= 0) {
+      sunriseTime = new Date(data.daily.sunrise[dayIndex]);
+      sunsetTime = new Date(data.daily.sunset[dayIndex]);
+    }
+
     const temperature =
       Math.round(data.current.temperature_2m);
 
@@ -204,7 +219,7 @@ async function updateWeather(){
       `${temperature}°C`;
 
     document.getElementById("weatherIcon").textContent =
-      weatherIcon(code);
+      weatherIcon(code, isNightTime());
 
   }catch(error){
 
