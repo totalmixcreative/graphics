@@ -804,14 +804,13 @@ if(e.data.specialEvent){
       .textContent =
         venueText;
 
-    if(!e.data.silent){
-
-      if(!bumperActive){
-
-  showNightBumper();
-
-}
-
+    /* Only the 90s special event may trigger the night bumper. */
+    if(
+      !e.data.silent &&
+      specialEventType === "90s" &&
+      !bumperActive
+    ){
+      showNightBumper();
     }
 
   }
@@ -822,9 +821,10 @@ if(e.data.specialEvent){
 
   if(e.data.type === "nightmode-off"){
 
+    const wasNinetiesEvent = specialEventType === "90s";
+
     nightModeActive = false;
-	  
-	specialEventActive = false;
+    specialEventActive = false;
     specialEventType = null;
     specialEventIndex = 0;
 
@@ -838,7 +838,9 @@ if(e.data.specialEvent){
       .textContent =
         venueText;
 
-    showNightBumper();
+    if(wasNinetiesEvent){
+      showNightBumper();
+    }
 
   }
 
@@ -1018,7 +1020,9 @@ function playSpecialEvent(){
       false,
       () => {
 
-        showNightBumper();
+        if(specialEventType === "90s"){
+          showNightBumper();
+        }
 
         setTimeout(()=>{
 
@@ -1494,12 +1498,12 @@ if(
 ){
 
   if(
-  nightModeActive &&
-  !specialEventActive &&
-  !bumperActive
-){
-  showNightBumper();
-}
+    nightModeActive &&
+    specialEventType === "90s" &&
+    !bumperActive
+  ){
+    showNightBumper();
+  }
 
   wrapper.classList.remove("slide-in");
 
