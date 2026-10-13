@@ -1117,7 +1117,38 @@ function animateFootballOut(){
   elements.forEach(el=>{if(el){void el.offsetWidth;el.classList.add('exit')}});
 }
 
+
+function getFixtureStatusLabel(f){
+  const startValue = f.startTime || f.start || f.dateTime || f.kickoff || f.date;
+  const start = startValue ? new Date(startValue) : null;
+  const now = new Date();
+  const explicitEndValue = f.endTime || f.end || f.endDateTime;
+  const explicitEnd = explicitEndValue ? new Date(explicitEndValue) : null;
+  const validStart = start && !Number.isNaN(start.getTime());
+  const validEnd = explicitEnd && !Number.isNaN(explicitEnd.getTime());
+  const end = validEnd ? explicitEnd : (validStart ? new Date(start.getTime() + 135 * 60 * 1000) : null);
+
+  if(validStart && now >= start && now <= end) return "LIVE NOW";
+  if(validStart && now < start && start - now <= 60 * 60 * 1000){
+    const time = start.toLocaleTimeString("en-GB", {hour:"numeric", minute:"2-digit"}).replace(" ", "").toUpperCase();
+    return "UP NEXT • " + time;
+  }
+  if(f.label) return String(f.label);
+  if(!validStart) return f.date || "";
+  const time = start.toLocaleTimeString("en-GB", {hour:"2-digit", minute:"2-digit"});
+  const today = new Date(now); today.setHours(0,0,0,0);
+  const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate()+1);
+  const eventDay = new Date(start); eventDay.setHours(0,0,0,0);
+  if(eventDay.getTime() === today.getTime()) return (start.getHours() >= 18 ? "Tonight " : "Today ") + time;
+  if(eventDay.getTime() === tomorrow.getTime()) return "Tomorrow " + time;
+  if(start - now <= 7 * 24 * 60 * 60 * 1000) return start.toLocaleDateString("en-GB", {weekday:"long"}) + " " + time;
+  return start.toLocaleString("en-GB", {weekday:"short", day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"});
+}
+
+let currentlyRenderedFixture = null;
+
 function render(f){
+  currentlyRenderedFixture = f;
   const ringColours =
     COMPETITION_RING_COLOURS[f.competition] ||
     ["#ffffff","#ffffff"];
@@ -1147,8 +1178,10 @@ function render(f){
   document.getElementById("fixtureName").textContent =
     `${f.home} V ${f.away}`;
 
+  // Calculate the live/up-next label locally, like the Carbon website.
+  // Prefer an explicit end time; otherwise use a 2h15m match window.
   document.getElementById("fixtureTime").textContent =
-    f.label || f.date || "";
+    getFixtureStatusLabel(f);
 
   const channelLogos =
     Array.isArray(f.channelLogos)
@@ -1506,6 +1539,14 @@ setInterval(()=>{
   }
 
 },100);
+
+// Refresh the status label while a fixture remains on screen.
+setInterval(()=>{
+  if(currentlyRenderedFixture){
+    const timeEl = document.getElementById("fixtureTime");
+    if(timeEl) timeEl.textContent = getFixtureStatusLabel(currentlyRenderedFixture);
+  }
+}, 30000);
 
 /* =========================
    STORAGE SYNC

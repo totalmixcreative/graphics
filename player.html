@@ -351,10 +351,7 @@ const ltFrame =
 	
 function enterNightMode(){
 
-  document
-    .getElementById("promo")
-    .classList
-    .add("nightmode");
+  setPromoFullScreen(isFullScreenNight());
 
   setTimeout(()=>{
 
@@ -401,10 +398,7 @@ ltFrame.contentWindow.postMessage(
 
   setTimeout(()=>{
 
-    document
-      .getElementById("promo")
-      .classList
-      .remove("nightmode");
+    setPromoFullScreen(isFullScreenNight());
 
   },2200);
 
@@ -547,6 +541,21 @@ if(venue === "mill"){
   return false;
 
 }
+
+/* FULL SCREEN IS SATURDAY NIGHT ONLY.
+   Night Mode messaging/content behaviour remains independent. */
+function isFullScreenNight(){
+  const nowTime = now();
+  const day = nowTime.getDay(); // Sunday=0, Saturday=6
+  const hour = nowTime.getHours();
+
+  // Saturday evening through Sunday 04:00
+  return (day === 6 && hour >= 21) || (day === 0 && hour < 4);
+}
+
+function setPromoFullScreen(enabled){
+  document.getElementById("promo").classList.toggle("nightmode", !!enabled);
+}
 	
 /* ============================
 SERVER TIME
@@ -639,10 +648,7 @@ if(
 	  enteringNightMode = true;
       nightExpandTriggered = true;
 
-      document
-        .getElementById("promo")
-        .classList
-        .add("nightmode");
+      setPromoFullScreen(isFullScreenNight());
 
     }
 
@@ -750,10 +756,7 @@ dayBumperTriggered = true;
       remaining <= 100
     ){
 
-      document
-        .getElementById("promo")
-        .classList
-        .remove("nightmode");
+      setPromoFullScreen(isFullScreenNight());
 
       nightActive = false;
 	  dayShrinkTriggered = false;
@@ -807,7 +810,7 @@ setInterval(updateMode,250);
     document
       .getElementById("promo")
       .classList
-      .add("nightmode");
+      .toggle("nightmode", isFullScreenNight());
 
     nightActive = true;
 

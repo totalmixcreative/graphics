@@ -274,60 +274,68 @@ async function loadData(){
     items = data.lowerThird || [];
 	  
 /* =========================
-   NIGHT MODE FILTER
+   TIME-BASED CONTENT FILTER
+   Independent of Night Mode / Full Screen.
+   Mon-Sat: filter from 9pm.
+   Sunday: filter from 6pm.
+   Keep filtering through the overnight period until 4am.
 ========================= */
 
-items = data.lowerThird || [];
-	  
+function shouldFilterDaytimePromos(){
+  const current = now();
+  const day = current.getDay(); // 0 = Sunday
+  const hour = current.getHours();
+
+  if(hour < 4) return true;
+  if(day === 0) return hour >= 18;
+  return hour >= 21;
+}
+
+function promoTextForFiltering(item){
+  const imageText = Array.isArray(item.image)
+    ? item.image.join(" ")
+    : (item.image || "");
+
+  return [
+    imageText,
+    item.headline || "",
+    item.subline || ""
+  ].join(" ").toLowerCase();
+}
+
+function filterTimeRestrictedPromos(sourceItems){
+  if(!shouldFilterDaytimePromos()) return sourceItems;
+
+  const blocked = [
+    "food",
+    "darts",
+    "pool",
+    "steak",
+    "lunch",
+    "fizz",
+    "sunday"
+  ];
+
+  const allowed = ["freepool"];
+
+  return sourceItems.filter(item => {
+    const searchableText = promoTextForFiltering(item);
+    const isBlocked = blocked.some(tag => searchableText.includes(tag));
+    const isAllowed = allowed.some(tag => searchableText.includes(tag));
+    return !(isBlocked && !isAllowed);
+  });
+}
+
+items = filterTimeRestrictedPromos(data.lowerThird || []);
+
 console.log(
-  "NM ACTIVE:",
-  nightModeActive
+  "TIME FILTER ACTIVE:",
+  shouldFilterDaytimePromos(),
+  "Eligible promos:",
+  items.length
 );
 
-if(nightModeActive){
-
-  items = items.filter(item => {
-
-    const joined =
-      Array.isArray(item.image)
-      ? item.image.join(" ").toLowerCase()
-      : item.image.toLowerCase();
-
-    const blocked = [
-
-      "food",
-      "darts",
-      "pool",
-      "steak",
-      "lunch",
-      "fizz",
-	  "sunday"
-
-    ];
-
-    const allowed = [
-
-      "freepool"
-
-    ];
-
-    const isBlocked =
-      blocked.some(tag =>
-        joined.includes(tag)
-      );
-
-    const isAllowed =
-      allowed.some(tag =>
-        joined.includes(tag)
-      );
-
-    return !(isBlocked && !isAllowed);
-
-  });
-
-}
-	  
-	 buildRotationSchedule();
+buildRotationSchedule();
 
     if(items.length && !rotationStarted){
 
@@ -438,7 +446,7 @@ function buildRotationSchedule(){
 
 function rotate(){
 
-  if(!rotationSchedule.length) return;
+  if(!rotationSchedule.length || !items.length) return;
 
   const timelineIndex =
     Math.floor(
