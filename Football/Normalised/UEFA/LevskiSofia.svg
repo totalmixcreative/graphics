@@ -1,15 +1,15 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <svg xmlns="http://www.w3.org/2000/svg" width="260" height="260" viewBox="0 0 260 260" version="1.1" preserveAspectRatio="xMidYMid meet">
-  <svg id="Layer_1" x="0.000000" y="0.000000" enable-background="new 0 0 256 256" xml:space="preserve" width="260.000000" height="260.000000" viewBox="0 0 256 256" preserveAspectRatio="xMidYMid meet">
+  <svg id="Layer_1" x="20" y="20" enable-background="new 0 0 256 256" xml:space="preserve" width="220" height="220" viewBox="0 0 256 256" preserveAspectRatio="xMidYMid meet">
     <g>
-      <rect x="0" y="0" transform="matrix(-1.836970e-16 1 -1 -1.836970e-16 256 -4.263256e-13)" fill="#FFFFFF" width="256" height="256" />
-      <rect x="7.5" y="7.5" fill="#28348A" width="240.9" height="240.9" />
+      <rect x="0" y="0" transform="matrix(-1.836970e-16 1 -1 -1.836970e-16 256 -4.263256e-13)" fill="#FFFFFF" width="256" height="256"/>
+      <rect x="7.5" y="7.5" fill="#28348A" width="240.9" height="240.9"/>
       <g>
-        <rect x="7.5" y="208.9" fill="#FABB33" width="60.2" height="39.5" />
-        <polygon fill="#D50F3B" points="128,103.5 67.8,208.9 67.8,248.5 128,248.5   " />
-        <polygon fill="#FABB33" points="188.2,208.9 128,103.5 128,248.5 188.2,248.5   " />
-        <rect x="188.2" y="208.9" fill="#D50F3B" width="60.2" height="39.5" />
-        <polygon fill="#FFFFFF" points="256,193.9 225.9,193.9 142,47.1 82.8,47.1 82.8,62.1 105.4,62.1 30.1,193.9 0,193.9 0,208.9     67.8,208.9 128,103.5 188.2,208.9 256,208.9   " />
+        <rect x="7.5" y="208.9" fill="#FABB33" width="60.2" height="39.5"/>
+        <polygon fill="#D50F3B" points="128,103.5 67.8,208.9 67.8,248.5 128,248.5   "/>
+        <polygon fill="#FABB33" points="188.2,208.9 128,103.5 128,248.5 188.2,248.5   "/>
+        <rect x="188.2" y="208.9" fill="#D50F3B" width="60.2" height="39.5"/>
+        <polygon fill="#FFFFFF" points="256,193.9 225.9,193.9 142,47.1 82.8,47.1 82.8,62.1 105.4,62.1 30.1,193.9 0,193.9 0,208.9     67.8,208.9 128,103.5 188.2,208.9 256,208.9   "/>
       </g>
     </g>
   </svg>
