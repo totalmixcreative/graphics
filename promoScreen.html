@@ -718,7 +718,7 @@ if ("serviceWorker" in navigator) {
 
 
 const BASE =
-"https://totalmixcreative.github.io/graphics/promos/";
+"/promos/";
 
 const IMAGE_DURATION = 10000;
 const ANIMATION_DURATION = 600;
@@ -1042,7 +1042,7 @@ function playSpecialEvent(){
 }
 	
 const COMPETITION_BASE =
-  "https://totalmixcreative.github.io/graphics/Football/";
+  "/sport/competition/";
 
 const COMPETITION_LOGOS = {
   "Premier League":"PremierLeague.svg",
@@ -1097,7 +1097,18 @@ function competitionAsset(name){
 }
 
 function setImg(el,url){
-  el.innerHTML = url ? `<img src="${url}" alt="">` : "";
+
+  if(!url){
+    el.classList.remove("flagRoundel");
+    el.innerHTML = "";
+    return;
+  }
+
+  const isFlag = /\/Nations\//i.test(url);
+
+  el.classList.toggle("flagRoundel", isFlag);
+
+  el.innerHTML = `<img src="${url}" alt="">`;
 }
 
 let fixtures = [];
